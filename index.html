@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live TV</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif}
+#player-wrap{width:100%;height:calc(100% - 80px);position:relative}
+video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
+#controls-overlay{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.9));
+  padding:28px 14px 12px;display:flex;align-items:center;gap:10px;
+  opacity:0;transition:opacity .3s;pointer-events:none
+}
+#player-wrap:hover #controls-overlay{opacity:1;pointer-events:auto}
+.ctrl-btn{
+  background:rgba(255,255,255,.1);border:none;color:#fff;
+  padding:9px 16px;border-radius:6px;cursor:pointer;font-size:13px;
+  backdrop-filter:blur(6px);transition:.2s
+}
+.ctrl-btn:hover{background:rgba(255,255,255,.3)}
+#quality-menu{
+  position:absolute;bottom:52px;right:12px;
+  background:rgba(8,8,8,.96);border:1px solid #222;border-radius:8px;
+  display:none;flex-direction:column;min-width:140px;max-height:220px;overflow-y:auto
+}
+#quality-menu button{
+  background:none;border:none;color:#fff;padding:11px 16px;
+  cursor:pointer;text-align:right;font-size:13px
+}
+#quality-menu button:hover{background:rgba(255,255,255,.08)}
+#quality-menu button.active{color:#0f0}
+#channels{
+  height:80px;background:#030303;display:flex;gap:5px;
+  padding:10px;overflow-x:auto;align-items:center;border-top:1px solid #111
+}
+#channels::-webkit-scrollbar{height:4px}
+#channels::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+.ch-btn{
+  min-width:82px;height:55px;background:#0a0a0a;border:1px solid #1a1a1a;
+  color:#bbb;font-size:12px;font-weight:700;border-radius:8px;
+  cursor:pointer;transition:.2s;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;flex-direction:column;gap:3px
+}
+.ch-btn:hover{background:#151515;border-color:#0f0;color:#fff}
+.ch-btn.on{background:#0f0;color:#000;border-color:#0f0}
+#gear{
+  position:fixed;top:10px;left:10px;z-index:1000;
+  background:rgba(0,0,0,.7);border:1px solid #333;
+  color:#fff;font-size:18px;padding:8px 12px;border-radius:7px;cursor:pointer
+}
+#add-ch{
+  position:fixed;top:10px;left:58px;z-index:1000;
+  background:rgba(0,0,0,.7);border:1px solid #333;
+  color:#0f0;font-size:20px;padding:6px 13px;border-radius:7px;cursor:pointer
+}
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;
+  display:none;align-items:center;justify-content:center
+}
+.modal-box{
+  background:#0a0a0a;border:1px solid #222;border-radius:14px;
+  padding:26px;width:92%;max-width:500px
+}
+.modal-box h2{color:#fff;margin-bottom:16px;font-size:17px}
+.modal-box input,.modal-box select{
+  width:100%;padding:11px;margin:6px 0;background:#111;
+  border:1px solid #2a2a2a;border-radius:7px;color:#fff;font-size:13px
+}
+.modal-box button{
+  padding:11px 24px;background:#0f0;color:#000;border:none;
+  border-radius:7px;cursor:pointer;font-weight:700;margin-top:12px;font-size:13px
+}
+.modal-box .cancel{background:#1a1a1a;color:#fff;margin-right:8px}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.status{
+  position:fixed;top:10px;right:10px;z-index:1000;color:#0f0;
+  font-size:12px;background:rgba(0,0,0,.75);padding:7px 14px;border-radius:7px;display:none
+}
+#err-toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:#a00;color:#fff;padding:10px 20px;border-radius:8px;
+  font-size:13px;display:none;z-index:9999
+}
+</style>
+</head>
+<body>
+
+<button id="gear" onclick="toggleSettings()">⚙️</button>
+<button id="add-ch" onclick="toggleAdd()">+</button>
+<div class="status" id="status">● جاري البث</div>
+<div id="err-toast"></div>
+
+<!-- إعدادات -->
+<div class="modal" id="settings-modal" onclick="if(event.target===this)toggleSettings()">
+  <div class="modal-box">
+    <h2>⚙️ إعدادات</h2>
+    <input id="in-proxy" placeholder="رابط البروكسي" value="https://alameeeretv.mkhtar80.workers.dev/?url=">
+    <input id="in-referer" placeholder="Referer (مثال: http://lynovo.cc/)">
+    <div style="margin-top:8px">
+      <button onclick="saveConfig()">💾 حفظ</button>
+      <button class="cancel" onclick="toggleSettings()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- إضافة قناة -->
+<div class="modal" id="add-modal" onclick="if(event.target===this)toggleAdd()">
+  <div class="modal-box">
+    <h2>➕ إضافة / تعديل قناة</h2>
+    <input id="ch-name" placeholder="اسم القناة">
+    <input id="ch-url" placeholder="رابط البث (m3u8 أو ts)">
+    <select id="ch-type">
+      <option value="auto">كشف تلقائي</option>
+      <option value="hls">HLS (.m3u8)</option>
+      <option value="ts">MPEG-TS (.ts)</option>
+    </select>
+    <div class="row">
+      <input id="ch-idx" placeholder="رقم القناة (1-30)" type="number" min="1" max="30">
+    </div>
+    <div style="margin-top:8px">
+      <button onclick="saveChannel()">حفظ القناة</button>
+      <button class="cancel" onclick="toggleAdd()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- المشغل -->
+<div id="player-wrap">
+  <video id="vid" playsinline webkit-playsinline></video>
+  <div id="controls-overlay">
+    <button class="ctrl-btn" onclick="togglePlay()">⏯️</button>
+    <button class="ctrl-btn" onclick="toggleMute()">🔊</button>
+    <button class="ctrl-btn" onclick="skip(-10)">⏪</button>
+    <button class="ctrl-btn" onclick="skip(10)">⏩</button>
+    <button class="ctrl-btn" onclick="toggleFullscreen()" style="margin-right:auto">⛶</button>
+    <button class="ctrl-btn" onclick="toggleQuality()">جودة</button>
+    <div id="quality-menu"></div>
+  </div>
+</div>
+
+<div id="channels"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.4/dist/hls.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
+
+<script>
+// ===== البروكسي =====
+// الرابط الافتراضي هو Cloudflare Worker الخاص بك
+const PROXY = localStorage.getItem('proxy') || 'https://alameeeretv.mkhtar80.workers.dev/?url=';
+
+let CFG = {
+  proxy:   localStorage.getItem('proxy')   || 'https://alameeeretv.mkhtar80.workers.dev/?url=',
+  referer: localStorage.getItem('referer') || 'http://lynovo.cc/'
+};
+
+// ===== القنوات =====
+const DEFAULT_CHANNELS = [
+  {n:"BeIN 1",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339224.ts", type:"ts"},
+  {n:"BeIN 2",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339225.ts", type:"ts"},
+  {n:"BeIN 3",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339226.ts", type:"ts"},
+  {n:"BeIN 4",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339227.ts", type:"ts"},
+  {n:"BeIN 5",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339228.ts", type:"ts"},
+  {n:"BeIN 6",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339229.ts", type:"ts"},
+  {n:"BeIN 7",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339230.ts", type:"ts"},
+  {n:"SSC 1",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339231.ts", type:"ts"},
+  {n:"SSC 2",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339232.ts", type:"ts"},
+  {n:"SSC 3",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339233.ts", type:"ts"},
+  {n:"SSC 4",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339234.ts", type:"ts"},
+  {n:"SSC 5",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339235.ts", type:"ts"},
+  {n:"MBC 1",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339236.ts", type:"ts"},
+  {n:"MBC 2",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339237.ts", type:"ts"},
+  {n:"MBC 3",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339238.ts", type:"ts"},
+  {n:"MBC 4",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339239.ts", type:"ts"},
+  {n:"MBC 5",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339240.ts", type:"ts"},
+  {n:"الأولى",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339241.ts", type:"ts"},
+  {n:"الثانية", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339242.ts", type:"ts"},
+  {n:"الإخبارية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339243.ts",type:"ts"},
+  {n:"الرياضية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339244.ts", type:"ts"},
+  {n:"الفضائية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339245.ts", type:"ts"},
+  {n:"الترفيه", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339246.ts", type:"ts"},
+  {n:"الأفلام", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339247.ts", type:"ts"},
+  {n:"المسلسلات",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339248.ts",type:"ts"},
+  {n:"الوثائقية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339249.ts",type:"ts"},
+  {n:"الأطفال", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339250.ts", type:"ts"},
+  {n:"القرآن",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339251.ts", type:"ts"},
+  {n:"السنة",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339252.ts", type:"ts"},
+  {n:"إضافية",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339253.ts", type:"ts"}
+];
+
+let CH = JSON.parse(localStorage.getItem('channels')) || DEFAULT_CHANNELS;
+let hlsPlayer = null, tsPlayer = null, cur = 0;
+const vid = document.getElementById('vid');
+const qMenu = document.getElementById('quality-menu');
+
+function toast(msg){
+  const t = document.getElementById('err-toast');
+  t.textContent = msg; t.style.display='block';
+  setTimeout(()=>t.style.display='none', 4000);
+}
+
+function buildChannels(){
+  const box = document.getElementById('channels');
+  box.innerHTML = '';
+  CH.forEach((c,i) => {
+    const b = document.createElement('button');
+    b.className = 'ch-btn';
+    b.innerHTML = `<span>${c.n}</span>`;
+    b.onclick = () => load(i);
+    box.appendChild(b);
+  });
+}
+
+function detectType(url){
+  if(url.includes('.m3u8')) return 'hls';
+  return 'ts';
+}
+
+function getProxiedUrl(raw){
+  return CFG.proxy + encodeURIComponent(raw);
+}
+
+function load(idx){
+  if(idx < 0 || idx >= CH.length) return;
+  cur = idx;
+  document.querySelectorAll('.ch-btn').forEach((b,i)=>b.classList.toggle('on', i===idx));
+  document.getElementById('status').style.display='block';
+
+  if(hlsPlayer){ hlsPlayer.destroy(); hlsPlayer=null; }
+  if(tsPlayer){ tsPlayer.destroy(); tsPlayer=null; }
+  vid.removeAttribute('src');
+  vid.load();
+
+  const ch  = CH[idx];
+  const url = getProxiedUrl(ch.u);
+  const type = ch.type || detectType(ch.u);
+
+  try {
+    if(type === 'hls' && Hls.isSupported()){
+      hlsPlayer = new Hls({ enableWorker:true, maxBufferLength:30 });
+      hlsPlayer.loadSource(url);
+      hlsPlayer.attachMedia(vid);
+      hlsPlayer.on(Hls.Events.MANIFEST_PARSED, ()=>{ vid.play().catch(()=>{}); buildQuality(); });
+      hlsPlayer.on(Hls.Events.ERROR, (e,d)=>{
+        if(d.fatal){ toast('خطأ في البث، إعادة المحاولة...'); setTimeout(()=>load(cur),5000); }
+      });
+    }
+    else if(mpegts.getFeatureList().mseLivePlayback){
+      tsPlayer = mpegts.createPlayer({ type:'mpegts', url, isLive:true });
+      tsPlayer.attachMediaElement(vid);
+      tsPlayer.load();
+      tsPlayer.play();
+      tsPlayer.on(mpegts.Events.ERROR, ()=>{
+        toast('خطأ في البث، إعادة المحاولة...');
+        setTimeout(()=>load(cur),5000);
+      });
+    } else {
+      vid.src = url;
+      vid.play().catch(()=>{});
+    }
+  } catch(e){ toast('خطأ: '+e.message); }
+}
+
+function buildQuality(){
+  qMenu.innerHTML='';
+  if(!hlsPlayer) return;
+  const auto=document.createElement('button');
+  auto.textContent='تلقائي';
+  auto.onclick=()=>{ hlsPlayer.currentLevel=-1; qMenu.style.display='none'; };
+  if(hlsPlayer.currentLevel===-1) auto.classList.add('active');
+  qMenu.appendChild(auto);
+  hlsPlayer.levels.forEach((lv,i)=>{
+    const b=document.createElement('button');
+    b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
+    b.onclick=()=>{ hlsPlayer.currentLevel=i; qMenu.style.display='none'; };
+    if(hlsPlayer.currentLevel===i) b.classList.add('active');
+    qMenu.appendChild(b);
+  });
+}
+
+function toggleQuality(){ qMenu.style.display=qMenu.style.display==='flex'?'none':'flex'; }
+function togglePlay(){ vid.paused?vid.play():vid.pause(); }
+function toggleMute(){ vid.muted=!vid.muted; }
+function skip(s){ vid.currentTime+=s; }
+function toggleFullscreen(){
+  const el=document.getElementById('player-wrap');
+  document.fullscreenElement?document.exitFullscreen():el.requestFullscreen();
+}
+
+document.addEventListener('click',e=>{ if(!e.target.closest('#controls-overlay')) qMenu.style.display='none'; });
+
+function toggleSettings(){
+  const m=document.getElementById('settings-modal');
+  const show=m.style.display!=='flex';
+  m.style.display=show?'flex':'none';
+  if(show){
+    document.getElementById('in-proxy').value=CFG.proxy;
+    document.getElementById('in-referer').value=CFG.referer;
+  }
+}
+
+function saveConfig(){
+  CFG.proxy=document.getElementById('in-proxy').value.trim();
+  CFG.referer=document.getElementById('in-referer').value.trim();
+  localStorage.setItem('proxy',CFG.proxy);
+  localStorage.setItem('referer',CFG.referer);
+  toggleSettings();
+  toast('✅ تم الحفظ');
+}
+
+function toggleAdd(){
+  const m=document.getElementById('add-modal');
+  m.style.display=m.style.display!=='flex'?'flex':'none';
+}
+
+function saveChannel(){
+  const name=document.getElementById('ch-name').value.trim();
+  const url=document.getElementById('ch-url').value.trim();
+  const type=document.getElementById('ch-type').value;
+  const idx=parseInt(document.getElementById('ch-idx').value)-1;
+  if(!name||!url){ toast('أدخل الاسم والرابط'); return; }
+  const ch={n:name,u:url};
+  if(type!=='auto') ch.type=type;
+  if(idx>=0&&idx<30) CH[idx]=ch;
+  else CH.push(ch);
+  localStorage.setItem('channels',JSON.stringify(CH));
+  buildChannels();
+  toggleAdd();
+  load(idx>=0&&idx<CH.length?idx:CH.length-1);
+  document.getElementById('ch-name').value='';
+  document.getElementById('ch-url').value='';
+  document.getElementById('ch-idx').value='';
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT') return;
+  switch(e.key){
+    case ' ': e.preventDefault(); togglePlay(); break;
+    case 'f': case 'F': toggleFullscreen(); break;
+    case 'm': case 'M': toggleMute(); break;
+    case 'ArrowRight': skip(10); break;
+    case 'ArrowLeft':  skip(-10); break;
+    default: if(e.key>='1'&&e.key<='9') load(parseInt(e.key)-1);
+             else if(e.key==='0') load(9);
+  }
+});
+
+buildChannels();
+load(0);
+</script>
+</body>
+</html>
