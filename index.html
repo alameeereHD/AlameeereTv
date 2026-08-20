@@ -16,6 +16,7 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
   opacity:0;transition:opacity .3s;pointer-events:none
 }
 #player-wrap:hover #controls-overlay{opacity:1;pointer-events:auto}
+#player-wrap:active #controls-overlay{opacity:1;pointer-events:auto}
 .ctrl-btn{
   background:rgba(255,255,255,.1);border:none;color:#fff;
   padding:9px 16px;border-radius:6px;cursor:pointer;font-size:13px;
@@ -95,12 +96,11 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
 <div class="status" id="status">● جاري البث</div>
 <div id="err-toast"></div>
 
-<!-- إعدادات -->
 <div class="modal" id="settings-modal" onclick="if(event.target===this)toggleSettings()">
   <div class="modal-box">
     <h2>⚙️ إعدادات</h2>
     <input id="in-proxy" placeholder="رابط البروكسي" value="https://alameeeretv.mkhtar80.workers.dev/?url=">
-    <input id="in-referer" placeholder="Referer (مثال: http://lynovo.cc/)">
+    <input id="in-referer" placeholder="Referer">
     <div style="margin-top:8px">
       <button onclick="saveConfig()">💾 حفظ</button>
       <button class="cancel" onclick="toggleSettings()">إلغاء</button>
@@ -108,7 +108,6 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
   </div>
 </div>
 
-<!-- إضافة قناة -->
 <div class="modal" id="add-modal" onclick="if(event.target===this)toggleAdd()">
   <div class="modal-box">
     <h2>➕ إضافة / تعديل قناة</h2>
@@ -120,7 +119,7 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
       <option value="ts">MPEG-TS (.ts)</option>
     </select>
     <div class="row">
-      <input id="ch-idx" placeholder="رقم القناة (1-30)" type="number" min="1" max="30">
+      <input id="ch-idx" placeholder="رقم القناة" type="number" min="1" max="30">
     </div>
     <div style="margin-top:8px">
       <button onclick="saveChannel()">حفظ القناة</button>
@@ -129,7 +128,6 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
   </div>
 </div>
 
-<!-- المشغل -->
 <div id="player-wrap">
   <video id="vid" playsinline webkit-playsinline></video>
   <div id="controls-overlay">
@@ -149,47 +147,42 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
 <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
 
 <script>
-// ===== البروكسي =====
-// الرابط الافتراضي هو Cloudflare Worker الخاص بك
-const PROXY = localStorage.getItem('proxy') || 'https://alameeeretv.mkhtar80.workers.dev/?url=';
-
 let CFG = {
   proxy:   localStorage.getItem('proxy')   || 'https://alameeeretv.mkhtar80.workers.dev/?url=',
-  referer: localStorage.getItem('referer') || 'http://lynovo.cc/'
+  referer: localStorage.getItem('referer') || ''
 };
 
-// ===== القنوات =====
 const DEFAULT_CHANNELS = [
-  {n:"BeIN 1",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339224.ts", type:"ts"},
-  {n:"BeIN 2",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339225.ts", type:"ts"},
-  {n:"BeIN 3",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339226.ts", type:"ts"},
-  {n:"BeIN 4",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339227.ts", type:"ts"},
-  {n:"BeIN 5",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339228.ts", type:"ts"},
-  {n:"BeIN 6",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339229.ts", type:"ts"},
-  {n:"BeIN 7",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339230.ts", type:"ts"},
-  {n:"SSC 1",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339231.ts", type:"ts"},
-  {n:"SSC 2",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339232.ts", type:"ts"},
-  {n:"SSC 3",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339233.ts", type:"ts"},
-  {n:"SSC 4",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339234.ts", type:"ts"},
-  {n:"SSC 5",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339235.ts", type:"ts"},
-  {n:"MBC 1",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339236.ts", type:"ts"},
-  {n:"MBC 2",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339237.ts", type:"ts"},
-  {n:"MBC 3",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339238.ts", type:"ts"},
-  {n:"MBC 4",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339239.ts", type:"ts"},
-  {n:"MBC 5",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339240.ts", type:"ts"},
-  {n:"الأولى",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339241.ts", type:"ts"},
-  {n:"الثانية", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339242.ts", type:"ts"},
+  {n:"قناة 1",   u:"http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/325805.ts", type:"ts"},
+  {n:"BeIN 1",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339224.ts", type:"ts"},
+  {n:"BeIN 2",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339225.ts", type:"ts"},
+  {n:"BeIN 3",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339226.ts", type:"ts"},
+  {n:"BeIN 4",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339227.ts", type:"ts"},
+  {n:"BeIN 5",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339228.ts", type:"ts"},
+  {n:"BeIN 6",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339229.ts", type:"ts"},
+  {n:"BeIN 7",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339230.ts", type:"ts"},
+  {n:"SSC 1",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339231.ts", type:"ts"},
+  {n:"SSC 2",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339232.ts", type:"ts"},
+  {n:"SSC 3",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339233.ts", type:"ts"},
+  {n:"SSC 4",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339234.ts", type:"ts"},
+  {n:"SSC 5",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339235.ts", type:"ts"},
+  {n:"MBC 1",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339236.ts", type:"ts"},
+  {n:"MBC 2",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339237.ts", type:"ts"},
+  {n:"MBC 3",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339238.ts", type:"ts"},
+  {n:"MBC 4",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339239.ts", type:"ts"},
+  {n:"MBC 5",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339240.ts", type:"ts"},
+  {n:"الأولى",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339241.ts", type:"ts"},
+  {n:"الثانية",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339242.ts", type:"ts"},
   {n:"الإخبارية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339243.ts",type:"ts"},
-  {n:"الرياضية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339244.ts", type:"ts"},
-  {n:"الفضائية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339245.ts", type:"ts"},
-  {n:"الترفيه", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339246.ts", type:"ts"},
-  {n:"الأفلام", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339247.ts", type:"ts"},
+  {n:"الرياضية", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339244.ts", type:"ts"},
+  {n:"الفضائية", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339245.ts", type:"ts"},
+  {n:"الترفيه",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339246.ts", type:"ts"},
+  {n:"الأفلام",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339247.ts", type:"ts"},
   {n:"المسلسلات",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339248.ts",type:"ts"},
   {n:"الوثائقية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339249.ts",type:"ts"},
-  {n:"الأطفال", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339250.ts", type:"ts"},
-  {n:"القرآن",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339251.ts", type:"ts"},
-  {n:"السنة",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339252.ts", type:"ts"},
-  {n:"إضافية",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339253.ts", type:"ts"}
+  {n:"الأطفال",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339250.ts", type:"ts"},
+  {n:"القرآن",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339251.ts", type:"ts"},
+  {n:"السنة",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339252.ts", type:"ts"}
 ];
 
 let CH = JSON.parse(localStorage.getItem('channels')) || DEFAULT_CHANNELS;
@@ -229,16 +222,13 @@ function load(idx){
   cur = idx;
   document.querySelectorAll('.ch-btn').forEach((b,i)=>b.classList.toggle('on', i===idx));
   document.getElementById('status').style.display='block';
-
   if(hlsPlayer){ hlsPlayer.destroy(); hlsPlayer=null; }
   if(tsPlayer){ tsPlayer.destroy(); tsPlayer=null; }
   vid.removeAttribute('src');
   vid.load();
-
   const ch  = CH[idx];
   const url = getProxiedUrl(ch.u);
   const type = ch.type || detectType(ch.u);
-
   try {
     if(type === 'hls' && Hls.isSupported()){
       hlsPlayer = new Hls({ enableWorker:true, maxBufferLength:30 });
@@ -248,8 +238,7 @@ function load(idx){
       hlsPlayer.on(Hls.Events.ERROR, (e,d)=>{
         if(d.fatal){ toast('خطأ في البث، إعادة المحاولة...'); setTimeout(()=>load(cur),5000); }
       });
-    }
-    else if(mpegts.getFeatureList().mseLivePlayback){
+    } else if(mpegts.getFeatureList().mseLivePlayback){
       tsPlayer = mpegts.createPlayer({ type:'mpegts', url, isLive:true });
       tsPlayer.attachMediaElement(vid);
       tsPlayer.load();
