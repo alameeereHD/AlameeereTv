@@ -15,7 +15,7 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
   padding:28px 14px 12px;display:flex;align-items:center;gap:10px;
   opacity:0;transition:opacity .3s;pointer-events:none
 }
-#player-wrap:hover #controls-overlay,#player-wrap:active #controls-overlay{opacity:1;pointer-events:auto}
+#player-wrap:hover #controls-overlay,#player-wrap:focus-within #controls-overlay{opacity:1;pointer-events:auto}
 .ctrl-btn{
   background:rgba(255,255,255,.1);border:none;color:#fff;
   padding:9px 16px;border-radius:6px;cursor:pointer;font-size:13px;
@@ -89,37 +89,25 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
 </style>
 </head>
 <body>
+
 <button id="gear" onclick="toggleSettings()">⚙️</button>
 <button id="add-ch" onclick="toggleAdd()">+</button>
 <div class="status" id="status">● جاري البث</div>
 <div id="err-toast"></div>
 
-<div class="modal" id="settings-modal" onclick="if(event.target===this)toggleSettings()">
-  <div class="modal-box">
-    <h2>⚙️ إعدادات</h2>
-    <input id="in-proxy" placeholder="بروكسي (اتركه فارغًا للتشغيل المباشر)">
-    <div style="margin-top:8px">
-      <button onclick="saveConfig()">💾 حفظ</button>
-      <button class="cancel" onclick="toggleSettings()">إلغاء</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal" id="add-modal" onclick="if(event.target===this)toggleAdd()">
   <div class="modal-box">
-    <h2>➕ إضافة / تعديل قناة</h2>
+    <h2>➕ إضافة قناة</h2>
     <input id="ch-name" placeholder="اسم القناة">
     <input id="ch-url" placeholder="رابط البث">
     <select id="ch-type">
-      <option value="auto">كشف تلقائي</option>
+      <option value="auto">تلقائي</option>
       <option value="hls">HLS (.m3u8)</option>
-      <option value="ts">MPEG-TS (.ts)</option>
+      <option value="ts">TS</option>
     </select>
-    <div class="row">
-      <input id="ch-idx" placeholder="رقم القناة" type="number" min="1" max="100">
-    </div>
+    <input id="ch-idx" placeholder="رقم القناة" type="number" min="1">
     <div style="margin-top:8px">
-      <button onclick="saveChannel()">حفظ القناة</button>
+      <button onclick="saveChannel()">حفظ</button>
       <button class="cancel" onclick="toggleAdd()">إلغاء</button>
     </div>
   </div>
@@ -144,39 +132,37 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
 <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
 
 <script>
-let CFG = { proxy: localStorage.getItem('proxy') || '' };
-
 const DEFAULT_CHANNELS = [
-  {n:"قناة 1",    u:"http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/325805.ts", type:"ts"},
-  {n:"BeIN 1",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339224.ts", type:"ts"},
-  {n:"BeIN 2",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339225.ts", type:"ts"},
-  {n:"BeIN 3",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339226.ts", type:"ts"},
-  {n:"BeIN 4",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339227.ts", type:"ts"},
-  {n:"BeIN 5",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339228.ts", type:"ts"},
-  {n:"BeIN 6",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339229.ts", type:"ts"},
-  {n:"BeIN 7",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339230.ts", type:"ts"},
-  {n:"SSC 1",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339231.ts", type:"ts"},
-  {n:"SSC 2",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339232.ts", type:"ts"},
-  {n:"SSC 3",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339233.ts", type:"ts"},
-  {n:"SSC 4",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339234.ts", type:"ts"},
-  {n:"SSC 5",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339235.ts", type:"ts"},
-  {n:"MBC 1",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339236.ts", type:"ts"},
-  {n:"MBC 2",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339237.ts", type:"ts"},
-  {n:"MBC 3",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339238.ts", type:"ts"},
-  {n:"MBC 4",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339239.ts", type:"ts"},
-  {n:"MBC 5",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339240.ts", type:"ts"},
-  {n:"الأولى",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339241.ts", type:"ts"},
-  {n:"الثانية",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339242.ts", type:"ts"},
-  {n:"الإخبارية", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339243.ts", type:"ts"},
-  {n:"الرياضية",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339244.ts", type:"ts"},
-  {n:"الفضائية",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339245.ts", type:"ts"},
-  {n:"الترفيه",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339246.ts", type:"ts"},
-  {n:"الأفلام",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339247.ts", type:"ts"},
-  {n:"المسلسلات", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339248.ts", type:"ts"},
-  {n:"الوثائقية", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339249.ts", type:"ts"},
-  {n:"الأطفال",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339250.ts", type:"ts"},
-  {n:"القرآن",    u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339251.ts", type:"ts"},
-  {n:"السنة",     u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339252.ts", type:"ts"}
+  {n:"قناة 1", u:"http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/325805.ts", type:"ts"},
+  {n:"BeIN 1",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339224.ts", type:"ts"},
+  {n:"BeIN 2",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339225.ts", type:"ts"},
+  {n:"BeIN 3",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339226.ts", type:"ts"},
+  {n:"BeIN 4",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339227.ts", type:"ts"},
+  {n:"BeIN 5",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339228.ts", type:"ts"},
+  {n:"BeIN 6",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339229.ts", type:"ts"},
+  {n:"BeIN 7",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339230.ts", type:"ts"},
+  {n:"SSC 1",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339231.ts", type:"ts"},
+  {n:"SSC 2",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339232.ts", type:"ts"},
+  {n:"SSC 3",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339233.ts", type:"ts"},
+  {n:"SSC 4",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339234.ts", type:"ts"},
+  {n:"SSC 5",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339235.ts", type:"ts"},
+  {n:"MBC 1",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339236.ts", type:"ts"},
+  {n:"MBC 2",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339237.ts", type:"ts"},
+  {n:"MBC 3",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339238.ts", type:"ts"},
+  {n:"MBC 4",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339239.ts", type:"ts"},
+  {n:"MBC 5",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339240.ts", type:"ts"},
+  {n:"الأولى",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339241.ts", type:"ts"},
+  {n:"الثانية", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339242.ts", type:"ts"},
+  {n:"الإخبارية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339243.ts",type:"ts"},
+  {n:"الرياضية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339244.ts",type:"ts"},
+  {n:"الفضائية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339245.ts",type:"ts"},
+  {n:"الترفيه", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339246.ts",type:"ts"},
+  {n:"الأفلام", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339247.ts",type:"ts"},
+  {n:"المسلسلات",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339248.ts",type:"ts"},
+  {n:"الوثائقية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339249.ts",type:"ts"},
+  {n:"الأطفال", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339250.ts",type:"ts"},
+  {n:"القرآن",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339251.ts",type:"ts"},
+  {n:"السنة",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339252.ts",type:"ts"}
 ];
 
 let CH = JSON.parse(localStorage.getItem('channels')) || DEFAULT_CHANNELS;
@@ -185,19 +171,19 @@ const vid = document.getElementById('vid');
 const qMenu = document.getElementById('quality-menu');
 
 function toast(msg){
-  const t = document.getElementById('err-toast');
-  t.textContent = msg; t.style.display='block';
-  setTimeout(()=>t.style.display='none', 4000);
+  const t=document.getElementById('err-toast');
+  t.textContent=msg;t.style.display='block';
+  setTimeout(()=>t.style.display='none',4000);
 }
 
 function buildChannels(){
-  const box = document.getElementById('channels');
-  box.innerHTML = '';
-  CH.forEach((c,i) => {
-    const b = document.createElement('button');
-    b.className = 'ch-btn';
-    b.innerHTML = `<span>${c.n}</span>`;
-    b.onclick = () => load(i);
+  const box=document.getElementById('channels');
+  box.innerHTML='';
+  CH.forEach((c,i)=>{
+    const b=document.createElement('button');
+    b.className='ch-btn';
+    b.innerHTML=`<span>${c.n}</span>`;
+    b.onclick=()=>load(i);
     box.appendChild(b);
   });
 }
@@ -207,40 +193,38 @@ function detectType(url){
   return 'ts';
 }
 
-function getUrl(raw){
-  if(CFG.proxy) return CFG.proxy + encodeURIComponent(raw);
-  return raw;
-}
-
 function load(idx){
-  if(idx < 0 || idx >= CH.length) return;
-  cur = idx;
-  document.querySelectorAll('.ch-btn').forEach((b,i)=>b.classList.toggle('on', i===idx));
+  if(idx<0||idx>=CH.length) return;
+  cur=idx;
+  document.querySelectorAll('.ch-btn').forEach((b,i)=>b.classList.toggle('on',i===idx));
   document.getElementById('status').style.display='block';
-  if(hlsPlayer){ hlsPlayer.destroy(); hlsPlayer=null; }
-  if(tsPlayer){ tsPlayer.destroy(); tsPlayer=null; }
-  vid.removeAttribute('src'); vid.load();
-  const ch = CH[idx];
-  const url = getUrl(ch.u);
-  const type = ch.type || detectType(ch.u);
-  try {
-    if(type==='hls' && Hls.isSupported()){
-      hlsPlayer = new Hls({enableWorker:true,maxBufferLength:30});
+  if(hlsPlayer){hlsPlayer.destroy();hlsPlayer=null;}
+  if(tsPlayer){tsPlayer.destroy();tsPlayer=null;}
+  vid.removeAttribute('src');vid.load();
+  const ch=CH[idx];
+  const url=ch.u;
+  const type=ch.type||detectType(ch.u);
+  try{
+    if(type==='hls'&&Hls.isSupported()){
+      hlsPlayer=new Hls({enableWorker:true,maxBufferLength:30});
       hlsPlayer.loadSource(url);
       hlsPlayer.attachMedia(vid);
       hlsPlayer.on(Hls.Events.MANIFEST_PARSED,()=>{vid.play().catch(()=>{});buildQuality();});
       hlsPlayer.on(Hls.Events.ERROR,(e,d)=>{
-        if(d.fatal){toast('خطأ، إعادة محاولة...');setTimeout(()=>load(cur),5000);}
+        if(d.fatal){toast('خطأ في البث...');setTimeout(()=>load(cur),5000);}
       });
     } else if(mpegts.getFeatureList().mseLivePlayback){
-      tsPlayer = mpegts.createPlayer({type:'mpegts',url,isLive:true});
+      tsPlayer=mpegts.createPlayer({type:'mpegts',url,isLive:true});
       tsPlayer.attachMediaElement(vid);
-      tsPlayer.load(); tsPlayer.play();
+      tsPlayer.load();
+      tsPlayer.play();
       tsPlayer.on(mpegts.Events.ERROR,()=>{
-        toast('خطأ، إعادة محاولة...');setTimeout(()=>load(cur),5000);
+        toast('خطأ في البث...');
+        setTimeout(()=>load(cur),5000);
       });
     } else {
-      vid.src=url; vid.play().catch(()=>{});
+      vid.src=url;
+      vid.play().catch(()=>{});
     }
   } catch(e){toast('خطأ: '+e.message);}
 }
@@ -270,24 +254,14 @@ function toggleFullscreen(){
   const el=document.getElementById('player-wrap');
   document.fullscreenElement?document.exitFullscreen():el.requestFullscreen();
 }
+
 document.addEventListener('click',e=>{if(!e.target.closest('#controls-overlay'))qMenu.style.display='none';});
 
-function toggleSettings(){
-  const m=document.getElementById('settings-modal');
-  const show=m.style.display!=='flex';
-  m.style.display=show?'flex':'none';
-  if(show) document.getElementById('in-proxy').value=CFG.proxy;
-}
-function saveConfig(){
-  CFG.proxy=document.getElementById('in-proxy').value.trim();
-  localStorage.setItem('proxy',CFG.proxy);
-  toggleSettings();
-  toast('✅ تم الحفظ');
-}
 function toggleAdd(){
   const m=document.getElementById('add-modal');
   m.style.display=m.style.display!=='flex'?'flex':'none';
 }
+
 function saveChannel(){
   const name=document.getElementById('ch-name').value.trim();
   const url=document.getElementById('ch-url').value.trim();
@@ -296,15 +270,14 @@ function saveChannel(){
   if(!name||!url){toast('أدخل الاسم والرابط');return;}
   const ch={n:name,u:url};
   if(type!=='auto') ch.type=type;
-  if(idx>=0&&idx<100) CH[idx]=ch;
+  if(idx>=0) CH[idx]=ch;
   else CH.push(ch);
   localStorage.setItem('channels',JSON.stringify(CH));
-  buildChannels(); toggleAdd();
+  buildChannels();
+  toggleAdd();
   load(idx>=0&&idx<CH.length?idx:CH.length-1);
-  document.getElementById('ch-name').value='';
-  document.getElementById('ch-url').value='';
-  document.getElementById('ch-idx').value='';
 }
+
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT') return;
   switch(e.key){
@@ -317,6 +290,7 @@ document.addEventListener('keydown',e=>{
             else if(e.key==='0')load(9);
   }
 });
+
 buildChannels();
 load(0);
 </script>
