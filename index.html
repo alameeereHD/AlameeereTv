@@ -15,7 +15,7 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
   padding:28px 14px 12px;display:flex;align-items:center;gap:10px;
   opacity:0;transition:opacity .3s;pointer-events:none
 }
-#player-wrap:hover #controls-overlay,#player-wrap:focus-within #controls-overlay{opacity:1;pointer-events:auto}
+#player-wrap:hover #controls-overlay{opacity:1;pointer-events:auto}
 .ctrl-btn{
   background:rgba(255,255,255,.1);border:none;color:#fff;
   padding:9px 16px;border-radius:6px;cursor:pointer;font-size:13px;
@@ -47,6 +47,7 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
 }
 .ch-btn:hover{background:#151515;border-color:#0f0;color:#fff}
 .ch-btn.on{background:#0f0;color:#000;border-color:#0f0}
+.ch-btn small{font-size:9px;opacity:.6;font-weight:400}
 #gear{
   position:fixed;top:10px;left:10px;z-index:1000;
   background:rgba(0,0,0,.7);border:1px solid #333;
@@ -95,19 +96,38 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
 <div class="status" id="status">● جاري البث</div>
 <div id="err-toast"></div>
 
+<div class="modal" id="settings-modal" onclick="if(event.target===this)toggleSettings()">
+  <div class="modal-box">
+    <h2>⚙️ إعدادات البروكسي والتوكن</h2>
+    <input id="in-proxy" placeholder="رابط البروكسي (مثال: /proxy/?url=)">
+    <input id="in-token" placeholder="رابط API التوكن">
+    <input id="in-key" placeholder="مفتاح API (Header)">
+    <input id="in-referer" placeholder="Referer (مثال: http://lynovo.cc/)">
+    <input id="in-ua" placeholder="User-Agent (اختياري)">
+    <input id="in-interval" placeholder="فترة التجديد بالدقائق (افتراضي: 120)" value="120">
+    <div style="margin-top:8px">
+      <button onclick="saveConfig()">💾 حفظ وتفعيل</button>
+      <button class="cancel" onclick="toggleSettings()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="add-modal" onclick="if(event.target===this)toggleAdd()">
   <div class="modal-box">
-    <h2>➕ إضافة قناة</h2>
+    <h2>➕ إضافة / تعديل قناة</h2>
     <input id="ch-name" placeholder="اسم القناة">
-    <input id="ch-url" placeholder="رابط البث">
+    <input id="ch-url" placeholder="رابط البث (m3u8 أو ts)">
     <select id="ch-type">
-      <option value="auto">تلقائي</option>
+      <option value="auto">كشف تلقائي</option>
       <option value="hls">HLS (.m3u8)</option>
-      <option value="ts">TS</option>
+      <option value="ts">MPEG-TS (.ts)</option>
     </select>
-    <input id="ch-idx" placeholder="رقم القناة" type="number" min="1">
+    <div class="row">
+      <input id="ch-idx" placeholder="رقم القناة (1-30)" type="number" min="1" max="30">
+      <input id="ch-logo" placeholder="رابط الشعار (اختياري)">
+    </div>
     <div style="margin-top:8px">
-      <button onclick="saveChannel()">حفظ</button>
+      <button onclick="saveChannel()">حفظ القناة</button>
       <button class="cancel" onclick="toggleAdd()">إلغاء</button>
     </div>
   </div>
@@ -116,12 +136,12 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
 <div id="player-wrap">
   <video id="vid" playsinline webkit-playsinline></video>
   <div id="controls-overlay">
-    <button class="ctrl-btn" onclick="togglePlay()">⏯️</button>
-    <button class="ctrl-btn" onclick="toggleMute()">🔊</button>
-    <button class="ctrl-btn" onclick="skip(-10)">⏪</button>
-    <button class="ctrl-btn" onclick="skip(10)">⏩</button>
-    <button class="ctrl-btn" onclick="toggleFullscreen()" style="margin-right:auto">⛶</button>
-    <button class="ctrl-btn" onclick="toggleQuality()">جودة</button>
+    <button class="ctrl-btn" onclick="togglePlay()" title="تشغيل/إيقاف">⏯️</button>
+    <button class="ctrl-btn" onclick="toggleMute()" title="صامت">🔊</button>
+    <button class="ctrl-btn" onclick="skip(-10)" title="رجوع 10ث">⏪</button>
+    <button class="ctrl-btn" onclick="skip(10)" title="تقديم 10ث">⏩</button>
+    <button class="ctrl-btn" onclick="toggleFullscreen()" title="شاشة كاملة" style="margin-right:auto">⛶</button>
+    <button class="ctrl-btn" onclick="toggleQuality()" title="الجودة">جودة</button>
     <div id="quality-menu"></div>
   </div>
 </div>
@@ -132,37 +152,49 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
 <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
 
 <script>
+const isNetlify = location.hostname.includes('netlify.app') || location.hostname.includes('netlify.com');
+let CFG = {
+  proxy: localStorage.getItem('p') || (isNetlify ? '/proxy/?url=' : ''),
+  tokenUrl: localStorage.getItem('t') || '',
+  apiKey: localStorage.getItem('k') || '',
+  referer: localStorage.getItem('r') || '',
+  ua: localStorage.getItem('ua') || '',
+  interval: parseInt(localStorage.getItem('i')) || 7200000,
+  token: localStorage.getItem('tk') || '',
+  exp: parseInt(localStorage.getItem('ex')) || 0
+};
+
 const DEFAULT_CHANNELS = [
-  {n:"قناة 1", u:"http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/325805.ts", type:"ts"},
-  {n:"BeIN 1",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339224.ts", type:"ts"},
-  {n:"BeIN 2",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339225.ts", type:"ts"},
-  {n:"BeIN 3",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339226.ts", type:"ts"},
-  {n:"BeIN 4",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339227.ts", type:"ts"},
-  {n:"BeIN 5",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339228.ts", type:"ts"},
-  {n:"BeIN 6",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339229.ts", type:"ts"},
-  {n:"BeIN 7",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339230.ts", type:"ts"},
-  {n:"SSC 1",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339231.ts", type:"ts"},
-  {n:"SSC 2",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339232.ts", type:"ts"},
-  {n:"SSC 3",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339233.ts", type:"ts"},
-  {n:"SSC 4",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339234.ts", type:"ts"},
-  {n:"SSC 5",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339235.ts", type:"ts"},
-  {n:"MBC 1",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339236.ts", type:"ts"},
-  {n:"MBC 2",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339237.ts", type:"ts"},
-  {n:"MBC 3",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339238.ts", type:"ts"},
-  {n:"MBC 4",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339239.ts", type:"ts"},
-  {n:"MBC 5",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339240.ts", type:"ts"},
-  {n:"الأولى",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339241.ts", type:"ts"},
-  {n:"الثانية", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339242.ts", type:"ts"},
+  {n:"قناة 1", u:"http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/325805.ts",type:"ts"},
+  {n:"BeIN 1",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339224.ts",type:"ts"},
+  {n:"BeIN 2",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339225.ts",type:"ts"},
+  {n:"BeIN 3",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339226.ts",type:"ts"},
+  {n:"BeIN 4",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339227.ts",type:"ts"},
+  {n:"BeIN 5",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339228.ts",type:"ts"},
+  {n:"BeIN 6",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339229.ts",type:"ts"},
+  {n:"BeIN 7",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339230.ts",type:"ts"},
+  {n:"SSC 1",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339231.ts",type:"ts"},
+  {n:"SSC 2",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339232.ts",type:"ts"},
+  {n:"SSC 3",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339233.ts",type:"ts"},
+  {n:"SSC 4",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339234.ts",type:"ts"},
+  {n:"SSC 5",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339235.ts",type:"ts"},
+  {n:"MBC 1",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339236.ts",type:"ts"},
+  {n:"MBC 2",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339237.ts",type:"ts"},
+  {n:"MBC 3",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339238.ts",type:"ts"},
+  {n:"MBC 4",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339239.ts",type:"ts"},
+  {n:"MBC 5",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339240.ts",type:"ts"},
+  {n:"الأولى",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339241.ts",type:"ts"},
+  {n:"الثانية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339242.ts",type:"ts"},
   {n:"الإخبارية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339243.ts",type:"ts"},
   {n:"الرياضية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339244.ts",type:"ts"},
   {n:"الفضائية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339245.ts",type:"ts"},
-  {n:"الترفيه", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339246.ts",type:"ts"},
-  {n:"الأفلام", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339247.ts",type:"ts"},
+  {n:"الترفيه",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339246.ts",type:"ts"},
+  {n:"الأفلام",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339247.ts",type:"ts"},
   {n:"المسلسلات",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339248.ts",type:"ts"},
   {n:"الوثائقية",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339249.ts",type:"ts"},
-  {n:"الأطفال", u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339250.ts",type:"ts"},
-  {n:"القرآن",  u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339251.ts",type:"ts"},
-  {n:"السنة",   u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339252.ts",type:"ts"}
+  {n:"الأطفال",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339250.ts",type:"ts"},
+  {n:"القرآن",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339251.ts",type:"ts"},
+  {n:"السنة",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339252.ts",type:"ts"}
 ];
 
 let CH = JSON.parse(localStorage.getItem('channels')) || DEFAULT_CHANNELS;
@@ -171,128 +203,228 @@ const vid = document.getElementById('vid');
 const qMenu = document.getElementById('quality-menu');
 
 function toast(msg){
-  const t=document.getElementById('err-toast');
-  t.textContent=msg;t.style.display='block';
-  setTimeout(()=>t.style.display='none',4000);
+  const t = document.getElementById('err-toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(()=>t.style.display='none', 4000);
 }
 
 function buildChannels(){
-  const box=document.getElementById('channels');
-  box.innerHTML='';
-  CH.forEach((c,i)=>{
-    const b=document.createElement('button');
-    b.className='ch-btn';
-    b.innerHTML=`<span>${c.n}</span>`;
-    b.onclick=()=>load(i);
+  const box = document.getElementById('channels');
+  box.innerHTML = '';
+  CH.forEach((c,i) => {
+    const b = document.createElement('button');
+    b.className = 'ch-btn';
+    b.innerHTML = `<span>${c.n}</span>`;
+    b.onclick = () => load(i);
     box.appendChild(b);
   });
 }
 
 function detectType(url){
   if(url.includes('.m3u8')) return 'hls';
-  return 'ts';
+  if(url.includes('.ts')) return 'ts';
+  return 'hls';
+}
+
+function getUrl(url){
+  if(!CFG.proxy) return url;
+  if(CFG.proxy.includes('?')) return CFG.proxy + encodeURIComponent(url);
+  if(CFG.proxy.endsWith('/')) return CFG.proxy + encodeURIComponent(url);
+  return CFG.proxy + '/' + encodeURIComponent(url);
 }
 
 function load(idx){
-  if(idx<0||idx>=CH.length) return;
-  cur=idx;
-  document.querySelectorAll('.ch-btn').forEach((b,i)=>b.classList.toggle('on',i===idx));
-  document.getElementById('status').style.display='block';
-  if(hlsPlayer){hlsPlayer.destroy();hlsPlayer=null;}
-  if(tsPlayer){tsPlayer.destroy();tsPlayer=null;}
-  vid.removeAttribute('src');vid.load();
-  const ch=CH[idx];
-  const url=ch.u;
-  const type=ch.type||detectType(ch.u);
-  try{
-    if(type==='hls'&&Hls.isSupported()){
-      hlsPlayer=new Hls({enableWorker:true,maxBufferLength:30});
+  if(idx < 0 || idx >= CH.length) return;
+  cur = idx;
+  document.querySelectorAll('.ch-btn').forEach((b,i) => b.classList.toggle('on', i === idx));
+  document.getElementById('status').style.display = 'block';
+  if(hlsPlayer){ hlsPlayer.destroy(); hlsPlayer = null; }
+  if(tsPlayer){ tsPlayer.destroy(); tsPlayer = null; }
+  vid.removeAttribute('src');
+  vid.load();
+  const ch = CH[idx];
+  const rawUrl = ch.u;
+  const url = getUrl(rawUrl);
+  const type = ch.type || detectType(rawUrl);
+  const customHeaders = {};
+  if(CFG.referer) customHeaders['X-Referer'] = CFG.referer;
+  if(CFG.ua) customHeaders['X-UA'] = CFG.ua;
+  if(CFG.token) customHeaders['Authorization'] = 'Bearer '+CFG.token;
+  try {
+    if(type === 'hls' && Hls.isSupported()){
+      hlsPlayer = new Hls({
+        enableWorker: true,
+        maxBufferLength: 30,
+        maxMaxBufferLength: 60,
+        xhrSetup: (xhr, u) => {
+          if(CFG.referer) xhr.setRequestHeader('X-Referer', CFG.referer);
+          if(CFG.ua) xhr.setRequestHeader('X-UA', CFG.ua);
+          if(CFG.token) xhr.setRequestHeader('Authorization', 'Bearer '+CFG.token);
+        }
+      });
       hlsPlayer.loadSource(url);
       hlsPlayer.attachMedia(vid);
-      hlsPlayer.on(Hls.Events.MANIFEST_PARSED,()=>{vid.play().catch(()=>{});buildQuality();});
-      hlsPlayer.on(Hls.Events.ERROR,(e,d)=>{
-        if(d.fatal){toast('خطأ في البث...');setTimeout(()=>load(cur),5000);}
+      hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => {
+        vid.play().catch(()=>{});
+        buildQuality();
       });
-    } else if(mpegts.getFeatureList().mseLivePlayback){
-      tsPlayer=mpegts.createPlayer({type:'mpegts',url,isLive:true});
+      hlsPlayer.on(Hls.Events.ERROR, (e,d) => {
+        if(d.fatal){
+          toast('خطأ في البث - إعادة المحاولة...');
+          setTimeout(() => load(cur), 5000);
+        }
+      });
+    }
+    else if(type === 'ts' && mpegts.getFeatureList().mseLivePlayback){
+      tsPlayer = mpegts.createPlayer({
+        type: 'mpegts',
+        url: url,
+        isLive: true,
+        headers: customHeaders
+      });
       tsPlayer.attachMediaElement(vid);
       tsPlayer.load();
       tsPlayer.play();
-      tsPlayer.on(mpegts.Events.ERROR,()=>{
-        toast('خطأ في البث...');
-        setTimeout(()=>load(cur),5000);
+      tsPlayer.on(mpegts.Events.ERROR, (err) => {
+        toast('خطأ في البث - إعادة المحاولة...');
+        setTimeout(() => load(cur), 5000);
       });
-    } else {
-      vid.src=url;
+    }
+    else {
+      vid.src = url;
       vid.play().catch(()=>{});
     }
-  } catch(e){toast('خطأ: '+e.message);}
+  } catch(e) {
+    toast('خطأ: ' + e.message);
+  }
 }
 
 function buildQuality(){
-  qMenu.innerHTML='';
+  qMenu.innerHTML = '';
   if(!hlsPlayer) return;
-  const auto=document.createElement('button');
-  auto.textContent='تلقائي';
-  auto.onclick=()=>{hlsPlayer.currentLevel=-1;qMenu.style.display='none';};
-  if(hlsPlayer.currentLevel===-1) auto.classList.add('active');
+  const auto = document.createElement('button');
+  auto.textContent = 'تلقائي';
+  auto.onclick = () => { hlsPlayer.currentLevel = -1; qMenu.style.display='none'; };
+  if(hlsPlayer.currentLevel === -1) auto.classList.add('active');
   qMenu.appendChild(auto);
-  hlsPlayer.levels.forEach((lv,i)=>{
-    const b=document.createElement('button');
-    b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
-    b.onclick=()=>{hlsPlayer.currentLevel=i;qMenu.style.display='none';};
-    if(hlsPlayer.currentLevel===i) b.classList.add('active');
+  hlsPlayer.levels.forEach((lv,i) => {
+    const b = document.createElement('button');
+    b.textContent = lv.height ? lv.height+'p' : (lv.bitrate ? Math.round(lv.bitrate/1000)+'k' : 'جودة '+(i+1));
+    b.onclick = () => { hlsPlayer.currentLevel = i; qMenu.style.display='none'; };
+    if(hlsPlayer.currentLevel === i) b.classList.add('active');
     qMenu.appendChild(b);
   });
 }
 
-function toggleQuality(){qMenu.style.display=qMenu.style.display==='flex'?'none':'flex';}
-function togglePlay(){vid.paused?vid.play():vid.pause();}
-function toggleMute(){vid.muted=!vid.muted;}
-function skip(s){vid.currentTime+=s;}
+function toggleQuality(){
+  qMenu.style.display = qMenu.style.display === 'flex' ? 'none' : 'flex';
+}
+function togglePlay(){ vid.paused ? vid.play() : vid.pause(); }
+function toggleMute(){ vid.muted = !vid.muted; }
+function skip(s){ vid.currentTime += s; }
 function toggleFullscreen(){
-  const el=document.getElementById('player-wrap');
-  document.fullscreenElement?document.exitFullscreen():el.requestFullscreen();
+  const el = document.getElementById('player-wrap');
+  if(document.fullscreenElement) document.exitFullscreen();
+  else el.requestFullscreen();
 }
 
-document.addEventListener('click',e=>{if(!e.target.closest('#controls-overlay'))qMenu.style.display='none';});
+document.addEventListener('click', (e) => {
+  if(!e.target.closest('#controls-overlay')) qMenu.style.display = 'none';
+});
+
+async function refreshToken(){
+  if(!CFG.tokenUrl) return;
+  try{
+    const h = {};
+    if(CFG.apiKey) h['X-API-Key'] = CFG.apiKey;
+    const r = await fetch(CFG.tokenUrl, { headers: h });
+    const d = await r.json();
+    CFG.token = d.token || d.access_token || d.data?.token || '';
+    CFG.exp = Date.now() + CFG.interval;
+    localStorage.setItem('tk', CFG.token);
+    localStorage.setItem('ex', CFG.exp);
+    toast('✅ تم تجديد التوكن');
+  }catch(e){ toast('❌ فشل تجديد التوكن'); }
+}
+
+function checkToken(){
+  if(CFG.tokenUrl && Date.now() > CFG.exp - 60000) refreshToken();
+}
+
+function toggleSettings(){
+  const m = document.getElementById('settings-modal');
+  const show = m.style.display !== 'flex';
+  m.style.display = show ? 'flex' : 'none';
+  if(show){
+    document.getElementById('in-proxy').value = CFG.proxy;
+    document.getElementById('in-token').value = CFG.tokenUrl;
+    document.getElementById('in-key').value = CFG.apiKey;
+    document.getElementById('in-referer').value = CFG.referer;
+    document.getElementById('in-ua').value = CFG.ua;
+    document.getElementById('in-interval').value = CFG.interval / 60000;
+  }
+}
+
+function saveConfig(){
+  CFG.proxy = document.getElementById('in-proxy').value.trim();
+  CFG.tokenUrl = document.getElementById('in-token').value.trim();
+  CFG.apiKey = document.getElementById('in-key').value.trim();
+  CFG.referer = document.getElementById('in-referer').value.trim();
+  CFG.ua = document.getElementById('in-ua').value.trim();
+  CFG.interval = parseInt(document.getElementById('in-interval').value || 120) * 60000;
+  localStorage.setItem('p', CFG.proxy);
+  localStorage.setItem('t', CFG.tokenUrl);
+  localStorage.setItem('k', CFG.apiKey);
+  localStorage.setItem('r', CFG.referer);
+  localStorage.setItem('ua', CFG.ua);
+  localStorage.setItem('i', CFG.interval);
+  refreshToken();
+  toggleSettings();
+  toast('✅ تم الحفظ! التجديد كل '+(CFG.interval/60000)+' دقيقة');
+}
 
 function toggleAdd(){
-  const m=document.getElementById('add-modal');
-  m.style.display=m.style.display!=='flex'?'flex':'none';
+  const m = document.getElementById('add-modal');
+  m.style.display = m.style.display !== 'flex' ? 'flex' : 'none';
 }
 
 function saveChannel(){
-  const name=document.getElementById('ch-name').value.trim();
-  const url=document.getElementById('ch-url').value.trim();
-  const type=document.getElementById('ch-type').value;
-  const idx=parseInt(document.getElementById('ch-idx').value)-1;
-  if(!name||!url){toast('أدخل الاسم والرابط');return;}
-  const ch={n:name,u:url};
-  if(type!=='auto') ch.type=type;
-  if(idx>=0) CH[idx]=ch;
-  else CH.push(ch);
-  localStorage.setItem('channels',JSON.stringify(CH));
+  const name = document.getElementById('ch-name').value.trim();
+  const url = document.getElementById('ch-url').value.trim();
+  const type = document.getElementById('ch-type').value;
+  const idx = parseInt(document.getElementById('ch-idx').value) - 1;
+  if(!name || !url){ toast('أدخل الاسم والرابط'); return; }
+  const ch = { n: name, u: url };
+  if(type !== 'auto') ch.type = type;
+  if(idx >= 0 && idx < 30) CH[idx] = ch;
+  else { if(CH.length >= 30) CH.pop(); CH.push(ch); }
+  localStorage.setItem('channels', JSON.stringify(CH));
   buildChannels();
   toggleAdd();
-  load(idx>=0&&idx<CH.length?idx:CH.length-1);
+  load(idx >= 0 && idx < CH.length ? idx : CH.length-1);
+  document.getElementById('ch-name').value = '';
+  document.getElementById('ch-url').value = '';
+  document.getElementById('ch-idx').value = '';
 }
 
-document.addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT') return;
+document.addEventListener('keydown', (e) => {
+  if(e.target.tagName === 'INPUT') return;
   switch(e.key){
-    case ' ':e.preventDefault();togglePlay();break;
-    case 'f':case 'F':toggleFullscreen();break;
-    case 'm':case 'M':toggleMute();break;
-    case 'ArrowRight':skip(10);break;
-    case 'ArrowLeft':skip(-10);break;
-    default:if(e.key>='1'&&e.key<='9')load(parseInt(e.key)-1);
-            else if(e.key==='0')load(9);
+    case ' ': e.preventDefault(); togglePlay(); break;
+    case 'f': case 'F': toggleFullscreen(); break;
+    case 'm': case 'M': toggleMute(); break;
+    case 'ArrowRight': skip(10); break;
+    case 'ArrowLeft': skip(-10); break;
+    case '1': case '2': case '3': case '4': case '5':
+    case '6': case '7': case '8': case '9': load(parseInt(e.key)-1); break;
+    case '0': load(9); break;
   }
 });
 
 buildChannels();
 load(0);
+setInterval(checkToken, 30000);
+checkToken();
 </script>
 </body>
 </html>
