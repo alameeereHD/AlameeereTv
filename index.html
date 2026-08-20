@@ -90,7 +90,6 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
 </style>
 </head>
 <body>
-
 <button id="gear" onclick="toggleSettings()">⚙️</button>
 <button id="add-ch" onclick="toggleAdd()">+</button>
 <div class="status" id="status">● جاري البث</div>
@@ -98,7 +97,7 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
 
 <div class="modal" id="settings-modal" onclick="if(event.target===this)toggleSettings()">
   <div class="modal-box">
-    <h2>⚙️ إعدادات البروكسي والتوكن</h2>
+    <h2>⚙️ إعدادات</h2>
     <input id="in-proxy" placeholder="رابط البروكسي (مثال: /proxy/?url=)">
     <input id="in-token" placeholder="رابط API التوكن">
     <input id="in-key" placeholder="مفتاح API (Header)">
@@ -165,7 +164,7 @@ let CFG = {
 };
 
 const DEFAULT_CHANNELS = [
-  {n:"قناة 1", u:"http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/325805.ts",type:"ts"},
+  {n:"قناة 1",u:"http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/325805.ts",type:"ts"},
   {n:"BeIN 1",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339224.ts",type:"ts"},
   {n:"BeIN 2",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339225.ts",type:"ts"},
   {n:"BeIN 3",u:"http://lynovo.cc/live/407F2F55785345F/xiAYSAZIpR/1339226.ts",type:"ts"},
@@ -319,6 +318,7 @@ function buildQuality(){
 function toggleQuality(){
   qMenu.style.display = qMenu.style.display === 'flex' ? 'none' : 'flex';
 }
+
 function togglePlay(){ vid.paused ? vid.play() : vid.pause(); }
 function toggleMute(){ vid.muted = !vid.muted; }
 function skip(s){ vid.currentTime += s; }
@@ -380,7 +380,7 @@ function saveConfig(){
   localStorage.setItem('i', CFG.interval);
   refreshToken();
   toggleSettings();
-  toast('✅ تم الحفظ! التجديد كل '+(CFG.interval/60000)+' دقيقة');
+  toast('✅ تم الحفظ');
 }
 
 function toggleAdd(){
