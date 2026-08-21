@@ -11,343 +11,50 @@
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { 
-    background: #050505; 
-    color: #fff; 
-    font-family: 'Cairo', sans-serif; 
-    overflow-x: hidden;
-  }
-
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 10px 16px;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .header-icon { 
-    width: 32px; 
-    height: 32px; 
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 800;
-  }
-  .header-title { 
-    font-size: 20px; 
-    font-weight: 800; 
-    background: linear-gradient(90deg, #fbbf24, #3b82f6, #fbbf24, #3b82f6);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shine 3s linear infinite;
-  }
-  @keyframes shine {
-    to { background-position: 200% center; }
-  }
-
-  .player-wrap {
-    position: sticky;
-    top: 52px;
-    z-index: 90;
-    background: #000;
-    padding: 0 0 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
-  .player-box {
-    aspect-ratio: 16/9;
-    max-height: 50vh;
-    width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
-    background: #0a0a0a;
-    border-radius: 0 0 16px 16px;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-top: none;
-    position: relative;
-  }
-  .player-box video {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-    object-fit: contain;
-  }
-  .player-placeholder {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255,255,255,0.25);
-    font-size: 14px;
-    font-weight: 600;
-    gap: 8px;
-  }
-  .player-loader {
-    width: 36px; height: 36px;
-    border: 3px solid rgba(255,255,255,0.08);
-    border-top-color: #6366f1;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
+  body { background: #050505; color: #fff; font-family: 'Cairo', sans-serif; overflow-x: hidden; }
+  .header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 16px; background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 100; }
+  .header-left { display: flex; align-items: center; gap: 8px; }
+  .header-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff; font-size: 14px; font-weight: 800; }
+  .header-title { font-size: 20px; font-weight: 800; background: linear-gradient(90deg, #fbbf24, #3b82f6, #fbbf24, #3b82f6); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite; }
+  @keyframes shine { to { background-position: 200% center; } }
+  .player-wrap { position: sticky; top: 52px; z-index: 90; background: #000; padding: 0 0 12px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .player-box { aspect-ratio: 16/9; max-height: 50vh; width: 100%; max-width: 1100px; margin: 0 auto; background: #0a0a0a; border-radius: 0 0 16px 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); border-top: none; position: relative; }
+  .player-box video { width: 100%; height: 100%; border: none; display: block; object-fit: contain; }
+  .player-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255,255,255,0.25); font-size: 14px; font-weight: 600; gap: 8px; }
+  .player-loader { width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.08); border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  .live-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px);
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    z-index: 5;
-  }
-  .live-dot {
-    width: 7px; height: 7px;
-    background: #ef4444;
-    border-radius: 50%;
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
-    50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(239,68,68,0); }
-  }
-
-  .controls-bar {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 5;
-  }
+  .live-badge { position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; z-index: 5; }
+  .live-dot { width: 7px; height: 7px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(239,68,68,0); } }
+  .controls-bar { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent); opacity: 0; transition: opacity 0.3s; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; z-index: 5; }
   .player-box:hover .controls-bar { opacity: 1; }
-  .ctrl-btn {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: none;
-    color: #fff;
-    transition: background 0.2s;
-    position: relative;
-  }
+  .ctrl-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; color: #fff; transition: background 0.2s; position: relative; }
   .ctrl-btn:hover { background: rgba(255,255,255,0.2); }
-
-  .quality-menu {
-    position: absolute;
-    bottom: 42px;
-    right: 0;
-    background: rgba(0,0,0,0.9);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    padding: 6px;
-    min-width: 100px;
-    display: none;
-    flex-direction: column;
-    gap: 2px;
-    z-index: 20;
-  }
+  .quality-menu { position: absolute; bottom: 42px; right: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px; min-width: 100px; display: none; flex-direction: column; gap: 2px; z-index: 20; }
   .quality-menu.open { display: flex; }
-  .quality-option {
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.7);
-    cursor: pointer;
-    transition: all 0.15s;
-    text-align: center;
-    font-family: 'Cairo', sans-serif;
-    border: none;
-    background: transparent;
-  }
-  .quality-option:hover {
-    background: rgba(255,255,255,0.08);
-    color: #fff;
-  }
-  .quality-option.active {
-    background: rgba(99,102,241,0.25);
-    color: #a5b4fc;
-  }
-
-  .search-wrap {
-    max-width: 480px;
-    margin: 14px auto 6px;
-    padding: 0 16px;
-  }
-  .search-wrap input {
-    width: 100%;
-    padding: 12px 20px;
-    border-radius: 50px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.03);
-    color: #fff;
-    font-size: 14px;
-    font-family: 'Cairo', sans-serif;
-    outline: none;
-    text-align: center;
-    transition: all 0.2s;
-  }
+  .quality-option { padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.15s; text-align: center; font-family: 'Cairo', sans-serif; border: none; background: transparent; }
+  .quality-option:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .quality-option.active { background: rgba(99,102,241,0.25); color: #a5b4fc; }
+  .search-wrap { max-width: 480px; margin: 14px auto 6px; padding: 0 16px; }
+  .search-wrap input { width: 100%; padding: 12px 20px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #fff; font-size: 14px; font-family: 'Cairo', sans-serif; outline: none; text-align: center; transition: all 0.2s; }
   .search-wrap input::placeholder { color: rgba(255,255,255,0.25); }
-  .search-wrap input:focus { 
-    border-color: rgba(99, 102, 241, 0.5); 
-    background: rgba(255,255,255,0.05);
-    box-shadow: 0 0 20px rgba(99,102,241,0.1);
-  }
-
-  .cats {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    padding: 8px 16px 12px;
-    flex-wrap: wrap;
-  }
-  .cat-btn {
-    padding: 8px 20px;
-    border-radius: 50px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.03);
-    color: rgba(255,255,255,0.5);
-    font-size: 12px;
-    font-weight: 700;
-    font-family: 'Cairo', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .cat-btn:hover { 
-    background: rgba(255,255,255,0.06); 
-    color: rgba(255,255,255,0.8);
-  }
-  .cat-btn.active {
-    background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.25));
-    border-color: rgba(99,102,241,0.4);
-    color: #a5b4fc;
-  }
-
-  .grid-wrap {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 12px;
-    padding: 8px 16px 40px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  @media (max-width: 400px) {
-    .grid-wrap { grid-template-columns: repeat(2, 1fr); }
-  }
-
-  .ch-card {
-    background: rgba(255,255,255,0.025);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 16px;
-    padding: 18px 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    position: relative;
-    overflow: hidden;
-  }
-  .ch-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .ch-card:hover {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.15);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-  }
+  .search-wrap input:focus { border-color: rgba(99,102,241,0.5); background: rgba(255,255,255,0.05); box-shadow: 0 0 20px rgba(99,102,241,0.1); }
+  .cats { display: flex; gap: 8px; justify-content: center; padding: 8px 16px 12px; flex-wrap: wrap; }
+  .cat-btn { padding: 8px 20px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 700; font-family: 'Cairo', sans-serif; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .cat-btn:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); }
+  .cat-btn.active { background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(168,85,247,0.25)); border-color: rgba(99,102,241,0.4); color: #a5b4fc; }
+  .grid-wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; padding: 8px 16px 40px; max-width: 1200px; margin: 0 auto; }
+  @media (max-width: 400px) { .grid-wrap { grid-template-columns: repeat(2, 1fr); } }
+  .ch-card { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px 10px; text-align: center; cursor: pointer; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; overflow: hidden; }
+  .ch-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent); opacity: 0; transition: opacity 0.3s; }
+  .ch-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); transform: translateY(-3px); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
   .ch-card:hover::before { opacity: 1; }
-  .ch-card.active {
-    background: linear-gradient(180deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08));
-    border-color: rgba(99,102,241,0.35);
-    box-shadow: 0 0 30px rgba(99,102,241,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
-  }
+  .ch-card.active { background: linear-gradient(180deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08)); border-color: rgba(99,102,241,0.35); box-shadow: 0 0 30px rgba(99,102,241,0.15), inset 0 1px 0 rgba(255,255,255,0.05); }
   .ch-card.active::before { opacity: 1; }
-
-  .ch-logo {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    object-fit: cover;
-    background: #111;
-    border: 1px solid rgba(255,255,255,0.06);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 9px;
-    font-weight: 800;
-    color: #fff;
-    text-align: center;
-    line-height: 1.2;
-    padding: 2px;
-  }
-  .ch-name {
-    font-size: 12px;
-    font-weight: 700;
-    color: #e2e8f0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    padding: 0 4px;
-  }
-  .ch-badge {
-    font-size: 9px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    background: rgba(34,197,94,0.12);
-    color: #4ade80;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-  .ch-card.active .ch-badge {
-    background: rgba(99,102,241,0.2);
-    color: #a5b4fc;
-  }
-
+  .ch-logo { width: 52px; height: 52px; border-radius: 14px; object-fit: cover; background: #111; border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; text-align: center; line-height: 1.2; padding: 2px; }
+  .ch-name { font-size: 12px; font-weight: 700; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; padding: 0 4px; }
+  .ch-badge { font-size: 9px; padding: 3px 10px; border-radius: 20px; background: rgba(34,197,94,0.12); color: #4ade80; font-weight: 700; letter-spacing: 0.5px; }
+  .ch-card.active .ch-badge { background: rgba(99,102,241,0.2); color: #a5b4fc; }
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
@@ -355,14 +62,12 @@
 </style>
 </head>
 <body>
-
 <div class="header">
   <div class="header-left">
     <div class="header-icon">A</div>
     <span class="header-title">AlameeereTv</span>
   </div>
 </div>
-
 <div class="player-wrap">
   <div class="player-box" id="playerBox">
     <div class="player-placeholder" id="placeholder">
@@ -371,309 +76,131 @@
     </div>
   </div>
 </div>
-
 <div class="search-wrap">
   <input type="text" id="searchInp" placeholder="ابحث عن قناة..." oninput="filterChannels()">
 </div>
-
 <div class="cats">
-  <button class="cat-btn active" onclick="filterCat('all', this)">الكل</button>
-  <button class="cat-btn" onclick="filterCat('news', this)">الأخبار</button>
-  <button class="cat-btn" onclick="filterCat('doc', this)">وثائقية</button>
-  <button class="cat-btn" onclick="filterCat('sport', this)">رياضة</button>
-  <button class="cat-btn" onclick="filterCat('mbc', this)">MBC</button>
-  <button class="cat-btn" onclick="filterCat('osn', this)">OSN</button>
-  <button class="cat-btn" onclick="filterCat('bein', this)">beIN</button>
-  <button class="cat-btn" onclick="filterCat('islamic', this)">قنوات دينية</button>
+  <button class="cat-btn active" onclick="filterCat('all',this)">الكل</button>
+  <button class="cat-btn" onclick="filterCat('news',this)">الأخبار</button>
+  <button class="cat-btn" onclick="filterCat('doc',this)">وثائقية</button>
+  <button class="cat-btn" onclick="filterCat('sport',this)">رياضة</button>
+  <button class="cat-btn" onclick="filterCat('mbc',this)">MBC</button>
+  <button class="cat-btn" onclick="filterCat('osn',this)">OSN</button>
+  <button class="cat-btn" onclick="filterCat('bein',this)">beIN</button>
+  <button class="cat-btn" onclick="filterCat('islamic',this)">قنوات دينية</button>
 </div>
-
 <div class="grid-wrap" id="channelsGrid">
-
-  <div class="channel-card ch-card" data-cat="news" data-name="الجزيرة" onclick="play(this, 'https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#d97706,#b45309);"><span>الجزيرة</span></div>
-    <div class="ch-name">الجزيرة</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="news" data-name="الجزيرة" onclick="play(this,'https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#d97706,#b45309)">الجزيرة</div>
+    <div class="ch-name">الجزيرة</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="news" data-name="الجزيرة مباشر" onclick="play(this, 'https://live-hls-web-ajm-gcp.thehlive.com/AJM/index.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#d97706,#b45309);"><span>الجزيرة M</span></div>
-    <div class="ch-name">الجزيرة مباشر</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="news" data-name="الجزيرة مباشر" onclick="play(this,'https://live-hls-web-ajm-gcp.thehlive.com/AJM/index.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#d97706,#b45309)">الجزيرة M</div>
+    <div class="ch-name">الجزيرة مباشر</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="news" data-name="العربية" onclick="play(this, 'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#991b1b,#7f1d1d);"><span>العربية</span></div>
-    <div class="ch-name">العربية</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="news" data-name="العربية" onclick="play(this,'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#991b1b,#7f1d1d)">العربية</div>
+    <div class="ch-name">العربية</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="news" data-name="الحدث" onclick="play(this, 'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#991b1b,#7f1d1d);"><span>الحدث</span></div>
-    <div class="ch-name">الحدث</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="news" data-name="الحدث" onclick="play(this,'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#991b1b,#7f1d1d)">الحدث</div>
+    <div class="ch-name">الحدث</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="news" data-name="سكاي نيوز" onclick="play(this, 'https://stream.skynewsarabia.com/hls/sna.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#991b1b);"><span>سكاي نيوز</span></div>
-    <div class="ch-name">سكاي نيوز عربية</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="news" data-name="سكاي نيوز" onclick="play(this,'https://stream.skynewsarabia.com/hls/sna.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#991b1b)">سكاي نيوز</div>
+    <div class="ch-name">سكاي نيوز عربية</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="doc" data-name="الجزيرة الوثائقية" onclick="play(this, 'https://live-hls-web-ajd-gcp.thehlive.com/AJD/index.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#d97706,#b45309);"><span>الوثائقية</span></div>
-    <div class="ch-name">الجزيرة الوثائقية</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="doc" data-name="الجزيرة الوثائقية" onclick="play(this,'https://live-hls-web-ajd-gcp.thehlive.com/AJD/index.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#d97706,#b45309)">الوثائقية</div>
+    <div class="ch-name">الجزيرة الوثائقية</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="mbc" data-name="MBC 1" onclick="play(this, 'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2F3050%2Findex.m3u8%3Ftoken%3D%3D')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#1e3a5f,#0f2847);"><span>MBC1</span></div>
-    <div class="ch-name">MBC 1</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="mbc" data-name="MBC 1" onclick="play(this,'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2F3050%2Findex.m3u8%3Ftoken%3D%3D')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#1e3a5f,#0f2847)">MBC1</div>
+    <div class="ch-name">MBC 1</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="mbc" data-name="MBC 2" onclick="play(this, 'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#7c3aed,#4c1d95);"><span>MBC2</span></div>
-    <div class="ch-name">MBC 2</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="mbc" data-name="MBC 2" onclick="play(this,'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#7c3aed,#4c1d95)">MBC2</div>
+    <div class="ch-name">MBC 2</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="mbc" data-name="MBC Action" onclick="play(this, 'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBCAction%2Findex.m3u8%3Ftoken%3D%3D')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#dc2626,#991b1b);"><span>ACTION</span></div>
-    <div class="ch-name">MBC Action</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="mbc" data-name="MBC Action" onclick="play(this,'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBCAction%2Findex.m3u8%3Ftoken%3D%3D')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#dc2626,#991b1b)">ACTION</div>
+    <div class="ch-name">MBC Action</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="mbc" data-name="MBC Masr 1" onclick="play(this, 'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FsatMBCMASR%2Findex.m3u8%3Ftoken%3D%3D')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#059669,#047857);"><span>MASr 1</span></div>
-    <div class="ch-name">MBC Masr 1</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="mbc" data-name="MBC Masr" onclick="play(this,'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FsatMBCMASR%2Findex.m3u8%3Ftoken%3D%3D')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#059669,#047857)">MASr</div>
+    <div class="ch-name">MBC Masr</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="mbc" data-name="MBC Masr 2" onclick="play(this, 'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FsatMBCMasr2%2Findex.m3u8%3Ftoken%3D%3D')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#059669,#047857);"><span>MASr 2</span></div>
-    <div class="ch-name">MBC Masr 2</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="osn" data-name="OSN Action" onclick="play(this,'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FOSNACTIONHD%2Findex.m3u8%3Ftoken%3D%3D')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#ea580c,#9a3412)">OSN ACT</div>
+    <div class="ch-name">OSN Action HD</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="osn" data-name="OSN Action" onclick="play(this, 'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FOSNACTIONHD%2Findex.m3u8%3Ftoken%3D%3D')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#ea580c,#9a3412);"><span>OSN ACT</span></div>
-    <div class="ch-name">OSN Action HD</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="osn" data-name="OSN Star Movies" onclick="play(this,'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FOSNStarMoviesHD%2Findex.m3u8%3Ftoken%3D%3D')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#ca8a04,#a16207)">STAR MOV</div>
+    <div class="ch-name">OSN Star Movies</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="osn" data-name="OSN Star Movies" onclick="play(this, 'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FOSNStarMoviesHD%2Findex.m3u8%3Ftoken%3D%3D')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#ca8a04,#a16207);"><span>STAR MOV</span></div>
-    <div class="ch-name">OSN Star Movies HD</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="bein" data-name="beIN Drama" onclick="play(this,'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fstream.woodfencepods.com%2Fpdf%2FIC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ%2Findex.m3u8%3Ftoken%3D%3D')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#2563eb,#1e40af)">DRAMA</div>
+    <div class="ch-name">beIN Drama HD</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="bein" data-name="beIN Drama" onclick="play(this, 'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fstream.woodfencepods.com%2Fpdf%2FIC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ%2Findex.m3u8%3Ftoken%3D%3D')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#2563eb,#1e40af);"><span>DRAMA</span></div>
-    <div class="ch-name">beIN Drama HD 1</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 1" onclick="play(this,'https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d)">ALKASS 1</div>
+    <div class="ch-name">الكأس 1</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="sport" data-name="العراقية الرياضية" onclick="play(this, 'https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#15803d,#166534);"><span>IRAQ SPORT</span></div>
-    <div class="ch-name">العراقية الرياضية</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 2" onclick="play(this,'https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d)">ALKASS 2</div>
+    <div class="ch-name">الكأس 2</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 1" onclick="play(this, 'https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);"><span>ALKASS 1</span></div>
-    <div class="ch-name">الكأس 1</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 3" onclick="play(this,'https://liveeu-gcp.alkassdigital.net/alkass3-p/main.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d)">ALKASS 3</div>
+    <div class="ch-name">الكأس 3</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 2" onclick="play(this, 'https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);"><span>ALKASS 2</span></div>
-    <div class="ch-name">الكأس 2</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 4" onclick="play(this,'https://liveeu-gcp.alkassdigital.net/alkass4-p/main.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d)">ALKASS 4</div>
+    <div class="ch-name">الكأس 4</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 3" onclick="play(this, 'https://liveeu-gcp.alkassdigital.net/alkass3-p/main.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);"><span>ALKASS 3</span></div>
-    <div class="ch-name">الكأس 3</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 5" onclick="play(this,'https://liveeu-gcp.alkassdigital.net/alkass5-p/main.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d)">ALKASS 5</div>
+    <div class="ch-name">الكأس 5</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 4" onclick="play(this, 'https://liveeu-gcp.alkassdigital.net/alkass4-p/main.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);"><span>ALKASS 4</span></div>
-    <div class="ch-name">الكأس 4</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 6" onclick="play(this,'https://liveeu-gcp.alkassdigital.net/alkass6-p/main.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d)">ALKASS 6</div>
+    <div class="ch-name">الكأس 6</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 5" onclick="play(this, 'https://liveeu-gcp.alkassdigital.net/alkass5-p/main.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);"><span>ALKASS 5</span></div>
-    <div class="ch-name">الكأس 5</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="sport" data-name="البحرين سبورت 1" onclick="play(this,'https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#dc2626,#b91c1c)">BH SPORT 1</div>
+    <div class="ch-name">البحرين سبورت 1</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="sport" data-name="الكأس 6" onclick="play(this, 'https://liveeu-gcp.alkassdigital.net/alkass6-p/main.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);"><span>ALKASS 6</span></div>
-    <div class="ch-name">الكأس 6</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="sport" data-name="البحرين سبورت 2" onclick="play(this,'https://5c7b683162943.streamlock.net/live/ngrp:bahrainsportstwo_all/playlist.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#dc2626,#b91c1c)">BH SPORT 2</div>
+    <div class="ch-name">البحرين سبورت 2</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="sport" data-name="البحرين سبورت 1" onclick="play(this, 'https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#dc2626,#b91c1c);"><span>BH SPORT 1</span></div>
-    <div class="ch-name">البحرين سبورت 1</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="sport" data-name="العراقية الرياضية" onclick="play(this,'https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#15803d,#166534)">IRAQ SPORT</div>
+    <div class="ch-name">العراقية الرياضية</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="sport" data-name="شوف سبورت 1" onclick="play(this, 'https://liveeu-gcp.alkassdigital.net/shooflive/main.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#0284c7,#0369a1);"><span>SHOOF 1</span></div>
-    <div class="ch-name">شوف سبورت 1</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="islamic" data-name="القرآن الكريم" onclick="play(this,'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#047857,#065f46)">QURAN</div>
+    <div class="ch-name">القرآن الكريم</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="sport" data-name="شوف سبورت 2" onclick="play(this, 'https://liveeu-gcp.alkassdigital.net/shooflive2/main.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#0284c7,#0369a1);"><span>SHOOF 2</span></div>
-    <div class="ch-name">شوف سبورت 2</div>
-    <div class="ch-badge">مباشر</div>
+  <div class="channel-card ch-card" data-cat="islamic" data-name="السنة النبوية" onclick="play(this,'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8')">
+    <div class="ch-logo" style="background:linear-gradient(135deg,#047857,#065f46)">SUNNAH</div>
+    <div class="ch-name">السنة النبوية</div><div class="ch-badge">مباشر</div>
   </div>
-
-  <div class="channel-card ch-card" data-cat="islamic" data-name="القرآن الكريم" onclick="play(this, 'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#047857,#065f46);"><span>QURAN</span></div>
-    <div class="ch-name">القرآن الكريم (مكة)</div>
-    <div class="ch-badge">مباشر</div>
-  </div>
-
-  <div class="channel-card ch-card" data-cat="islamic" data-name="السنة النبوية" onclick="play(this, 'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8')">
-    <div class="ch-logo" style="background:linear-gradient(135deg,#047857,#065f46);"><span>SUNNAH</span></div>
-    <div class="ch-name">السنة النبوية</div>
-    <div class="ch-badge">مباشر</div>
-  </div>
-
 </div>
-
 <script>
-let activeCard = null;
-let hls = null;
-let currentLevels = [];
-let currentLevel = -1;
-
-function buildPlayerHTML() {
-  return '<video id="vid" style="width:100%;height:100%;background:#000;display:block;" playsinline></video>' +
-    '<div class="live-badge"><span class="live-dot"></span><span>مباشر</span></div>' +
-    '<div class="controls-bar">' +
-    '<div style="display:flex;align-items:center;gap:8px;">' +
-    '<button class="ctrl-btn" onclick="togglePlay()" id="playBtn"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>' +
-    '<button class="ctrl-btn" onclick="toggleMute()" id="muteBtn"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/></svg></button>' +
-    '</div>' +
-    '<div style="display:flex;align-items:center;gap:8px;">' +
-    '<button class="ctrl-btn" onclick="toggleQualityMenu()" id="qualityBtn" style="position:relative;">' +
-    '<span style="font-size:10px;font-weight:800;font-family:Cairo,sans-serif;">HD</span>' +
-    '<div class="quality-menu" id="qualityMenu"></div>' +
-    '</button>' +
-    '<button class="ctrl-btn" onclick="toggleFullscreen()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></button>' +
-    '</div>' +
-    '</div>';
-}
-
-function play(card, url) {
-  const box = document.getElementById('playerBox');
-  if (activeCard) activeCard.classList.remove('active');
-  activeCard = card;
-  card.classList.add('active');
-  if (hls) { hls.destroy(); hls = null; }
-  currentLevels = []; currentLevel = -1;
-  box.innerHTML = buildPlayerHTML();
-  const video = document.getElementById('vid');
-  if (Hls.isSupported()) {
-    hls = new Hls({ maxBufferLength:30, maxMaxBufferLength:60, enableWorker:true, manifestLoadingMaxRetry:4, levelLoadingMaxRetry:4, fragLoadingMaxRetry:4 });
-    hls.loadSource(url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-      video.play().catch(()=>{});
-      currentLevels = data.levels;
-      buildQualityMenu();
-    });
-    hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-      currentLevel = data.level;
-      updateQualityMenu();
-    });
-    hls.on(Hls.Events.ERROR, (e, d) => {
-      if (d.fatal) {
-        if (d.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
-        else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
-      }
-    });
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = url;
-    video.play().catch(()=>{});
-  }
-}
-
-function buildQualityMenu() {
-  const menu = document.getElementById('qualityMenu');
-  if (!menu || !currentLevels.length) return;
-  let html = '<button class="quality-option active" onclick="setQuality(-1)">تلقائي</button>';
-  currentLevels.forEach((lvl, i) => {
-    const h = lvl.height || '?';
-    html += '<button class="quality-option" onclick="setQuality(' + i + ')">' + h + 'p</button>';
-  });
-  menu.innerHTML = html;
-}
-
-function updateQualityMenu() {
-  document.querySelectorAll('.quality-option').forEach((btn, i) => {
-    btn.classList.toggle('active', (i === 0 && currentLevel === -1) || (i > 0 && currentLevel === i - 1));
-  });
-}
-
-function toggleQualityMenu() {
-  const menu = document.getElementById('qualityMenu');
-  if (menu) menu.classList.toggle('open');
-}
-
-function setQuality(level) {
-  if (!hls) return;
-  hls.currentLevel = level;
-  currentLevel = level;
-  updateQualityMenu();
-  toggleQualityMenu();
-}
-
-function togglePlay() {
-  const v = document.getElementById('vid');
-  if (!v) return;
-  v.paused ? v.play().catch(()=>{}) : v.pause();
-}
-
-function toggleMute() {
-  const v = document.getElementById('vid');
-  if (!v) return;
-  v.muted = !v.muted;
-}
-
-function toggleFullscreen() {
-  const box = document.getElementById('playerBox');
-  if (!document.fullscreenElement) box.requestFullscreen?.() || box.webkitRequestFullscreen?.();
-  else document.exitFullscreen?.() || document.webkitExitFullscreen?.();
-}
-
-function filterCat(cat, btn) {
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.channel-card').forEach(c => {
-    c.style.display = (cat === 'all' || c.dataset.cat === cat) ? 'flex' : 'none';
-  });
-}
-
-function filterChannels() {
-  const term = document.getElementById('searchInp').value.trim().toLowerCase();
-  document.querySelectorAll('.channel-card').forEach(c => {
-    const name = (c.dataset.name || '').toLowerCase();
-    c.style.display = name.includes(term) ? 'flex' : 'none';
-  });
-}
-
-document.addEventListener('click', (e) => {
-  const menu = document.getElementById('qualityMenu');
-  const btn = document.getElementById('qualityBtn');
-  if (menu && btn && !btn.contains(e.target)) menu.classList.remove('open');
-});
+let activeCard=null,hls=null,currentLevels=[],currentLevel=-1;
+function buildPlayerHTML(){return '<video id="vid" style="width:100%;height:100%;background:#000;display:block;" playsinline></video><div class="live-badge"><span class="live-dot"></span><span>مباشر</span></div><div class="controls-bar"><div style="display:flex;align-items:center;gap:8px;"><button class="ctrl-btn" onclick="togglePlay()"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button><button class="ctrl-btn" onclick="toggleMute()"><svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/></svg></button></div><div style="display:flex;align-items:center;gap:8px;"><button class="ctrl-btn" onclick="toggleQualityMenu()" id="qualityBtn" style="position:relative;"><span style="font-size:10px;font-weight:800;font-family:Cairo,sans-serif;">HD</span><div class="quality-menu" id="qualityMenu"></div></button><button class="ctrl-btn" onclick="toggleFullscreen()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg></button></div></div>';}
+function play(card,url){const box=document.getElementById('playerBox');if(activeCard)activeCard.classList.remove('active');activeCard=card;card.classList.add('active');if(hls){hls.destroy();hls=null;}currentLevels=[];currentLevel=-1;box.innerHTML=buildPlayerHTML();const video=document.getElementById('vid');if(Hls.isSupported()){hls=new Hls({maxBufferLength:30,maxMaxBufferLength:60,enableWorker:true,manifestLoadingMaxRetry:4,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:4,fragLoadingMaxRetry:4});hls.loadSource(url);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,(event,data)=>{video.play().catch(()=>{});currentLevels=data.levels;buildQualityMenu();});hls.on(Hls.Events.LEVEL_SWITCHED,(event,data)=>{currentLevel=data.level;updateQualityMenu();});hls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR)hls.startLoad();else if(d.type===Hls.ErrorTypes.MEDIA_ERROR)hls.recoverMediaError();}});}else if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=url;video.play().catch(()=>{});}}
+function buildQualityMenu(){const menu=document.getElementById('qualityMenu');if(!menu||!currentLevels.length)return;let html='<button class="quality-option active" onclick="setQuality(-1)">تلقائي</button>';currentLevels.forEach((lvl,i)=>{const h=lvl.height||'?';html+='<button class="quality-option" onclick="setQuality('+i+')">'+h+'p</button>';});menu.innerHTML=html;}
+function updateQualityMenu(){document.querySelectorAll('.quality-option').forEach((btn,i)=>{btn.classList.toggle('active',(i===0&&currentLevel===-1)||(i>0&&currentLevel===i-1));});const btn=document.getElementById('qualityBtn');if(btn&&currentLevel>=0&&currentLevels[currentLevel]){btn.querySelector('span').textContent=(currentLevels[currentLevel].height||'HD')+'p';}else if(btn){btn.querySelector('span').textContent='HD';}}
+function toggleQualityMenu(){const menu=document.getElementById('qualityMenu');if(menu)menu.classList.toggle('open');}
+function setQuality(level){if(!hls)return;hls.currentLevel=level;currentLevel=level;updateQualityMenu();toggleQualityMenu();}
+function togglePlay(){const v=document.getElementById('vid');if(!v)return;if(v.paused)v.play().catch(()=>{});else v.pause();}
+function toggleMute(){const v=document.getElementById('vid');if(!v)return;v.muted=!v.muted;}
+function toggleFullscreen(){const box=document.getElementById('playerBox');if(!document.fullscreenElement){box.requestFullscreen?.();}else{document.exitFullscreen?.();}}
+function filterCat(cat,btn){document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.channel-card').forEach(c=>{c.style.display=(cat==='all'||c.dataset.cat===cat)?'flex':'none';});}
+function filterChannels(){const term=document.getElementById('searchInp').value.trim().toLowerCase();document.querySelectorAll('.channel-card').forEach(c=>{const name=(c.dataset.name||'').toLowerCase();c.style.display=name.includes(term)?'flex':'none';});}
+document.addEventListener('click',(e)=>{const menu=document.getElementById('qualityMenu');const btn=document.getElementById('qualityBtn');if(menu&&btn&&!btn.contains(e.target)){menu.classList.remove('open');}});
 </script>
 </body>
 </html>
