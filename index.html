@@ -44,6 +44,8 @@ video.ff{object-fit:fill;}
 #qm button{background:none;border:none;color:#fff;padding:10px 16px;cursor:pointer;text-align:center;font-size:13px;}
 #qm button:hover{background:rgba(255,255,255,.08);}
 #qm button.active{color:#0f0;font-weight:700;}
+/* زر الجودة يتلون أخضر عند تحديد جودة يدوية */
+#q-btn.manual{background:rgba(0,200,0,.2);color:#0f0;border:1px solid rgba(0,255,0,.35);}
 #channels{height:80px;flex-shrink:0;background:#030303;display:flex;gap:5px;padding:10px;overflow-x:auto;align-items:center;border-top:1px solid #111;}
 @media (orientation:landscape) and (max-height:450px){#channels{display:none;}}
 #channels::-webkit-scrollbar{height:4px;}
@@ -87,15 +89,12 @@ video.ff{object-fit:fill;}
   <div id="loader"><div class="spinner"></div><span id="loader-txt">جاري التحميل...</span></div>
   <div id="ch-title"></div>
   <div id="speed-badge">-- Mbps</div>
-
   <div id="swipe-ind">
     <div id="si-icon">🔊</div>
     <div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div>
     <div id="si-label">الصوت</div>
   </div>
-
   <div id="dbl-hint"><span id="dbl-txt">دوران الشاشة</span></div>
-
   <div id="controls-overlay">
     <button class="cb" onclick="togglePlay()">⏯️</button>
     <div id="vw">
@@ -109,7 +108,7 @@ video.ff{object-fit:fill;}
     <button class="cb" onclick="toggleFullscreen()">⛶</button>
     <div id="fg"></div>
     <div id="qw">
-      <button class="cb" onclick="toggleQ()">جودة</button>
+      <button class="cb" id="q-btn" onclick="toggleQ()">جودة</button>
       <div id="qm"></div>
     </div>
   </div>
@@ -149,6 +148,7 @@ var CH=JSON.parse(localStorage.getItem('channels')||'null')||[
 var hls=null,cur=-1,retryT=null;
 var vid=document.getElementById('vid');
 var qm=document.getElementById('qm');
+var qBtn=document.getElementById('q-btn');
 var loader=document.getElementById('loader');
 var loaderTxt=document.getElementById('loader-txt');
 var chTitle=document.getElementById('ch-title');
@@ -171,21 +171,13 @@ brightL.style.opacity=brightness;
 // قياسات الفيديو
 var ASPECTS=[{cls:'fc',lbl:'↕ عادي'},{cls:'fv',lbl:'⛶ ملء'},{cls:'ff',lbl:'↔ مضغوط'}];
 var aspectIdx=parseInt(localStorage.getItem('aspectIdx')||'0');
-function applyAspect(i){
-  vid.className=ASPECTS[i].cls;
-  fitBtn.textContent=ASPECTS[i].lbl;
-  fitBtn.classList.toggle('on',i!==0);
-  localStorage.setItem('aspectIdx',i);
-}
+function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[i].lbl;fitBtn.classList.toggle('on',i!==0);localStorage.setItem('aspectIdx',i);}
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
 
 // سرعة النت
 var speedOn=localStorage.getItem('speedOn')!=='0';
-function applySpeedVis(){
-  speedBadge.classList.toggle('hide',!speedOn);
-  spdBtn.classList.toggle('on',speedOn);
-}
+function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);}
 function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}
 applySpeedVis();
 
@@ -215,11 +207,7 @@ setInterval(updateSpeed,1000);
 
 function showLoader(t){loader.style.display='flex';loaderTxt.textContent=t||'جاري التحميل...';}
 function hideLoader(){loader.style.display='none';}
-function toast(msg){
-  var t=document.getElementById('err-toast');
-  t.textContent=msg;t.style.display='block';
-  setTimeout(function(){t.style.display='none';},4000);
-}
+function toast(msg){var t=document.getElementById('err-toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},4000);}
 
 function buildChannels(){
   var box=document.getElementById('channels');
@@ -243,11 +231,20 @@ function load(idx){
   vid.removeAttribute('src');vid.load();
   lastBytes=0;lastBytesTime=Date.now();
   try{performance.clearResourceTimings();}catch(e){}
+  // إعادة زر الجودة للحيادي
+  qBtn.classList.remove('manual');
   var url=CH[idx].u;
   if(Hls.isSupported()){
-    hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,
-      manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,
-      levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:-1});
+    hls=new Hls({
+      enableWorker:true,
+      maxBufferLength:30,
+      maxMaxBufferLength:60,
+      manifestLoadingMaxRetry:5,
+      manifestLoadingRetryDelay:1000,
+      levelLoadingMaxRetry:5,
+      fragLoadingMaxRetry:5,
+      startLevel:0        // أقل جودة عند البداية
+    });
     hls.loadSource(url);hls.attachMedia(vid);
     hls.on(Hls.Events.MANIFEST_PARSED,function(){hideLoader();vid.play().catch(function(){});buildQ();});
     hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
@@ -277,23 +274,44 @@ function load(idx){
 function buildQ(){
   qm.innerHTML='';
   if(!hls)return;
+  // تلقائي
   var auto=document.createElement('button');
   auto.textContent='تلقائي';
-  auto.onclick=function(){hls.currentLevel=-1;closeQ();};
-  if(hls.currentLevel===-1)auto.classList.add('active');
+  auto.onclick=function(){
+    hls.currentLevel=-1;
+    qBtn.classList.remove('manual');
+    updateQActive();
+    closeQ();
+  };
   qm.appendChild(auto);
+  // مستويات الجودة
   hls.levels.forEach(function(lv,i){
     var b=document.createElement('button');
     b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
-    b.onclick=function(){hls.currentLevel=i;closeQ();};
-    if(hls.currentLevel===i)b.classList.add('active');
+    b.onclick=function(){
+      hls.currentLevel=i;
+      qBtn.classList.add('manual');  // أخضر عند اختيار يدوي
+      updateQActive();
+      closeQ();
+    };
     qm.appendChild(b);
   });
+  updateQActive();
 }
+
+function updateQActive(){
+  var btns=qm.querySelectorAll('button');
+  btns.forEach(function(b,i){
+    if(i===0) b.classList.toggle('active', hls.currentLevel===-1);
+    else b.classList.toggle('active', hls.currentLevel===(i-1));
+  });
+}
+
 function closeQ(){qm.classList.remove('open');}
 function toggleQ(){
   qm.classList.toggle('open');
   if(qm.classList.contains('open')){
+    updateQActive();
     setTimeout(function(){
       var r=qm.getBoundingClientRect();
       if(r.right>window.innerWidth){qm.style.right='0';qm.style.left='auto';}
@@ -317,7 +335,7 @@ function setVolume(v){
 function skip(s){vid.currentTime+=s;}
 function toggleFullscreen(){document.fullscreenElement?document.exitFullscreen():pw.requestFullscreen&&pw.requestFullscreen();}
 
-// السحب: صوت (يمين) + إضاءة (يسار)
+// سحب: صوت (يمين) + إضاءة (يسار)
 var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0,txStart=0;
 function showSwipe(type,val){
   clearTimeout(swTimer);
@@ -327,7 +345,7 @@ function showSwipe(type,val){
   swTimer=setTimeout(function(){swInd.style.display='none';},1200);
 }
 
-// الضغطتان = دوران
+// ضغطتان = دوران
 var lastTap=0,dblTimer=null,dblHintTimer=null;
 function doRotate(){
   var p=Promise.resolve();
