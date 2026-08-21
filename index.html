@@ -85,7 +85,7 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
   <div id="brightness-layer"></div>
   <div id="loader"><div class="spinner"></div><span id="loader-txt">جاري التحميل...</span></div>
   <div id="ch-title"></div>
-  <div id="speed-badge" onclick="manualSpeedTest()">📶 قياس</div>
+  <div id="speed-badge" onclick="runSpeedTest()">📶 قياس</div>
   <div id="swipe-ind">
     <div id="si-icon">🔊</div>
     <div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div>
@@ -159,6 +159,7 @@ var fitBtn=document.getElementById('fit-btn');
 var speedBadge=document.getElementById('speed-badge');
 var spdBtn=document.getElementById('spd-btn');
 var lastCh=parseInt(localStorage.getItem('lastCh'));
+
 var brightness=parseFloat(localStorage.getItem('brightness')||'0');
 brightL.style.opacity=brightness;
 
@@ -168,73 +169,47 @@ function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
 
-// ===== قياس سرعة النت الحقيقية =====
+// ===== قياس سرعة النت بواسطة fetch =====
 var speedOn=localStorage.getItem('speedOn')!=='0';
 var isTesting=false;
-var speedTimer=null;
+var speedInterval=null;
 
-function applySpeedVis(){
-  speedBadge.classList.toggle('hide',!speedOn);
-  spdBtn.classList.toggle('on',speedOn);
-  if(speedOn){
-    runSpeedTest();
-    if(speedTimer)clearInterval(speedTimer);
-    speedTimer=setInterval(runSpeedTest,15000);
-  } else {
-    if(speedTimer){clearInterval(speedTimer);speedTimer=null;}
-  }
-}
-function toggleSpeed(){
-  speedOn=!speedOn;
-  localStorage.setItem('speedOn',speedOn?'1':'0');
-  applySpeedVis();
-}
-function manualSpeedTest(){
-  if(!speedOn)return;
-  runSpeedTest();
-}
+// سيرفرات بديلة تدعم CORS
+var TEST_URLS=[
+  'https://httpbin.org/bytes/200000',
+  'https://www.google.com/images/phd/px.gif',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'
+];
+var urlIdx=0;
 
-// قياس حقيقي: تحميل صورة من httpbin أو سيرفر يدعم CORS
 function runSpeedTest(){
   if(isTesting)return;
   isTesting=true;
   speedBadge.textContent='📶 ...';
   speedBadge.style.color='#aaa';
-
-  // سيرفر fast.com (Netflix) - يدعم CORS
-  // نستخدم صورة عشوائية من picsum (CORS مفتوح) بحجم محدد
-  var imgSize=500000; // 500KB تقريبي
-  var url='https://picsum.photos/1200/800?random='+Date.now();
-  var start=Date.now();
-  var img=new Image();
-  img.onload=function(){
-    var elapsed=(Date.now()-start)/1000;
-    if(elapsed<0.05)elapsed=0.05;
-    var bps=(imgSize*8)/elapsed;
-    showSpeed(bps);
-    isTesting=false;
-  };
-  img.onerror=function(){
-    // بديل: تحميل ملف JS صغير من CDN
-    var url2='https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js?t='+Date.now();
-    var start2=Date.now();
-    var fileSize=350000; // ~350KB
-    fetch(url2,{cache:'no-store',mode:'cors'})
-      .then(function(r){return r.blob();})
-      .then(function(b){
-        var elapsed=(Date.now()-start2)/1000;
-        if(elapsed<0.05)elapsed=0.05;
-        var bps=((b.size||fileSize)*8)/elapsed;
-        showSpeed(bps);
-        isTesting=false;
-      })
-      .catch(function(){
+  var url=TEST_URLS[urlIdx%TEST_URLS.length]+'?r='+Date.now();
+  var t0=Date.now();
+  fetch(url,{cache:'no-store'})
+    .then(function(res){return res.blob();})
+    .then(function(blob){
+      var elapsed=(Date.now()-t0)/1000;
+      var bytes=blob.size||200000;
+      var bps=(bytes*8)/elapsed;
+      showSpeed(bps);
+      isTesting=false;
+    })
+    .catch(function(){
+      // جرب الرابط التالي
+      urlIdx++;
+      isTesting=false;
+      if(urlIdx<TEST_URLS.length){
+        setTimeout(runSpeedTest,500);
+      } else {
+        urlIdx=0;
         speedBadge.textContent='📶 خطأ';
         speedBadge.style.color='#f44';
-        isTesting=false;
-      });
-  };
-  img.src=url;
+      }
+    });
 }
 
 function showSpeed(bps){
@@ -246,6 +221,23 @@ function showSpeed(bps){
   speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';
 }
 
+function applySpeedVis(){
+  speedBadge.classList.toggle('hide',!speedOn);
+  spdBtn.classList.toggle('on',speedOn);
+  if(speedOn){
+    if(!speedInterval){
+      runSpeedTest();
+      speedInterval=setInterval(runSpeedTest,15000);
+    }
+  } else {
+    if(speedInterval){clearInterval(speedInterval);speedInterval=null;}
+  }
+}
+function toggleSpeed(){
+  speedOn=!speedOn;
+  localStorage.setItem('speedOn',speedOn?'1':'0');
+  applySpeedVis();
+}
 applySpeedVis();
 
 function showLoader(t){loader.style.display='flex';loaderTxt.textContent=t||'جاري التحميل...';}
@@ -253,10 +245,13 @@ function hideLoader(){loader.style.display='none';}
 function toast(msg){var t=document.getElementById('err-toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},4000);}
 
 function buildChannels(){
-  var box=document.getElementById('channels');box.innerHTML='';
+  var box=document.getElementById('channels');
+  box.innerHTML='';
   CH.forEach(function(c,i){
-    var b=document.createElement('button');b.className='ch';b.textContent=c.n;
-    b.onclick=function(){load(i);};box.appendChild(b);
+    var b=document.createElement('button');
+    b.className='ch';b.textContent=c.n;
+    b.onclick=function(){load(i);};
+    box.appendChild(b);
   });
 }
 
@@ -273,8 +268,14 @@ function load(idx){
   var url=CH[idx].u;
   if(Hls.isSupported()){
     hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:0,autoLevelEnabled:false,capLevelToPlayerSize:false});
-    hls.loadSource(url);hls.attachMedia(vid);
-    hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hideLoader();vid.play().catch(function(){});buildQ();});
+    hls.loadSource(url);
+    hls.attachMedia(vid);
+    hls.on(Hls.Events.MANIFEST_PARSED,function(){
+      hls.currentLevel=0;
+      hideLoader();
+      vid.play().catch(function(){});
+      buildQ();
+    });
     hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
     hls.on(Hls.Events.ERROR,function(e,d){
       if(d.fatal){
@@ -284,12 +285,17 @@ function load(idx){
       }
     });
   }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
-    vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
-  }else{hideLoader();toast('المتصفح لا يدعم البث');}
+    vid.src=url;
+    vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});
+    vid.play().catch(function(){});
+  }else{
+    hideLoader();toast('المتصفح لا يدعم البث');
+  }
 }
 
 function buildQ(){
-  qm.innerHTML='';if(!hls)return;
+  qm.innerHTML='';
+  if(!hls)return;
   var autoBtn=document.createElement('button');
   autoBtn.textContent='تلقائي';
   autoBtn.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};
