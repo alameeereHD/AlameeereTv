@@ -162,9 +162,9 @@ var CH=JSON.parse(localStorage.getItem('channels')||'null')||[
   {n:"beIN MAX S3",u:"https://cup.tvkora-online.net/albaplayer/sports-1/",t:"iframe"},
   {n:"beIN MAX S4",u:"https://go.pkju.online/albaplayer/max1/",t:"iframe"},
   {n:"beIN MAX S5",u:"https://live.bb6.dpdns.org/albaplayer/ch1/",t:"iframe"},
-  // جديدتين
   {n:"beIN MAX Live",u:"https://pl.koralive1.cc/albaplayer/1bein1/?serv=2",t:"iframe"},
-  {n:"Match Live",u:"https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4741712&key=9f39972b67d6ce22189507d008acwc26",t:"iframe"}
+  {n:"Match Live",u:"https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4741712&key=9f39972b67d6ce22189507d008acwc26",t:"iframe"},
+  {n:"beIN Fastera",u:"https://fteeng.blogspot.com/2026/06/1.html?tab=fastera-player",t:"iframe"}
 ];
 
 var hls=null,cur=-1,retryT=null;
@@ -212,8 +212,7 @@ function runSpeedTest(){
 }
 function showSpeed(bps){
   var lbl=bps>=1000000?'📶 '+(bps/1000000).toFixed(1)+' Mbps':bps>=1000?'📶 '+Math.round(bps/1000)+' Kbps':'📶 '+Math.round(bps)+' bps';
-  speedBadge.textContent=lbl;
-  speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';
+  speedBadge.textContent=lbl;speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';
 }
 function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);if(speedOn){if(!speedInterval){runSpeedTest();speedInterval=setInterval(runSpeedTest,15000);}}else{if(speedInterval){clearInterval(speedInterval);speedInterval=null;}}}
 function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}
@@ -289,8 +288,7 @@ function buildQ(){
 }
 function updateQActive(){if(!hls)return;var btns=qm.querySelectorAll('button');btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
 function closeQ(){qm.classList.remove('open');}
-function toggleQ(){qm.classList.toggle('open');if(qm.classList.contains('open')){updateQActive();setTimeout(function(){var r=qm.getBoundingClientRect();if(r.right>window.innerWidth){qm.style.right='0';qm.style.left='auto';}else if(r.left<0){qm.style.left='0';qm.style.right='auto';}},0);}
-}
+function toggleQ(){qm.classList.toggle('open');if(qm.classList.contains('open')){updateQActive();setTimeout(function(){var r=qm.getBoundingClientRect();if(r.right>window.innerWidth){qm.style.right='0';qm.style.left='auto';}else if(r.left<0){qm.style.left='0';qm.style.right='auto';}},0);}}
 function togglePlay(){if(CH[cur]&&CH[cur].t==='iframe')return;vid.paused?vid.play():vid.pause();}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
 function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElementById('mute-btn').textContent=v==0?'🔇':'🔊';document.getElementById('vs').value=v;localStorage.setItem('vol',v);}
