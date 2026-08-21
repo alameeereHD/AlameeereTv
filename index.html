@@ -15,17 +15,30 @@ html,body{
   padding-right:env(safe-area-inset-right);
 }
 #app{display:flex;flex-direction:column;width:100%;height:100%;}
-#player-wrap{flex:1;min-height:0;position:relative;user-select:none;}
+#player-wrap{flex:1;min-height:0;position:relative;user-select:none;overflow:hidden;}
 video{width:100%;height:100%;display:block;background:#000;}
 
-/* عادي: كل الفيديو بدون قص */
+/* عادي: كل الفيديو ظاهر مع هوامش سوداء */
 video.fc{object-fit:contain;}
 
-/* ملء: يمتد ليملأ الشاشة مع تمددد خفيف بدون قص الشريط */
-video.fv{object-fit:fill;}
+/* ملء: يمتد باتجاه عرضي فقط ليملأ العرض - لكن بدون قطع أعلى/أسفل */
+video.fv{
+  object-fit:contain;
+  width:100%;
+  height:auto;
+  position:absolute;
+  top:50%;
+  left:0;
+  transform:translateY(-50%) scaleX(1.18);
+  transform-origin:center center;
+}
 
-/* مضغوط: contain مع scaleY أصغر لإظهار هامش أسود */
-video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center center;}
+/* مضغوط: هامش أسود أعلى وأسفل */
+video.ff{
+  object-fit:contain;
+  transform:scaleY(0.72);
+  transform-origin:center center;
+}
 
 #brightness-layer{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4;}
 #loader{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,.75);z-index:10;}
@@ -177,10 +190,10 @@ var lastCh=parseInt(localStorage.getItem('lastCh'));
 var brightness=parseFloat(localStorage.getItem('brightness')||'0');
 brightL.style.opacity=brightness;
 
-// قياسات:
-// fc = contain (عادي)
-// fv = fill   (ملء بدون قص - يظهر كل شيء)
-// ff = contain + scaleY(مضغوط مع هامش)
+// قياسات الفيديو
+// fc = عادي (contain - كل الفيديو ظاهر)
+// fv = ملء (يمتد عرضياً ليملأ الشاشة بدون قطع الشريط الإخباري)
+// ff = مضغوط (هامش أسود أعلى/أسفل)
 var ASPECTS=[
   {cls:'fc', lbl:'↕ عادي'},
   {cls:'fv', lbl:'⛶ ملء'},
@@ -188,6 +201,8 @@ var ASPECTS=[
 ];
 var aspectIdx=parseInt(localStorage.getItem('aspectIdx')||'0');
 function applyAspect(i){
+  // إزالة جميع التأثيرات السابقة
+  vid.style.cssText='';
   vid.className=ASPECTS[i].cls;
   fitBtn.textContent=ASPECTS[i].lbl;
   fitBtn.classList.toggle('on',i!==0);
@@ -199,6 +214,7 @@ function cycleAspect(){
 }
 applyAspect(aspectIdx);
 
+// سرعة النت
 var speedOn=localStorage.getItem('speedOn')!=='0';
 function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);}
 function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}
@@ -317,6 +333,7 @@ function toggleFullscreen(){
   else{pw.requestFullscreen&&pw.requestFullscreen();}
 }
 
+// سحب
 var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0,txStart=0;
 function showSwipe(type,val){
   clearTimeout(swTimer);
@@ -326,6 +343,7 @@ function showSwipe(type,val){
   swTimer=setTimeout(function(){swInd.style.display='none';},1200);
 }
 
+// ضغطتان = دوران
 var lastTap=0,dblTimer=null,dblHintTimer=null;
 function doRotate(){
   var p=Promise.resolve();
