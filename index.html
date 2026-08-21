@@ -13,7 +13,7 @@ video{width:100%;height:100%;display:block;background:#000;}
 video.fc{object-fit:contain;}
 video.fv{object-fit:fill;}
 video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center center;}
-#iframe-wrap{position:absolute;inset:0;display:none;z-index:2;}
+#iframe-wrap{position:absolute;inset:0;display:none;z-index:5;}
 #iframe-wrap iframe{width:100%;height:100%;border:none;}
 #brightness-layer{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4;}
 #loader{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,.75);z-index:10;}
@@ -54,8 +54,8 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
 .ch{min-width:78px;height:52px;background:#0a0a0a;border:1px solid #1a1a1a;color:#bbb;font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;transition:.2s;flex-shrink:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;}
 .ch:hover{background:#151515;border-color:#0f0;color:#fff;}
 .ch.on{background:#0f0;color:#000;border-color:#0f0;}
-.ch.iframe-ch{border-color:#f80;color:#f80;}
-.ch.iframe-ch.on{background:#f80;color:#000;}
+.ch.iframe-ch{border-color:#f80;}
+.ch.iframe-ch.on{background:#f80;color:#000;border-color:#f80;}
 #add-ch{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,0,0,.75);border:1px solid #333;color:#0f0;font-size:12px;padding:7px 14px;border-radius:7px;cursor:pointer;}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:none;align-items:center;justify-content:center;}
 .modal-box{background:#0a0a0a;border:1px solid #222;border-radius:14px;padding:26px;width:92%;max-width:500px;}
@@ -75,8 +75,8 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
   <div class="modal-box">
     <h2>إضافة / تعديل قناة</h2>
     <input id="ch-name" placeholder="اسم القناة">
-    <input id="ch-url" placeholder="رابط البث (m3u8)">
-    <select id="ch-type"><option value="hls">HLS (.m3u8)</option></select>
+    <input id="ch-url" placeholder="رابط البث (m3u8 أو iframe)">
+    <select id="ch-type"><option value="hls">HLS (.m3u8)</option><option value="iframe">Iframe (صفحة ويب)</option></select>
     <div class="row"><input id="ch-idx" placeholder="رقم القناة للتعديل" type="number" min="1"></div>
     <div style="margin-top:8px">
       <button class="mbtn" onclick="saveChannel()">حفظ القناة</button>
@@ -86,7 +86,7 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
 </div>
 <div id="player-wrap">
   <video id="vid" class="fc" playsinline webkit-playsinline></video>
-  <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay"></iframe></div>
+  <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe></div>
   <div id="brightness-layer"></div>
   <div id="loader"><div class="spinner"></div><span id="loader-txt">جاري التحميل...</span></div>
   <div id="ch-title"></div>
@@ -119,7 +119,6 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
-// t = hls | iframe
 var CH=JSON.parse(localStorage.getItem('channels')||'null')||[
   {n:"الجزيرة",u:"https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8",t:"hls"},
   {n:"الجزيرة مباشر",u:"https://live-hls-web-ajm-gcp.thehlive.com/AJM/index.m3u8",t:"hls"},
@@ -160,9 +159,7 @@ var CH=JSON.parse(localStorage.getItem('channels')||'null')||[
   {n:"Zain TV 1",u:"https://zaintv1.zaintvpro.workers.dev/live/z1.m3u8",t:"hls"},
   {n:"Zain TV 2",u:"https://zaintv1.zaintvpro.workers.dev/live/z2.m3u8",t:"hls"},
   {n:"Sigma TV",u:"https://sl3.sigmatv.com/hls/live.m3u8",t:"hls"},
-  // beIN MAX - AlbaPlayer
-  {n:"beIN MAX S1",u:"https://yallashoot.tv/albaplayer/cluster/",t:"iframe"},
-  {n:"beIN MAX S2",u:"https://player.syria-player.live/albaplayer/beinmax1/",t:"iframe"},
+  // بث beIN MAX بواسطة iframe - التي تعمل
   {n:"beIN MAX S3",u:"https://cup.tvkora-online.net/albaplayer/sports-1/",t:"iframe"},
   {n:"beIN MAX S4",u:"https://go.pkju.online/albaplayer/max1/",t:"iframe"},
   {n:"beIN MAX S5",u:"https://live.bb6.dpdns.org/albaplayer/ch1/",t:"iframe"}
@@ -212,8 +209,19 @@ function runSpeedTest(){
   var t0=Date.now();
   fetch(url,{cache:'no-store'})
     .then(function(res){return res.blob();})
-    .then(function(blob){var elapsed=(Date.now()-t0)/1000;var bytes=blob.size||200000;var bps=(bytes*8)/elapsed;showSpeed(bps);isTesting=false;})
-    .catch(function(){urlIdx++;isTesting=false;if(urlIdx<TEST_URLS.length){setTimeout(runSpeedTest,500);}else{urlIdx=0;speedBadge.textContent='📶 خطأ';speedBadge.style.color='#f44';}});
+    .then(function(blob){
+      var elapsed=(Date.now()-t0)/1000;
+      var bytes=blob.size||200000;
+      var bps=(bytes*8)/elapsed;
+      showSpeed(bps);
+      isTesting=false;
+    })
+    .catch(function(){
+      urlIdx++;
+      isTesting=false;
+      if(urlIdx<TEST_URLS.length){setTimeout(runSpeedTest,500);}
+      else{urlIdx=0;speedBadge.textContent='📶 خطأ';speedBadge.style.color='#f44';}
+    });
 }
 function showSpeed(bps){
   var lbl;
@@ -255,43 +263,48 @@ function load(idx){
   document.querySelectorAll('.ch').forEach(function(b,i){b.classList.toggle('on',i===idx);});
   chTitle.textContent=CH[idx].n;chTitle.style.display='block';
   var type=CH[idx].t||'hls';
+
+  // إذا iframe
   if(type==='iframe'){
-    // تشغيل iframe
     if(hls){hls.destroy();hls=null;}
-    vid.removeAttribute('src');vid.load();
     vid.style.display='none';
     iframeWrap.style.display='block';
     showLoader('جاري تحميل '+CH[idx].n+'...');
-    iframePlayer.src=CH[idx].u;
-    setTimeout(function(){hideLoader();},3000);
-    qBtn.classList.remove('manual');
-    qm.innerHTML='';
-  } else {
-    // تشغيل HLS
-    iframeWrap.style.display='none';
     iframePlayer.src='';
-    vid.style.display='block';
-    if(hls){hls.destroy();hls=null;}
-    vid.removeAttribute('src');vid.load();
-    qBtn.classList.remove('manual');
-    showLoader('جاري تحميل '+CH[idx].n+'...');
-    var url=CH[idx].u;
-    if(Hls.isSupported()){
-      hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:0,autoLevelEnabled:false,capLevelToPlayerSize:false});
-      hls.loadSource(url);hls.attachMedia(vid);
-      hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hideLoader();vid.play().catch(function(){});buildQ();});
-      hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
-      hls.on(Hls.Events.ERROR,function(e,d){
-        if(d.fatal){
-          if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur);},8000);}
-          else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}
-          else{retryT=setTimeout(function(){load(cur);},5000);}
-        }
-      });
-    }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
-      vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
-    }else{hideLoader();toast('المتصفح لا يدعم البث');}
+    setTimeout(function(){
+      iframePlayer.src=CH[idx].u;
+      hideLoader();
+    },300);
+    // إخفاء زر الجودة للقنوات iframe
+    qm.innerHTML='';
+    return;
   }
+
+  // HLS عادي
+  vid.style.display='block';
+  iframeWrap.style.display='none';
+  iframePlayer.src='';
+  showLoader('جاري تحميل '+CH[idx].n+'...');
+  if(hls){hls.destroy();hls=null;}
+  vid.removeAttribute('src');vid.load();
+  qBtn.classList.remove('manual');
+  var url=CH[idx].u;
+  if(Hls.isSupported()){
+    hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:0,autoLevelEnabled:false,capLevelToPlayerSize:false});
+    hls.loadSource(url);
+    hls.attachMedia(vid);
+    hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hideLoader();vid.play().catch(function(){});buildQ();});
+    hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
+    hls.on(Hls.Events.ERROR,function(e,d){
+      if(d.fatal){
+        if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur);},8000);}
+        else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}
+        else{retryT=setTimeout(function(){load(cur);},5000);}
+      }
+    });
+  }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
+    vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
+  }else{hideLoader();toast('المتصفح لا يدعم البث');}
 }
 
 function buildQ(){
@@ -318,7 +331,10 @@ function toggleQ(){
   qm.classList.toggle('open');
   if(qm.classList.contains('open')){updateQActive();setTimeout(function(){var r=qm.getBoundingClientRect();if(r.right>window.innerWidth){qm.style.right='0';qm.style.left='auto';}else if(r.left<0){qm.style.left='0';qm.style.right='auto';}},0);}
 }
-function togglePlay(){if(CH[cur]&&CH[cur].t==='iframe')return;vid.paused?vid.play():vid.pause();}
+function togglePlay(){
+  if(CH[cur]&&CH[cur].t==='iframe')return;
+  vid.paused?vid.play():vid.pause();
+}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
 function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElementById('mute-btn').textContent=v==0?'🔇':'🔊';document.getElementById('vs').value=v;localStorage.setItem('vol',v);}
 function skip(s){if(CH[cur]&&CH[cur].t==='iframe')return;vid.currentTime+=s;}
@@ -384,9 +400,10 @@ function toggleAdd(){var m=document.getElementById('add-modal');m.style.display=
 function saveChannel(){
   var name=document.getElementById('ch-name').value.trim();
   var url=document.getElementById('ch-url').value.trim();
+  var type=document.getElementById('ch-type').value||'hls';
   var idx=parseInt(document.getElementById('ch-idx').value)-1;
   if(!name||!url){toast('أدخل الاسم والرابط');return;}
-  var ch={n:name,u:url,t:'hls'};
+  var ch={n:name,u:url,t:type};
   if(idx>=0&&idx<CH.length)CH[idx]=ch;else CH.push(ch);
   localStorage.setItem('channels',JSON.stringify(CH));
   buildChannels();toggleAdd();
