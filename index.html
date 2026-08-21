@@ -6,14 +6,7 @@
 <title>AlameeereTv</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{
-  width:100%;height:100%;background:#000;overflow:hidden;
-  font-family:system-ui,sans-serif;
-  padding-top:env(safe-area-inset-top);
-  padding-bottom:env(safe-area-inset-bottom);
-  padding-left:env(safe-area-inset-left);
-  padding-right:env(safe-area-inset-right);
-}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
 #app{display:flex;flex-direction:column;width:100%;height:100%;}
 #player-wrap{flex:1;min-height:0;position:relative;user-select:none;overflow:hidden;}
 video{width:100%;height:100%;display:block;background:#000;}
@@ -26,7 +19,7 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
 #loader span{color:rgba(255,255,255,.7);font-size:13px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 #ch-title{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;z-index:6;display:none;}
-#speed-badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#0f0;z-index:6;transition:opacity .3s;}
+#speed-badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#0f0;z-index:6;transition:opacity .3s;cursor:pointer;}
 #speed-badge.hide{opacity:0;pointer-events:none;}
 #swipe-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:14px 22px;display:none;flex-direction:column;align-items:center;gap:8px;z-index:20;pointer-events:none;min-width:130px;}
 #si-icon{font-size:26px;}
@@ -92,7 +85,7 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
   <div id="brightness-layer"></div>
   <div id="loader"><div class="spinner"></div><span id="loader-txt">جاري التحميل...</span></div>
   <div id="ch-title"></div>
-  <div id="speed-badge">-- Mbps</div>
+  <div id="speed-badge" onclick="runSpeedTest()">📶 قياس</div>
   <div id="swipe-ind">
     <div id="si-icon">🔊</div>
     <div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div>
@@ -176,34 +169,77 @@ function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
 
+// ===== قياس سرعة النت الحقيقية =====
+// يحمّل ملف حقيقي من Cloudflare ويقيس الوقت
 var speedOn=localStorage.getItem('speedOn')!=='0';
-function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);}
-function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}
-applySpeedVis();
+var isTesting=false;
+var lastSpeedResult='-- Mbps';
+var speedInterval=null;
 
-var lastBytes=0,lastBytesTime=Date.now();
-function updateSpeed(){
-  try{
-    var entries=performance.getEntriesByType('resource');
-    var total=0;
-    entries.forEach(function(e){
-      if(e.transferSize>0&&(e.name.indexOf('.ts')>-1||e.name.indexOf('.m3u8')>-1||e.name.indexOf('.mp4')>-1||e.name.indexOf('.aac')>-1))
-        total+=e.transferSize;
-    });
-    var now=Date.now();
-    var dt=(now-lastBytesTime)/1000;
-    var bps=Math.max(0,total-lastBytes)/dt;
-    lastBytes=total;lastBytesTime=now;
-    var lbl;
-    if(bps>=1000000)lbl=(bps/1000000).toFixed(1)+' Mbps';
-    else if(bps>=1000)lbl=Math.round(bps/1000)+' Kbps';
-    else if(bps>0)lbl=Math.round(bps)+' bps';
-    else lbl='...';
-    speedBadge.textContent=lbl;
-    speedBadge.style.color=bps>=5000000?'#0f0':bps>=1000000?'#ff0':bps>0?'#f80':'#888';
-  }catch(e){}
+function applySpeedVis(){
+  speedBadge.classList.toggle('hide',!speedOn);
+  spdBtn.classList.toggle('on',speedOn);
+  if(speedOn && !speedInterval){
+    runSpeedTest();
+    speedInterval=setInterval(runSpeedTest,10000);
+  } else if(!speedOn && speedInterval){
+    clearInterval(speedInterval);
+    speedInterval=null;
+  }
 }
-setInterval(updateSpeed,1000);
+
+function toggleSpeed(){
+  speedOn=!speedOn;
+  localStorage.setItem('speedOn',speedOn?'1':'0');
+  applySpeedVis();
+}
+
+// قياس حقيقي: تحميل ملف 200KB من Cloudflare CDN
+function runSpeedTest(){
+  if(isTesting)return;
+  isTesting=true;
+  speedBadge.textContent='📶 ...';
+  // ملف 200KB حقيقي مع منع الكاش
+  var testUrl='https://speed.cloudflare.com/__down?bytes=200000&t='+Date.now();
+  var startTime=Date.now();
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET',testUrl,true);
+  xhr.timeout=8000;
+  xhr.onprogress=function(e){
+    if(e.loaded>50000 && !xhr._measured){
+      xhr._measured=true;
+      var elapsed=(Date.now()-startTime)/1000;
+      var bps=(e.loaded*8)/elapsed;
+      showSpeed(bps);
+    }
+  };
+  xhr.onload=function(){
+    var elapsed=(Date.now()-startTime)/1000;
+    if(elapsed>0){
+      var bps=(200000*8)/elapsed;
+      showSpeed(bps);
+    }
+    isTesting=false;
+  };
+  xhr.onerror=xhr.ontimeout=function(){
+    speedBadge.textContent='📶 خطأ';
+    speedBadge.style.color='#f00';
+    isTesting=false;
+  };
+  xhr.send();
+}
+
+function showSpeed(bps){
+  var lbl;
+  if(bps>=1000000) lbl='📶 '+(bps/1000000).toFixed(1)+' Mbps';
+  else if(bps>=1000) lbl='📶 '+Math.round(bps/1000)+' Kbps';
+  else lbl='📶 '+Math.round(bps)+' bps';
+  speedBadge.textContent=lbl;
+  speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';
+  lastSpeedResult=lbl;
+}
+
+applySpeedVis();
 
 function showLoader(t){loader.style.display='flex';loaderTxt.textContent=t||'جاري التحميل...';}
 function hideLoader(){loader.style.display='none';}
@@ -229,8 +265,6 @@ function load(idx){
   showLoader('جاري تحميل '+CH[idx].n+'...');
   if(hls){hls.destroy();hls=null;}
   vid.removeAttribute('src');vid.load();
-  lastBytes=0;lastBytesTime=Date.now();
-  try{performance.clearResourceTimings();}catch(e){}
   qBtn.classList.remove('manual');
   var url=CH[idx].u;
   if(Hls.isSupported()){
@@ -242,7 +276,6 @@ function load(idx){
       manifestLoadingRetryDelay:1000,
       levelLoadingMaxRetry:5,
       fragLoadingMaxRetry:5,
-      // يبدأ بأقل جودة ولا يتغير تلقائياً
       startLevel:0,
       autoLevelEnabled:false,
       capLevelToPlayerSize:false
@@ -250,7 +283,6 @@ function load(idx){
     hls.loadSource(url);
     hls.attachMedia(vid);
     hls.on(Hls.Events.MANIFEST_PARSED,function(){
-      // تثبيت أقل جودة عند البداية
       hls.currentLevel=0;
       hideLoader();
       vid.play().catch(function(){});
@@ -276,18 +308,16 @@ function load(idx){
 function buildQ(){
   qm.innerHTML='';
   if(!hls)return;
-  // زر تلقائي - يختاره المستخدم إذا أراد
   var autoBtn=document.createElement('button');
   autoBtn.textContent='تلقائي';
   autoBtn.onclick=function(){
-    hls.currentLevel=-1;       // تفعيل ABR التلقائي
+    hls.currentLevel=-1;
     hls.autoLevelEnabled=true;
     qBtn.classList.remove('manual');
     updateQActive();
     closeQ();
   };
   qm.appendChild(autoBtn);
-  // مستويات الجودة المحددة
   hls.levels.forEach(function(lv,i){
     var b=document.createElement('button');
     b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
@@ -306,23 +336,17 @@ function buildQ(){
 function updateQActive(){
   if(!hls)return;
   var btns=qm.querySelectorAll('button');
-  // زر تلقائي هو الأول (index 0)
   btns.forEach(function(b,i){
-    if(i===0) b.classList.toggle('active', hls.currentLevel===-1);
-    else b.classList.toggle('active', hls.currentLevel===(i-1));
+    if(i===0) b.classList.toggle('active',hls.currentLevel===-1);
+    else b.classList.toggle('active',hls.currentLevel===(i-1));
   });
 }
-
 function closeQ(){qm.classList.remove('open');}
 function toggleQ(){
   qm.classList.toggle('open');
   if(qm.classList.contains('open')){
     updateQActive();
-    setTimeout(function(){
-      var r=qm.getBoundingClientRect();
-      if(r.right>window.innerWidth){qm.style.right='0';qm.style.left='auto';}
-      else if(r.left<0){qm.style.left='0';qm.style.right='auto';}
-    },0);
+    setTimeout(function(){var r=qm.getBoundingClientRect();if(r.right>window.innerWidth){qm.style.right='0';qm.style.left='auto';}else if(r.left<0){qm.style.left='0';qm.style.right='auto';}},0);
   }
 }
 
@@ -363,34 +387,26 @@ document.addEventListener('touchend',function(e){
   if(e.target.closest('#controls-overlay')||e.target.closest('#channels')||e.target.closest('#add-ch')||e.target.closest('.modal')||e.target.closest('#qm'))return;
   if(isSwiping)return;
   var now=Date.now();
-  if(now-lastTap<350){
-    lastTap=0;clearTimeout(dblTimer);dblTimer=null;
-    doRotate();
-  }else{
+  if(now-lastTap<350){lastTap=0;clearTimeout(dblTimer);dblTimer=null;doRotate();}
+  else{
     lastTap=now;clearTimeout(dblTimer);
     if(e.target.closest('#player-wrap')){
-      dblTimer=setTimeout(function(){
-        pw.classList.add('show-ctrl');
-        clearTimeout(hideCtrlT);
-        hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
-      },350);
+      dblTimer=setTimeout(function(){pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);},350);
     }
   }
 },{passive:true});
 
 var hideCtrlT=null;
 pw.addEventListener('touchstart',function(e){
-  if(e.target.closest('#controls-overlay')||e.target.closest('#loader'))return;
+  if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge'))return;
   var t=e.touches[0];txStart=t.clientX;tyStart=t.clientY;isSwiping=false;
   var rect=pw.getBoundingClientRect();
   swType=(t.clientX-rect.left)>(rect.width/2)?'vol':'brightness';
-  swStartY=t.clientY;
-  swStartVal=swType==='vol'?vid.volume:brightness;
+  swStartY=t.clientY;swStartVal=swType==='vol'?vid.volume:brightness;
 },{passive:true});
 pw.addEventListener('touchmove',function(e){
   if(!swType||e.target.closest('#controls-overlay'))return;
-  var t=e.touches[0];
-  var dy=tyStart-t.clientY;
+  var t=e.touches[0];var dy=tyStart-t.clientY;
   if(!isSwiping&&Math.abs(dy)>12)isSwiping=true;
   if(!isSwiping)return;
   var delta=dy/pw.getBoundingClientRect().height;
@@ -399,17 +415,14 @@ pw.addEventListener('touchmove',function(e){
 },{passive:true});
 pw.addEventListener('touchend',function(){swType=null;setTimeout(function(){isSwiping=false;},50);},{passive:true});
 pw.addEventListener('click',function(e){
-  if(e.target.closest('#controls-overlay')||e.target.closest('#loader'))return;
+  if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge'))return;
   pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);
   hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
 });
 document.addEventListener('click',function(e){if(!e.target.closest('#qw'))closeQ();});
 document.addEventListener('touchend',function(e){if(!e.target.closest('#qw'))closeQ();},{passive:true});
 
-function toggleAdd(){
-  var m=document.getElementById('add-modal');
-  m.style.display=m.style.display!=='flex'?'flex':'none';
-}
+function toggleAdd(){var m=document.getElementById('add-modal');m.style.display=m.style.display!=='flex'?'flex':'none';}
 function saveChannel(){
   var name=document.getElementById('ch-name').value.trim();
   var url=document.getElementById('ch-url').value.trim();
