@@ -13,6 +13,8 @@ video{width:100%;height:100%;display:block;background:#000;}
 video.fc{object-fit:contain;}
 video.fv{object-fit:fill;}
 video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center center;}
+#iframe-wrap{position:absolute;inset:0;display:none;z-index:2;}
+#iframe-wrap iframe{width:100%;height:100%;border:none;}
 #brightness-layer{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4;}
 #loader{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,.75);z-index:10;}
 #loader .spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.15);border-top-color:#0f0;border-radius:50%;animation:spin .8s linear infinite;}
@@ -52,6 +54,8 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
 .ch{min-width:78px;height:52px;background:#0a0a0a;border:1px solid #1a1a1a;color:#bbb;font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;transition:.2s;flex-shrink:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;}
 .ch:hover{background:#151515;border-color:#0f0;color:#fff;}
 .ch.on{background:#0f0;color:#000;border-color:#0f0;}
+.ch.iframe-ch{border-color:#f80;color:#f80;}
+.ch.iframe-ch.on{background:#f80;color:#000;}
 #add-ch{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,0,0,.75);border:1px solid #333;color:#0f0;font-size:12px;padding:7px 14px;border-radius:7px;cursor:pointer;}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:none;align-items:center;justify-content:center;}
 .modal-box{background:#0a0a0a;border:1px solid #222;border-radius:14px;padding:26px;width:92%;max-width:500px;}
@@ -82,6 +86,7 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
 </div>
 <div id="player-wrap">
   <video id="vid" class="fc" playsinline webkit-playsinline></video>
+  <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay"></iframe></div>
   <div id="brightness-layer"></div>
   <div id="loader"><div class="spinner"></div><span id="loader-txt">جاري التحميل...</span></div>
   <div id="ch-title"></div>
@@ -114,58 +119,59 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
+// t = hls | iframe
 var CH=JSON.parse(localStorage.getItem('channels')||'null')||[
-  // إخبارية
-  {n:"الجزيرة",u:"https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8"},
-  {n:"الجزيرة مباشر",u:"https://live-hls-web-ajm-gcp.thehlive.com/AJM/index.m3u8"},
-  {n:"الجزيرة وثائق",u:"https://live-hls-web-ajd-gcp.thehlive.com/AJD/index.m3u8"},
-  {n:"العربية",u:"https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8"},
-  {n:"الحدث",u:"https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8"},
-  {n:"سكاي نيوز",u:"https://stream.skynewsarabia.com/hls/sna.m3u8"},
-  // الكأس
-  {n:"الكأس 1",u:"https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8"},
-  {n:"الكأس 2",u:"https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8"},
-  {n:"الكأس 3",u:"https://liveeu-gcp.alkassdigital.net/alkass3-p/main.m3u8"},
-  {n:"الكأس 4",u:"https://liveeu-gcp.alkassdigital.net/alkass4-p/main.m3u8"},
-  {n:"الكأس 5",u:"https://liveeu-gcp.alkassdigital.net/alkass5-p/main.m3u8"},
-  {n:"الكأس 6",u:"https://liveeu-gcp.alkassdigital.net/alkass6-p/main.m3u8"},
-  // البحرين
-  {n:"البحرين سبورت 1",u:"https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8"},
-  {n:"البحرين سبورت 2",u:"https://5c7b683162943.streamlock.net/live/ngrp:bahrainsportstwo_all/playlist.m3u8"},
-  {n:"العراقية رياضية",u:"https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8"},
-  // MBC
-  {n:"MBC 1",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2F3050%2Findex.m3u8%3Ftoken%3D%3D"},
-  {n:"MBC 2",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D"},
-  {n:"MBC Action",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBCAction%2Findex.m3u8%3Ftoken%3D%3D"},
-  {n:"MBC Masr",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FsatMBCMASR%2Findex.m3u8%3Ftoken%3D%3D"},
-  {n:"OSN Action",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FOSNACTIONHD%2Findex.m3u8%3Ftoken%3D%3D"},
-  {n:"beIN Drama",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fstream.woodfencepods.com%2Fpdf%2FIC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ%2Findex.m3u8%3Ftoken%3D%3D"},
-  // دينية
-  {n:"القرآن الكريم",u:"https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8"},
-  {n:"السنة النبوية",u:"https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8"},
-  // Sport TV
-  {n:"Sport TV 1",u:"http://94.130.32.19:8080/sporttv1/index.m3u8"},
-  {n:"Sport TV 2",u:"http://94.130.32.19:8080/sporttv2/index.m3u8"},
-  {n:"Sport TV 3",u:"http://94.130.32.19:8080/sporttv3/index.m3u8"},
-  {n:"Sport TV 4",u:"http://94.130.32.19:8080/sporttv4/index.m3u8"},
-  {n:"Sport TV 5",u:"http://94.130.32.19:8080/sporttv5/index.m3u8"},
-  {n:"Sport TV 6",u:"http://94.130.32.19:8080/sporttv6/index.m3u8"},
-  {n:"Sport TV 7",u:"http://94.130.32.19:8080/sporttv7/index.m3u8"},
-  // TSN كندا
-  {n:"TSN 1",u:"http://40.160.24.55/TSN_1/index.m3u8"},
-  {n:"TSN 2",u:"http://40.160.24.55/TSN_2/index.m3u8"},
-  {n:"TSN 3",u:"http://40.160.24.55/TSN_3/index.m3u8"},
-  {n:"TSN 4",u:"http://40.160.24.55/TSN_4/index.m3u8"},
-  {n:"TSN 5",u:"http://40.160.24.55/TSN_5/index.m3u8"},
-  // متنوعة
-  {n:"Super TV 1",u:"https://super-livetv.pages.dev/SUPER_TV_1.m3u8"},
-  {n:"Zain TV 1",u:"https://zaintv1.zaintvpro.workers.dev/live/z1.m3u8"},
-  {n:"Zain TV 2",u:"https://zaintv1.zaintvpro.workers.dev/live/z2.m3u8"},
-  {n:"Sigma TV",u:"https://sl3.sigmatv.com/hls/live.m3u8"}
+  {n:"الجزيرة",u:"https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8",t:"hls"},
+  {n:"الجزيرة مباشر",u:"https://live-hls-web-ajm-gcp.thehlive.com/AJM/index.m3u8",t:"hls"},
+  {n:"الجزيرة وثائق",u:"https://live-hls-web-ajd-gcp.thehlive.com/AJD/index.m3u8",t:"hls"},
+  {n:"العربية",u:"https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8",t:"hls"},
+  {n:"الحدث",u:"https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8",t:"hls"},
+  {n:"سكاي نيوز",u:"https://stream.skynewsarabia.com/hls/sna.m3u8",t:"hls"},
+  {n:"الكأس 1",u:"https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8",t:"hls"},
+  {n:"الكأس 2",u:"https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8",t:"hls"},
+  {n:"الكأس 3",u:"https://liveeu-gcp.alkassdigital.net/alkass3-p/main.m3u8",t:"hls"},
+  {n:"الكأس 4",u:"https://liveeu-gcp.alkassdigital.net/alkass4-p/main.m3u8",t:"hls"},
+  {n:"الكأس 5",u:"https://liveeu-gcp.alkassdigital.net/alkass5-p/main.m3u8",t:"hls"},
+  {n:"الكأس 6",u:"https://liveeu-gcp.alkassdigital.net/alkass6-p/main.m3u8",t:"hls"},
+  {n:"البحرين سبورت 1",u:"https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8",t:"hls"},
+  {n:"البحرين سبورت 2",u:"https://5c7b683162943.streamlock.net/live/ngrp:bahrainsportstwo_all/playlist.m3u8",t:"hls"},
+  {n:"العراقية رياضية",u:"https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8",t:"hls"},
+  {n:"MBC 1",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2F3050%2Findex.m3u8%3Ftoken%3D%3D",t:"hls"},
+  {n:"MBC 2",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D",t:"hls"},
+  {n:"MBC Action",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBCAction%2Findex.m3u8%3Ftoken%3D%3D",t:"hls"},
+  {n:"MBC Masr",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FsatMBCMASR%2Findex.m3u8%3Ftoken%3D%3D",t:"hls"},
+  {n:"OSN Action",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FOSNACTIONHD%2Findex.m3u8%3Ftoken%3D%3D",t:"hls"},
+  {n:"beIN Drama",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fstream.woodfencepods.com%2Fpdf%2FIC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ%2Findex.m3u8%3Ftoken%3D%3D",t:"hls"},
+  {n:"القرآن الكريم",u:"https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8",t:"hls"},
+  {n:"السنة النبوية",u:"https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8",t:"hls"},
+  {n:"Sport TV 1",u:"http://94.130.32.19:8080/sporttv1/index.m3u8",t:"hls"},
+  {n:"Sport TV 2",u:"http://94.130.32.19:8080/sporttv2/index.m3u8",t:"hls"},
+  {n:"Sport TV 3",u:"http://94.130.32.19:8080/sporttv3/index.m3u8",t:"hls"},
+  {n:"Sport TV 4",u:"http://94.130.32.19:8080/sporttv4/index.m3u8",t:"hls"},
+  {n:"Sport TV 5",u:"http://94.130.32.19:8080/sporttv5/index.m3u8",t:"hls"},
+  {n:"Sport TV 6",u:"http://94.130.32.19:8080/sporttv6/index.m3u8",t:"hls"},
+  {n:"Sport TV 7",u:"http://94.130.32.19:8080/sporttv7/index.m3u8",t:"hls"},
+  {n:"TSN 1",u:"http://40.160.24.55/TSN_1/index.m3u8",t:"hls"},
+  {n:"TSN 2",u:"http://40.160.24.55/TSN_2/index.m3u8",t:"hls"},
+  {n:"TSN 3",u:"http://40.160.24.55/TSN_3/index.m3u8",t:"hls"},
+  {n:"TSN 4",u:"http://40.160.24.55/TSN_4/index.m3u8",t:"hls"},
+  {n:"TSN 5",u:"http://40.160.24.55/TSN_5/index.m3u8",t:"hls"},
+  {n:"Super TV 1",u:"https://super-livetv.pages.dev/SUPER_TV_1.m3u8",t:"hls"},
+  {n:"Zain TV 1",u:"https://zaintv1.zaintvpro.workers.dev/live/z1.m3u8",t:"hls"},
+  {n:"Zain TV 2",u:"https://zaintv1.zaintvpro.workers.dev/live/z2.m3u8",t:"hls"},
+  {n:"Sigma TV",u:"https://sl3.sigmatv.com/hls/live.m3u8",t:"hls"},
+  // beIN MAX - AlbaPlayer
+  {n:"beIN MAX S1",u:"https://yallashoot.tv/albaplayer/cluster/",t:"iframe"},
+  {n:"beIN MAX S2",u:"https://player.syria-player.live/albaplayer/beinmax1/",t:"iframe"},
+  {n:"beIN MAX S3",u:"https://cup.tvkora-online.net/albaplayer/sports-1/",t:"iframe"},
+  {n:"beIN MAX S4",u:"https://go.pkju.online/albaplayer/max1/",t:"iframe"},
+  {n:"beIN MAX S5",u:"https://live.bb6.dpdns.org/albaplayer/ch1/",t:"iframe"}
 ];
 
 var hls=null,cur=-1,retryT=null;
 var vid=document.getElementById('vid');
+var iframeWrap=document.getElementById('iframe-wrap');
+var iframePlayer=document.getElementById('iframe-player');
 var qm=document.getElementById('qm');
 var qBtn=document.getElementById('q-btn');
 var loader=document.getElementById('loader');
@@ -192,7 +198,6 @@ function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
 
-// سرعة النت
 var speedOn=localStorage.getItem('speedOn')!=='0';
 var isTesting=false;
 var speedInterval=null;
@@ -207,19 +212,8 @@ function runSpeedTest(){
   var t0=Date.now();
   fetch(url,{cache:'no-store'})
     .then(function(res){return res.blob();})
-    .then(function(blob){
-      var elapsed=(Date.now()-t0)/1000;
-      var bytes=blob.size||200000;
-      var bps=(bytes*8)/elapsed;
-      showSpeed(bps);
-      isTesting=false;
-    })
-    .catch(function(){
-      urlIdx++;
-      isTesting=false;
-      if(urlIdx<TEST_URLS.length){setTimeout(runSpeedTest,500);}
-      else{urlIdx=0;speedBadge.textContent='📶 خطأ';speedBadge.style.color='#f44';}
-    });
+    .then(function(blob){var elapsed=(Date.now()-t0)/1000;var bytes=blob.size||200000;var bps=(bytes*8)/elapsed;showSpeed(bps);isTesting=false;})
+    .catch(function(){urlIdx++;isTesting=false;if(urlIdx<TEST_URLS.length){setTimeout(runSpeedTest,500);}else{urlIdx=0;speedBadge.textContent='📶 خطأ';speedBadge.style.color='#f44';}});
 }
 function showSpeed(bps){
   var lbl;
@@ -247,7 +241,8 @@ function buildChannels(){
   box.innerHTML='';
   CH.forEach(function(c,i){
     var b=document.createElement('button');
-    b.className='ch';b.textContent=c.n;
+    b.className='ch'+(c.t==='iframe'?' iframe-ch':'');
+    b.textContent=c.n;
     b.onclick=function(){load(i);};
     box.appendChild(b);
   });
@@ -259,26 +254,44 @@ function load(idx){
   if(retryT){clearTimeout(retryT);retryT=null;}
   document.querySelectorAll('.ch').forEach(function(b,i){b.classList.toggle('on',i===idx);});
   chTitle.textContent=CH[idx].n;chTitle.style.display='block';
-  showLoader('جاري تحميل '+CH[idx].n+'...');
-  if(hls){hls.destroy();hls=null;}
-  vid.removeAttribute('src');vid.load();
-  qBtn.classList.remove('manual');
-  var url=CH[idx].u;
-  if(Hls.isSupported()){
-    hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:0,autoLevelEnabled:false,capLevelToPlayerSize:false});
-    hls.loadSource(url);hls.attachMedia(vid);
-    hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hideLoader();vid.play().catch(function(){});buildQ();});
-    hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
-    hls.on(Hls.Events.ERROR,function(e,d){
-      if(d.fatal){
-        if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur);},8000);}
-        else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}
-        else{retryT=setTimeout(function(){load(cur);},5000);}
-      }
-    });
-  }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
-    vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
-  }else{hideLoader();toast('المتصفح لا يدعم البث');}
+  var type=CH[idx].t||'hls';
+  if(type==='iframe'){
+    // تشغيل iframe
+    if(hls){hls.destroy();hls=null;}
+    vid.removeAttribute('src');vid.load();
+    vid.style.display='none';
+    iframeWrap.style.display='block';
+    showLoader('جاري تحميل '+CH[idx].n+'...');
+    iframePlayer.src=CH[idx].u;
+    setTimeout(function(){hideLoader();},3000);
+    qBtn.classList.remove('manual');
+    qm.innerHTML='';
+  } else {
+    // تشغيل HLS
+    iframeWrap.style.display='none';
+    iframePlayer.src='';
+    vid.style.display='block';
+    if(hls){hls.destroy();hls=null;}
+    vid.removeAttribute('src');vid.load();
+    qBtn.classList.remove('manual');
+    showLoader('جاري تحميل '+CH[idx].n+'...');
+    var url=CH[idx].u;
+    if(Hls.isSupported()){
+      hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:0,autoLevelEnabled:false,capLevelToPlayerSize:false});
+      hls.loadSource(url);hls.attachMedia(vid);
+      hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hideLoader();vid.play().catch(function(){});buildQ();});
+      hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
+      hls.on(Hls.Events.ERROR,function(e,d){
+        if(d.fatal){
+          if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur);},8000);}
+          else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}
+          else{retryT=setTimeout(function(){load(cur);},5000);}
+        }
+      });
+    }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
+      vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
+    }else{hideLoader();toast('المتصفح لا يدعم البث');}
+  }
 }
 
 function buildQ(){
@@ -305,10 +318,10 @@ function toggleQ(){
   qm.classList.toggle('open');
   if(qm.classList.contains('open')){updateQActive();setTimeout(function(){var r=qm.getBoundingClientRect();if(r.right>window.innerWidth){qm.style.right='0';qm.style.left='auto';}else if(r.left<0){qm.style.left='0';qm.style.right='auto';}},0);}
 }
-function togglePlay(){vid.paused?vid.play():vid.pause();}
+function togglePlay(){if(CH[cur]&&CH[cur].t==='iframe')return;vid.paused?vid.play():vid.pause();}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
 function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElementById('mute-btn').textContent=v==0?'🔇':'🔊';document.getElementById('vs').value=v;localStorage.setItem('vol',v);}
-function skip(s){vid.currentTime+=s;}
+function skip(s){if(CH[cur]&&CH[cur].t==='iframe')return;vid.currentTime+=s;}
 function toggleFullscreen(){if(document.fullscreenElement){document.exitFullscreen();}else{pw.requestFullscreen&&pw.requestFullscreen();}}
 
 var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0,txStart=0;
@@ -333,7 +346,7 @@ function doRotate(){
   dblHintTimer=setTimeout(function(){dblHint.classList.remove('show');},1500);
 }
 document.addEventListener('touchend',function(e){
-  if(e.target.closest('#controls-overlay')||e.target.closest('#channels')||e.target.closest('#add-ch')||e.target.closest('.modal')||e.target.closest('#qm')||e.target.closest('#speed-badge'))return;
+  if(e.target.closest('#controls-overlay')||e.target.closest('#channels')||e.target.closest('#add-ch')||e.target.closest('.modal')||e.target.closest('#qm')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
   if(isSwiping)return;
   var now=Date.now();
   if(now-lastTap<350){lastTap=0;clearTimeout(dblTimer);dblTimer=null;doRotate();}
@@ -344,14 +357,14 @@ document.addEventListener('touchend',function(e){
 },{passive:true});
 var hideCtrlT=null;
 pw.addEventListener('touchstart',function(e){
-  if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge'))return;
+  if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
   var t=e.touches[0];txStart=t.clientX;tyStart=t.clientY;isSwiping=false;
   var rect=pw.getBoundingClientRect();
   swType=(t.clientX-rect.left)>(rect.width/2)?'vol':'brightness';
   swStartY=t.clientY;swStartVal=swType==='vol'?vid.volume:brightness;
 },{passive:true});
 pw.addEventListener('touchmove',function(e){
-  if(!swType||e.target.closest('#controls-overlay'))return;
+  if(!swType||e.target.closest('#controls-overlay')||e.target.closest('#iframe-wrap'))return;
   var t=e.touches[0];var dy=tyStart-t.clientY;
   if(!isSwiping&&Math.abs(dy)>12)isSwiping=true;
   if(!isSwiping)return;
@@ -361,7 +374,7 @@ pw.addEventListener('touchmove',function(e){
 },{passive:true});
 pw.addEventListener('touchend',function(){swType=null;setTimeout(function(){isSwiping=false;},50);},{passive:true});
 pw.addEventListener('click',function(e){
-  if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge'))return;
+  if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
   pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);
   hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
 });
@@ -373,7 +386,7 @@ function saveChannel(){
   var url=document.getElementById('ch-url').value.trim();
   var idx=parseInt(document.getElementById('ch-idx').value)-1;
   if(!name||!url){toast('أدخل الاسم والرابط');return;}
-  var ch={n:name,u:url};
+  var ch={n:name,u:url,t:'hls'};
   if(idx>=0&&idx<CH.length)CH[idx]=ch;else CH.push(ch);
   localStorage.setItem('channels',JSON.stringify(CH));
   buildChannels();toggleAdd();
