@@ -8,190 +8,158 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif}
 
-/* الحاوية الرئيسية */
+/* الحاوي الرئيسي */
 #app{display:flex;flex-direction:column;width:100%;height:100%;}
+#player-wrap{flex:1;position:relative;user-select:none;min-height:0;}
+video{width:100%;height:100%;display:block;background:#000;}
 
-/* مشغل الفيديو */
-#player-wrap{
-  flex:1;min-height:0;
-  position:relative;user-select:none;
-  overflow:visible;
-}
-video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
+/* قياسات الفيديو */
+video.fit-contain {object-fit:contain;}
+video.fit-cover   {object-fit:cover;}
+video.fit-short   {object-fit:contain;transform:scaleY(0.75);}
 
-/* طبقة الإضاءة */
 #brightness-layer{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4;}
 
-/* spinner */
-#loader{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,.7);z-index:10;}
+#loader{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,.75);z-index:10;}
 #loader .spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.15);border-top-color:#0f0;border-radius:50%;animation:spin .8s linear infinite;}
 #loader span{color:rgba(255,255,255,.7);font-size:13px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* عنوان القناة */
-#ch-title{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;z-index:6;display:none;}
+#ch-title{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;z-index:6;display:none;}
 
 /* مؤشر السحب */
-#swipe-indicator{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:14px 22px;display:none;flex-direction:column;align-items:center;gap:8px;z-index:20;pointer-events:none;min-width:130px;}
-#swipe-indicator.show{display:flex;}
-#swipe-icon{font-size:26px;}
-#swipe-label{font-size:12px;color:rgba(255,255,255,.7);}
-#swipe-bar-wrap{width:100%;height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;}
-#swipe-bar{height:100%;background:#0f0;border-radius:3px;}
+#swipe-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:14px 22px;display:none;flex-direction:column;align-items:center;gap:8px;z-index:20;pointer-events:none;min-width:130px;}
+#swipe-ind.show{display:flex;}
+#si-icon{font-size:26px;}
+#si-bar-bg{width:100%;height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;}
+#si-bar{height:100%;background:#0f0;border-radius:3px;}
+#si-label{font-size:12px;color:rgba(255,255,255,.75);}
 
 /* مؤشر الضغط المزدوج */
 #dbl-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:15;opacity:0;transition:opacity .3s;}
-#dbl-hint span{background:rgba(0,0,0,.7);color:#fff;font-size:14px;padding:10px 20px;border-radius:20px;border:1px solid rgba(255,255,255,.2);}
+#dbl-hint span{background:rgba(0,0,0,.75);color:#fff;font-size:15px;padding:12px 26px;border-radius:22px;border:1px solid rgba(255,255,255,.2);}
 #dbl-hint.show{opacity:1;}
 
-/* شريط التحكم - مهم: overflow visible لإظهار قائمة الجودة */
+/* شريط التحكم */
 #controls-overlay{
-  position:absolute;
-  bottom:0;left:0;right:0;
+  position:absolute;bottom:0;left:0;right:0;
   background:linear-gradient(transparent,rgba(0,0,0,.92));
-  padding:32px 14px 10px;
-  display:flex;align-items:center;gap:8px;
-  opacity:0;transition:opacity .3s;pointer-events:none;
-  z-index:100;
-  overflow:visible;
+  padding:30px 10px 10px;
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+  opacity:0;transition:opacity .3s;pointer-events:none;z-index:8;
 }
-#player-wrap:hover #controls-overlay,
-#player-wrap.show-ctrl #controls-overlay{
-  opacity:1;pointer-events:auto;
-}
+#player-wrap.show-ctrl #controls-overlay{opacity:1;pointer-events:auto;}
 
 .ctrl-btn{
-  background:rgba(255,255,255,.12);border:none;color:#fff;
+  background:rgba(255,255,255,.1);border:none;color:#fff;
   padding:8px 13px;border-radius:6px;cursor:pointer;font-size:13px;
   backdrop-filter:blur(6px);transition:.2s;white-space:nowrap;flex-shrink:0;
 }
-.ctrl-btn:hover{background:rgba(255,255,255,.3);}
+.ctrl-btn:hover{background:rgba(255,255,255,.28);}
 
-#vol-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+#vol-wrap{display:flex;align-items:center;gap:5px;flex-shrink:0;}
 #vol-slider{-webkit-appearance:none;appearance:none;width:65px;height:4px;border-radius:2px;background:rgba(255,255,255,.3);outline:none;cursor:pointer;}
 #vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#0f0;cursor:pointer;}
 
-/* فاصل مرن يدفع الجودة لليسار */
-#flex-gap{flex:1;}
+/* زر القياسات - يظهر نصه الحالي */
+#size-btn{min-width:52px;text-align:center;}
 
-/* قائمة الجودة - تظهر للأعلى دائماً */
-#quality-wrap{
-  position:relative;
-  flex-shrink:0;
-}
-#quality-btn{}
+/* قائمة الجودة - تظهر للأعلى دائماً، تبقى داخل الشاشة */
+#quality-wrap{position:relative;flex-shrink:0;}
 #quality-menu{
   position:absolute;
   bottom:calc(100% + 6px);
-  left:50%;
-  transform:translateX(-50%);
-  background:rgba(10,10,10,.97);
-  border:1px solid #333;
-  border-radius:10px;
-  display:none;
-  flex-direction:column;
-  min-width:110px;
-  max-height:55vh;
-  overflow-y:auto;
+  right:0;
+  background:rgba(8,8,8,.97);border:1px solid #2a2a2a;border-radius:8px;
+  display:none;flex-direction:column;
+  min-width:100px;max-height:180px;overflow-y:auto;
   z-index:9999;
-  box-shadow:0 -4px 20px rgba(0,0,0,.8);
+  /* منع الخروج من الشاشة */
+  max-width:90vw;
 }
-#quality-menu.open{display:flex;}
 #quality-menu button{
   background:none;border:none;color:#fff;
-  padding:11px 16px;cursor:pointer;
-  text-align:center;font-size:13px;white-space:nowrap;
+  padding:10px 16px;cursor:pointer;text-align:center;font-size:13px;white-space:nowrap;
 }
 #quality-menu button:hover{background:rgba(255,255,255,.08);}
-#quality-menu button.active{color:#0f0;font-weight:700;}
+#quality-menu button.active{color:#0f0;}
 
 /* شريط القنوات */
-#channels{
-  height:80px;flex-shrink:0;
-  background:#030303;display:flex;gap:5px;
-  padding:10px;overflow-x:auto;align-items:center;
-  border-top:1px solid #111;
-}
-@media (orientation:landscape) and (max-height:500px){
-  #channels{display:none;}
-  #player-wrap{height:100%;}
-}
-#channels::-webkit-scrollbar{height:4px;}
-#channels::-webkit-scrollbar-thumb{background:#222;border-radius:2px;}
-.ch-btn{
-  min-width:78px;height:52px;background:#0a0a0a;border:1px solid #1a1a1a;
-  color:#bbb;font-size:11px;font-weight:700;border-radius:8px;
-  cursor:pointer;transition:.2s;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-}
+#channels-bar{height:80px;background:#030303;display:flex;gap:5px;padding:10px;overflow-x:auto;align-items:center;border-top:1px solid #111;flex-shrink:0;}
+#channels-bar::-webkit-scrollbar{height:4px;}
+#channels-bar::-webkit-scrollbar-thumb{background:#222;border-radius:2px;}
+.ch-btn{min-width:80px;height:55px;background:#0a0a0a;border:1px solid #1a1a1a;color:#bbb;font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;transition:.2s;flex-shrink:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;}
 .ch-btn:hover{background:#151515;border-color:#0f0;color:#fff;}
 .ch-btn.on{background:#0f0;color:#000;border-color:#0f0;}
 
-/* باقي العناصر */
+/* زر إضافة قناة */
 #add-ch{position:fixed;top:10px;left:10px;z-index:1000;background:rgba(0,0,0,.7);border:1px solid #333;color:#0f0;font-size:13px;padding:8px 14px;border-radius:7px;cursor:pointer;}
+
+/* المودال */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:none;align-items:center;justify-content:center;}
 .modal-box{background:#0a0a0a;border:1px solid #222;border-radius:14px;padding:26px;width:92%;max-width:500px;}
 .modal-box h2{color:#fff;margin-bottom:16px;font-size:17px;}
 .modal-box input,.modal-box select{width:100%;padding:11px;margin:6px 0;background:#111;border:1px solid #2a2a2a;border-radius:7px;color:#fff;font-size:13px;}
-.modal-box button{padding:11px 24px;background:#0f0;color:#000;border:none;border-radius:7px;cursor:pointer;font-weight:700;margin-top:12px;font-size:13px;}
+.modal-box .mbtn{padding:11px 24px;background:#0f0;color:#000;border:none;border-radius:7px;cursor:pointer;font-weight:700;margin-top:12px;font-size:13px;}
 .modal-box .cancel{background:#1a1a1a;color:#fff;margin-right:8px;}
 .row{display:flex;gap:8px;}
 .row input{flex:1;}
+
 .status{position:fixed;top:10px;right:10px;z-index:1000;color:#0f0;font-size:12px;background:rgba(0,0,0,.75);padding:7px 14px;border-radius:7px;display:none;}
 #err-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:9999;}
 </style>
 </head>
 <body>
-<div id="app">
-
 <button id="add-ch" onclick="toggleAdd()">+ قناة</button>
-<div class="status" id="status">● جاري البث</div>
+<div class="status" id="status">◉ جاري البث</div>
 <div id="err-toast"></div>
 
 <div class="modal" id="add-modal" onclick="if(event.target===this)toggleAdd()">
   <div class="modal-box">
     <h2>➕ إضافة / تعديل قناة</h2>
     <input id="ch-name" placeholder="اسم القناة">
-    <input id="ch-url" placeholder="رابط البث (m3u8)">
+    <input id="ch-url"  placeholder="رابط البث (m3u8)">
     <select id="ch-type"><option value="hls">HLS (.m3u8)</option><option value="auto">كشف تلقائي</option></select>
-    <div class="row"><input id="ch-idx" placeholder="رقم القناة" type="number" min="1"></div>
+    <div class="row"><input id="ch-idx" placeholder="رقم القناة للتعديل" type="number" min="1"></div>
     <div style="margin-top:8px">
-      <button onclick="saveChannel()">حفظ القناة</button>
-      <button class="cancel" onclick="toggleAdd()">إلغاء</button>
+      <button class="mbtn" onclick="saveChannel()">حفظ القناة</button>
+      <button class="mbtn cancel" onclick="toggleAdd()">إلغاء</button>
     </div>
   </div>
 </div>
 
-<div id="player-wrap">
-  <video id="vid" playsinline webkit-playsinline></video>
-  <div id="brightness-layer"></div>
-  <div id="loader"><div class="spinner"></div><span id="loader-txt">جاري التحميل...</span></div>
-  <div id="ch-title"></div>
-  <div id="swipe-indicator">
-    <div id="swipe-icon">🔊</div>
-    <div id="swipe-bar-wrap"><div id="swipe-bar" style="width:100%"></div></div>
-    <div id="swipe-label">الصوت</div>
-  </div>
-  <div id="dbl-hint"><span id="dbl-txt">دوران الشاشة</span></div>
+<div id="app">
+  <div id="player-wrap">
+    <video id="vid" class="fit-contain" playsinline webkit-playsinline></video>
+    <div id="brightness-layer"></div>
+    <div id="loader"><div class="spinner"></div><span id="loader-txt">جاري التحميل...</span></div>
+    <div id="ch-title"></div>
 
-  <div id="controls-overlay">
-    <button class="ctrl-btn" onclick="togglePlay()">⏯️</button>
-    <div id="vol-wrap">
-      <button class="ctrl-btn" onclick="toggleMute()" id="mute-btn">🔊</button>
-      <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)">
+    <div id="swipe-ind">
+      <div id="si-icon">🔊</div>
+      <div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div>
+      <div id="si-label">الصوت</div>
     </div>
-    <button class="ctrl-btn" onclick="skip(-10)">⏪</button>
-    <button class="ctrl-btn" onclick="skip(10)">⏩</button>
-    <button class="ctrl-btn" onclick="toggleFullscreen()">⛶</button>
-    <div id="flex-gap"></div>
-    <div id="quality-wrap">
-      <button class="ctrl-btn" id="quality-btn" onclick="toggleQuality()">جودة</button>
-      <div id="quality-menu"></div>
+
+    <div id="dbl-hint"><span id="dbl-txt">⟳</span></div>
+
+    <div id="controls-overlay">
+      <button class="ctrl-btn" onclick="togglePlay()">⏯️</button>
+      <div id="vol-wrap">
+        <button class="ctrl-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
+        <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)">
+      </div>
+      <button class="ctrl-btn" onclick="skip(-10)">⏪</button>
+      <button class="ctrl-btn" onclick="skip(10)">⏩</button>
+      <button class="ctrl-btn" id="size-btn" onclick="cycleSize()" title="قياس الفيديو">↕ ملء</button>
+      <button class="ctrl-btn" onclick="toggleFullscreen()" style="margin-right:auto">⛶</button>
+      <div id="quality-wrap">
+        <button class="ctrl-btn" onclick="toggleQuality()">جودة</button>
+        <div id="quality-menu"></div>
+      </div>
     </div>
   </div>
-</div>
-
-<div id="channels"></div>
+  <div id="channels-bar"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
@@ -223,40 +191,53 @@ const DEFAULT_CHANNELS=[
 ];
 
 let CH=JSON.parse(localStorage.getItem('channels'))||DEFAULT_CHANNELS;
-let hlsPlayer=null,cur=-1,retryTimer=null;
-const vid=document.getElementById('vid');
-const qMenu=document.getElementById('quality-menu');
-const loader=document.getElementById('loader');
-const loaderTxt=document.getElementById('loader-txt');
-const chTitle=document.getElementById('ch-title');
-const dblHint=document.getElementById('dbl-hint');
-const dblTxt=document.getElementById('dbl-txt');
-const swipeInd=document.getElementById('swipe-indicator');
-const swipeIcon=document.getElementById('swipe-icon');
-const swipeBar=document.getElementById('swipe-bar');
-const swipeLabel=document.getElementById('swipe-label');
-const brightnessLayer=document.getElementById('brightness-layer');
-const pw=document.getElementById('player-wrap');
-const lastCh=parseInt(localStorage.getItem('lastCh'));
+let hlsPlayer=null, cur=-1, retryTimer=null;
+const vid       = document.getElementById('vid');
+const qMenu     = document.getElementById('quality-menu');
+const loader    = document.getElementById('loader');
+const loaderTxt = document.getElementById('loader-txt');
+const chTitle   = document.getElementById('ch-title');
+const dblHint   = document.getElementById('dbl-hint');
+const dblTxt    = document.getElementById('dbl-txt');
+const swipeInd  = document.getElementById('swipe-ind');
+const siIcon    = document.getElementById('si-icon');
+const siBar     = document.getElementById('si-bar');
+const siLabel   = document.getElementById('si-label');
+const brightL   = document.getElementById('brightness-layer');
+const pw        = document.getElementById('player-wrap');
+const sizeBtn   = document.getElementById('size-btn');
+const lastCh    = parseInt(localStorage.getItem('lastCh'));
 
-let brightness=parseFloat(localStorage.getItem('brightness'))||0;
-brightnessLayer.style.opacity=brightness;
+// ─── إضاءة ───
+let brightness = parseFloat(localStorage.getItem('brightness'))||0;
+brightL.style.opacity = brightness;
 
-function applyBrightness(v){
-  brightness=Math.max(0,Math.min(0.85,v));
-  brightnessLayer.style.opacity=brightness;
-  localStorage.setItem('brightness',brightness);
+// ─── قياسات الفيديو ───
+const SIZES = [
+  {cls:'fit-contain', label:'↕ ملء'},
+  {cls:'fit-cover',   label:'⛶ كامل'},
+  {cls:'fit-short',   label:'↕ مضغوط'}
+];
+let sizeIdx = parseInt(localStorage.getItem('sizeIdx'))||0;
+function applySize(){
+  vid.className = SIZES[sizeIdx].cls;
+  sizeBtn.textContent = SIZES[sizeIdx].label;
+  localStorage.setItem('sizeIdx', sizeIdx);
 }
+applySize();
+function cycleSize(){
+  sizeIdx = (sizeIdx+1) % SIZES.length;
+  applySize();
+}
+
+// ─── مساعدات ───
 function showLoader(txt){loader.style.display='flex';loaderTxt.textContent=txt||'جاري التحميل...';}
 function hideLoader(){loader.style.display='none';}
-function toast(msg,isErr=true){
-  const t=document.getElementById('err-toast');
-  t.textContent=msg;t.style.background=isErr?'#a00':'#080';
-  t.style.display='block';setTimeout(()=>t.style.display='none',4000);
-}
+function toast(msg,isErr=true){const t=document.getElementById('err-toast');t.textContent=msg;t.style.background=isErr?'#a00':'#080';t.style.display='block';setTimeout(()=>t.style.display='none',4000);}
 
+// ─── قنوات ───
 function buildChannels(){
-  const box=document.getElementById('channels');
+  const box=document.getElementById('channels-bar');
   box.innerHTML='';
   CH.forEach((c,i)=>{
     const b=document.createElement('button');
@@ -281,16 +262,26 @@ function load(idx){
   vid.removeAttribute('src');vid.load();
   const url=CH[idx].u;
   if(Hls.isSupported()){
-    hlsPlayer=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:-1});
+    hlsPlayer=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,
+      manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,
+      levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:-1});
     hlsPlayer.loadSource(url);
     hlsPlayer.attachMedia(vid);
     hlsPlayer.on(Hls.Events.MANIFEST_PARSED,()=>{hideLoader();vid.play().catch(()=>{});buildQuality();});
     hlsPlayer.on(Hls.Events.FRAG_BUFFERED,()=>hideLoader());
     hlsPlayer.on(Hls.Events.ERROR,(e,d)=>{
       if(d.fatal){
-        if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hlsPlayer.startLoad();retryTimer=setTimeout(()=>load(cur),8000);}
-        else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hlsPlayer.recoverMediaError();}
-        else{toast('خطأ، إعادة المحاولة...');retryTimer=setTimeout(()=>load(cur),5000);}
+        if(d.type===Hls.ErrorTypes.NETWORK_ERROR){
+          loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';
+          loader.style.display='flex';
+          hlsPlayer.startLoad();
+          retryTimer=setTimeout(()=>load(cur),8000);
+        }else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){
+          hlsPlayer.recoverMediaError();
+        }else{
+          toast('خطأ، إعادة المحاولة...');
+          retryTimer=setTimeout(()=>load(cur),5000);
+        }
       }
     });
   }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
@@ -298,31 +289,42 @@ function load(idx){
     vid.addEventListener('loadeddata',()=>hideLoader(),{once:true});
     vid.addEventListener('error',()=>{toast('خطأ في البث');retryTimer=setTimeout(()=>load(cur),5000);},{once:true});
     vid.play().catch(()=>{});
-  }else{hideLoader();toast('المتصفح لا يدعم البث');}
+  }else{
+    hideLoader();toast('المتصفح لا يدعم البث');
+  }
 }
 
+// ─── جودة ───
 function buildQuality(){
   qMenu.innerHTML='';
   if(!hlsPlayer)return;
   const auto=document.createElement('button');
   auto.textContent='تلقائي';
-  auto.onclick=()=>{hlsPlayer.currentLevel=-1;closeQuality();};
+  auto.onclick=()=>{hlsPlayer.currentLevel=-1;qMenu.style.display='none';};
   if(hlsPlayer.currentLevel===-1)auto.classList.add('active');
   qMenu.appendChild(auto);
   hlsPlayer.levels.forEach((lv,i)=>{
     const b=document.createElement('button');
     b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
-    b.onclick=()=>{hlsPlayer.currentLevel=i;closeQuality();};
+    b.onclick=()=>{hlsPlayer.currentLevel=i;qMenu.style.display='none';};
     if(hlsPlayer.currentLevel===i)b.classList.add('active');
     qMenu.appendChild(b);
   });
 }
-
-function closeQuality(){qMenu.classList.remove('open');}
 function toggleQuality(){
-  qMenu.classList.toggle('open');
+  if(qMenu.style.display==='flex'){
+    qMenu.style.display='none';
+    return;
+  }
+  // تحديد الموضع: إذا تجاوزت الحافة اليسرى انقلها
+  qMenu.style.display='flex';
+  qMenu.style.right='';
+  qMenu.style.left='';
+  const r=qMenu.getBoundingClientRect();
+  if(r.left<0){qMenu.style.right='auto';qMenu.style.left='0';}
 }
 
+// ─── تحكم ───
 function togglePlay(){vid.paused?vid.play():vid.pause();}
 function toggleMute(){
   vid.muted=!vid.muted;
@@ -340,120 +342,128 @@ function toggleFullscreen(){
   document.fullscreenElement?document.exitFullscreen():pw.requestFullscreen?.();
 }
 
-// السحب: صوت (يمين) + إضاءة (يسار)
-let swipeType=null,swipeStartY=0,swipeStartVal=0,swipeTimer=null,isSwiping=false;
-
-function showSwipeIndicator(type,val){
-  clearTimeout(swipeTimer);
-  if(type==='vol'){
-    swipeIcon.textContent=val>0?'🔊':'🔇';
-    swipeLabel.textContent='الصوت '+Math.round(val*100)+'%';
-    swipeBar.style.width=(val*100)+'%';
-    swipeBar.style.background='#0f0';
-  }else{
-    swipeIcon.textContent='☀️';
-    swipeLabel.textContent='الإضاءة '+Math.round((1-val/0.85)*100)+'%';
-    swipeBar.style.width=((1-val/0.85)*100)+'%';
-    swipeBar.style.background='#fbbf24';
-  }
-  swipeInd.style.display='flex';swipeInd.classList.add('show');
-  swipeTimer=setTimeout(()=>{swipeInd.style.display='none';swipeInd.classList.remove('show');},1200);
-}
-
-// الضغط المزدوج = دوران الشاشة (يعمل من أي مكان)
-let lastTapTime=0,dblTapTimer=null,dblHintTimer=null;
-
+// ─── دوران الشاشة (ضغطتان) ───
+let dblHintTimer=null;
 async function doRotate(){
+  let msg='';
+  const wasFS=!!document.fullscreenElement;
   try{
+    // إذا لم يكن fullscreen ادخله أولاً ليسمح بـ lock
+    if(!wasFS) await pw.requestFullscreen();
+    await new Promise(r=>setTimeout(r,200));
     if(screen.orientation&&screen.orientation.lock){
       if(screen.orientation.type.startsWith('landscape')){
-        await screen.orientation.lock('portrait');
-        dblTxt.textContent='عودة للعمودي ⬆';
+        await screen.orientation.lock('portrait-primary');
+        msg='وضع عمودي ↑';
       }else{
-        await screen.orientation.lock('landscape');
-        dblTxt.textContent='وضع أفقي ⬔';
+        await screen.orientation.lock('landscape-primary');
+        msg='وضع أفقي ↔';
       }
     }else{
-      toggleFullscreen();
-      dblTxt.textContent='شاشة كاملة ⛶';
+      msg='شاشة كاملة ⛶';
     }
   }catch(e){
-    toggleFullscreen();
-    dblTxt.textContent='شاشة كاملة ⛶';
+    // إذا رفض المتصفح: اخرج من fullscreen وأبلغ
+    if(!wasFS && document.fullscreenElement) document.exitFullscreen();
+    msg='اضغط على ⛶ أولاً';
   }
+  dblTxt.textContent=msg;
   dblHint.classList.add('show');
   clearTimeout(dblHintTimer);
-  dblHintTimer=setTimeout(()=>dblHint.classList.remove('show'),1500);
+  dblHintTimer=setTimeout(()=>dblHint.classList.remove('show'),1800);
 }
 
-document.addEventListener('touchend',e=>{
-  if(e.target.closest('#controls-overlay')||e.target.closest('#channels')||
-     e.target.closest('#add-ch')||e.target.closest('.modal')||e.target.closest('#quality-menu'))return;
-  if(isSwiping)return;
-  const now=Date.now();
-  if(now-lastTapTime<350){
-    lastTapTime=0;
-    clearTimeout(dblTapTimer);dblTapTimer=null;
-    doRotate();
-  }else{
-    lastTapTime=now;
-    clearTimeout(dblTapTimer);
-    if(e.target.closest('#player-wrap')){
-      dblTapTimer=setTimeout(()=>{
-        pw.classList.add('show-ctrl');
-        clearTimeout(hideCtrlTimer);
-        hideCtrlTimer=setTimeout(()=>pw.classList.remove('show-ctrl'),3000);
-      },350);
-    }
-  }
-},{passive:true});
+// ─── السحب: صوت (يمين) + إضاءة (يسار) ───
+let swType=null,swStartY=0,swStartVal=0,swTimer=null;
+let txStart=0,tyStart=0,isSwiping=false;
 
-let hideCtrlTimer;
+function showSwipe(type,val){
+  clearTimeout(swTimer);
+  if(type==='vol'){
+    siIcon.textContent=val>0?'🔊':'🔇';
+    siLabel.textContent='الصوت '+Math.round(val*100)+'%';
+    siBar.style.width=(val*100)+'%';
+    siBar.style.background='#0f0';
+  }else{
+    siIcon.textContent='☀️';
+    siLabel.textContent='الإضاءة '+Math.round((1-val/0.85)*100)+'%';
+    siBar.style.width=((1-val/0.85)*100)+'%';
+    siBar.style.background='#fbbf24';
+  }
+  swipeInd.style.display='flex';
+  swTimer=setTimeout(()=>swipeInd.style.display='none',1300);
+}
+
+let dblTapTimer=null;
+let hideCtrlTimer=null;
 
 pw.addEventListener('touchstart',e=>{
   if(e.target.closest('#controls-overlay')||e.target.closest('#loader'))return;
-  const touch=e.touches[0];
+  const t=e.touches[0];
+  txStart=t.clientX; tyStart=t.clientY; isSwiping=false;
   const rect=pw.getBoundingClientRect();
-  const x=touch.clientX-rect.left;
-  swipeType=x>(rect.width/2)?'vol':'brightness';
-  swipeStartY=touch.clientY;
-  swipeStartVal=swipeType==='vol'?vid.volume:brightness;
-  isSwiping=false;
+  swType=(t.clientX-rect.left)>(rect.width/2)?'vol':'brightness';
+  swStartY=t.clientY;
+  swStartVal=swType==='vol'?vid.volume:brightness;
 },{passive:true});
 
 pw.addEventListener('touchmove',e=>{
-  if(!swipeType||e.target.closest('#controls-overlay'))return;
-  const touch=e.touches[0];
-  const dy=swipeStartY-touch.clientY;
-  if(!isSwiping&&Math.abs(dy)>12)isSwiping=true;
-  if(!isSwiping)return;
+  if(e.target.closest('#controls-overlay'))return;
+  const t=e.touches[0];
+  const dy=tyStart-t.clientY;
+  const dx=Math.abs(t.clientX-txStart);
+  if(!isSwiping&&Math.abs(dy)>12&&Math.abs(dy)>dx){
+    isSwiping=true;
+    if(dblTapTimer){clearTimeout(dblTapTimer);dblTapTimer=null;}
+  }
+  if(!isSwiping||!swType)return;
   const rect=pw.getBoundingClientRect();
-  const delta=dy/rect.height;
-  if(swipeType==='vol'){
-    const v=Math.max(0,Math.min(1,swipeStartVal+delta));
-    setVolume(v);showSwipeIndicator('vol',v);
+  const delta=(swStartY-t.clientY)/rect.height;
+  if(swType==='vol'){
+    const nv=Math.max(0,Math.min(1,swStartVal+delta));
+    setVolume(nv);showSwipe('vol',nv);
   }else{
-    const v=Math.max(0,Math.min(0.85,swipeStartVal-delta));
-    applyBrightness(v);showSwipeIndicator('brightness',v);
+    const nb=Math.max(0,Math.min(0.85,swStartVal-delta));
+    brightness=nb;brightL.style.opacity=nb;
+    localStorage.setItem('brightness',nb);
+    showSwipe('brightness',nb);
   }
 },{passive:true});
 
-pw.addEventListener('touchend',()=>{swipeType=null;setTimeout(()=>isSwiping=false,50);},{passive:true});
+pw.addEventListener('touchend',e=>{
+  if(e.target.closest('#controls-overlay')||e.target.closest('#loader'))return;
+  const wasSwiping=isSwiping;
+  isSwiping=false;swType=null;
+  if(wasSwiping)return;
+  // ضغطتان
+  if(dblTapTimer){
+    clearTimeout(dblTapTimer);dblTapTimer=null;
+    doRotate();
+  }else{
+    dblTapTimer=setTimeout(()=>{
+      dblTapTimer=null;
+      pw.classList.add('show-ctrl');
+      clearTimeout(hideCtrlTimer);
+      hideCtrlTimer=setTimeout(()=>pw.classList.remove('show-ctrl'),3000);
+    },280);
+  }
+},{passive:true});
 
+// إخفاء قائمة الجودة عند الضغط خارجها
+document.addEventListener('touchstart',e=>{
+  if(!e.target.closest('#quality-wrap'))qMenu.style.display='none';
+},{passive:true});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#quality-wrap'))qMenu.style.display='none';
+});
+
+// إظهار شريط التحكم بالنقر
 pw.addEventListener('click',e=>{
   if(e.target.closest('#controls-overlay')||e.target.closest('#loader'))return;
   pw.classList.add('show-ctrl');
   clearTimeout(hideCtrlTimer);
   hideCtrlTimer=setTimeout(()=>pw.classList.remove('show-ctrl'),3000);
 });
-
-// إغلاق قائمة الجودة عند النقر خارجها
-document.addEventListener('click',e=>{
-  if(!e.target.closest('#quality-wrap'))closeQuality();
-});
-document.addEventListener('touchend',e=>{
-  if(!e.target.closest('#quality-wrap'))closeQuality();
-},{passive:true});
 
 function toggleAdd(){
   const m=document.getElementById('add-modal');
@@ -465,7 +475,7 @@ function saveChannel(){
   const idx=parseInt(document.getElementById('ch-idx').value)-1;
   if(!name||!url){toast('أدخل الاسم والرابط');return;}
   const ch={n:name,u:url};
-  if(idx>=0)CH[idx]=ch;else CH.push(ch);
+  if(idx>=0&&idx<CH.length)CH[idx]=ch;else CH.push(ch);
   localStorage.setItem('channels',JSON.stringify(CH));
   buildChannels();toggleAdd();
   load(idx>=0&&idx<CH.length?idx:CH.length-1);
@@ -478,6 +488,7 @@ document.addEventListener('keydown',e=>{
     case ' ':e.preventDefault();togglePlay();break;
     case 'f':case 'F':toggleFullscreen();break;
     case 'm':case 'M':toggleMute();break;
+    case 's':case 'S':cycleSize();break;
     case 'ArrowRight':skip(10);break;
     case 'ArrowLeft':skip(-10);break;
     case 'ArrowUp':setVolume(Math.min(1,(vid.volume+.1).toFixed(1)));break;
@@ -486,8 +497,8 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-const savedVol=localStorage.getItem('vol');
-if(savedVol){vid.volume=parseFloat(savedVol);document.getElementById('vol-slider').value=savedVol;}
+const sv=localStorage.getItem('vol');
+if(sv){vid.volume=parseFloat(sv);document.getElementById('vol-slider').value=sv;}
 
 buildChannels();
 load(!isNaN(lastCh)&&lastCh>=0&&lastCh<CH.length?lastCh:0);
