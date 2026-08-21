@@ -75,18 +75,18 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
   <div class="modal-box">
     <h2>إضافة / تعديل قناة</h2>
     <input id="ch-name" placeholder="اسم القناة">
-    <input id="ch-url" placeholder="رابط البث (m3u8 أو iframe)">
+    <input id="ch-url" placeholder="رابط البث">
     <select id="ch-type"><option value="hls">HLS (.m3u8)</option><option value="iframe">Iframe (صفحة ويب)</option></select>
     <div class="row"><input id="ch-idx" placeholder="رقم القناة للتعديل" type="number" min="1"></div>
     <div style="margin-top:8px">
-      <button class="mbtn" onclick="saveChannel()">حفظ القناة</button>
+      <button class="mbtn" onclick="saveChannel()">حفظ</button>
       <button class="mbtn cancel" onclick="toggleAdd()">إلغاء</button>
     </div>
   </div>
 </div>
 <div id="player-wrap">
   <video id="vid" class="fc" playsinline webkit-playsinline></video>
-  <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe></div>
+  <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay; encrypted-media"></iframe></div>
   <div id="brightness-layer"></div>
   <div id="loader"><div class="spinner"></div><span id="loader-txt">جاري التحميل...</span></div>
   <div id="ch-title"></div>
@@ -159,7 +159,8 @@ var CH=JSON.parse(localStorage.getItem('channels')||'null')||[
   {n:"Zain TV 1",u:"https://zaintv1.zaintvpro.workers.dev/live/z1.m3u8",t:"hls"},
   {n:"Zain TV 2",u:"https://zaintv1.zaintvpro.workers.dev/live/z2.m3u8",t:"hls"},
   {n:"Sigma TV",u:"https://sl3.sigmatv.com/hls/live.m3u8",t:"hls"},
-  // بث beIN MAX بواسطة iframe - التي تعمل
+  // beIN MAX - iframe
+  {n:"beIN MAX 1",u:"https://pl.koralive1.cc/albaplayer/1bein1/?serv=2",t:"iframe"},
   {n:"beIN MAX S3",u:"https://cup.tvkora-online.net/albaplayer/sports-1/",t:"iframe"},
   {n:"beIN MAX S4",u:"https://go.pkju.online/albaplayer/max1/",t:"iframe"},
   {n:"beIN MAX S5",u:"https://live.bb6.dpdns.org/albaplayer/ch1/",t:"iframe"}
@@ -209,19 +210,8 @@ function runSpeedTest(){
   var t0=Date.now();
   fetch(url,{cache:'no-store'})
     .then(function(res){return res.blob();})
-    .then(function(blob){
-      var elapsed=(Date.now()-t0)/1000;
-      var bytes=blob.size||200000;
-      var bps=(bytes*8)/elapsed;
-      showSpeed(bps);
-      isTesting=false;
-    })
-    .catch(function(){
-      urlIdx++;
-      isTesting=false;
-      if(urlIdx<TEST_URLS.length){setTimeout(runSpeedTest,500);}
-      else{urlIdx=0;speedBadge.textContent='📶 خطأ';speedBadge.style.color='#f44';}
-    });
+    .then(function(blob){var elapsed=(Date.now()-t0)/1000;var bytes=blob.size||200000;var bps=(bytes*8)/elapsed;showSpeed(bps);isTesting=false;})
+    .catch(function(){urlIdx++;isTesting=false;if(urlIdx<TEST_URLS.length){setTimeout(runSpeedTest,500);}else{urlIdx=0;speedBadge.textContent='📶 خطأ';speedBadge.style.color='#f44';}});
 }
 function showSpeed(bps){
   var lbl;
@@ -263,24 +253,16 @@ function load(idx){
   document.querySelectorAll('.ch').forEach(function(b,i){b.classList.toggle('on',i===idx);});
   chTitle.textContent=CH[idx].n;chTitle.style.display='block';
   var type=CH[idx].t||'hls';
-
-  // إذا iframe
   if(type==='iframe'){
     if(hls){hls.destroy();hls=null;}
     vid.style.display='none';
     iframeWrap.style.display='block';
     showLoader('جاري تحميل '+CH[idx].n+'...');
     iframePlayer.src='';
-    setTimeout(function(){
-      iframePlayer.src=CH[idx].u;
-      hideLoader();
-    },300);
-    // إخفاء زر الجودة للقنوات iframe
+    setTimeout(function(){iframePlayer.src=CH[idx].u;hideLoader();},300);
     qm.innerHTML='';
     return;
   }
-
-  // HLS عادي
   vid.style.display='block';
   iframeWrap.style.display='none';
   iframePlayer.src='';
@@ -291,8 +273,7 @@ function load(idx){
   var url=CH[idx].u;
   if(Hls.isSupported()){
     hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:0,autoLevelEnabled:false,capLevelToPlayerSize:false});
-    hls.loadSource(url);
-    hls.attachMedia(vid);
+    hls.loadSource(url);hls.attachMedia(vid);
     hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hideLoader();vid.play().catch(function(){});buildQ();});
     hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
     hls.on(Hls.Events.ERROR,function(e,d){
@@ -331,10 +312,7 @@ function toggleQ(){
   qm.classList.toggle('open');
   if(qm.classList.contains('open')){updateQActive();setTimeout(function(){var r=qm.getBoundingClientRect();if(r.right>window.innerWidth){qm.style.right='0';qm.style.left='auto';}else if(r.left<0){qm.style.left='0';qm.style.right='auto';}},0);}
 }
-function togglePlay(){
-  if(CH[cur]&&CH[cur].t==='iframe')return;
-  vid.paused?vid.play():vid.pause();
-}
+function togglePlay(){if(CH[cur]&&CH[cur].t==='iframe')return;vid.paused?vid.play():vid.pause();}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
 function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElementById('mute-btn').textContent=v==0?'🔇':'🔊';document.getElementById('vs').value=v;localStorage.setItem('vol',v);}
 function skip(s){if(CH[cur]&&CH[cur].t==='iframe')return;vid.currentTime+=s;}
