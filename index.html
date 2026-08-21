@@ -17,29 +17,9 @@ html,body{
 #app{display:flex;flex-direction:column;width:100%;height:100%;}
 #player-wrap{flex:1;min-height:0;position:relative;user-select:none;overflow:hidden;}
 video{width:100%;height:100%;display:block;background:#000;}
-
-/* عادي: كل الفيديو ظاهر مع هوامش سوداء */
 video.fc{object-fit:contain;}
-
-/* ملء: يمتد باتجاه عرضي فقط ليملأ العرض - لكن بدون قطع أعلى/أسفل */
-video.fv{
-  object-fit:contain;
-  width:100%;
-  height:auto;
-  position:absolute;
-  top:50%;
-  left:0;
-  transform:translateY(-50%) scaleX(1.18);
-  transform-origin:center center;
-}
-
-/* مضغوط: هامش أسود أعلى وأسفل */
-video.ff{
-  object-fit:contain;
-  transform:scaleY(0.72);
-  transform-origin:center center;
-}
-
+video.fv{object-fit:fill;}
+video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center center;}
 #brightness-layer{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4;}
 #loader{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,.75);z-index:10;}
 #loader .spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.15);border-top-color:#0f0;border-radius:50%;animation:spin .8s linear infinite;}
@@ -167,7 +147,7 @@ var CH=JSON.parse(localStorage.getItem('channels')||'null')||[
   {n:"السنة النبوية",u:"https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8"}
 ];
 
-var hls=null,cur=-1,retryT=null;
+var hls=null,cur=-1,retryT=null,autoT=null;
 var vid=document.getElementById('vid');
 var qm=document.getElementById('qm');
 var qBtn=document.getElementById('q-btn');
@@ -191,27 +171,10 @@ var brightness=parseFloat(localStorage.getItem('brightness')||'0');
 brightL.style.opacity=brightness;
 
 // قياسات الفيديو
-// fc = عادي (contain - كل الفيديو ظاهر)
-// fv = ملء (يمتد عرضياً ليملأ الشاشة بدون قطع الشريط الإخباري)
-// ff = مضغوط (هامش أسود أعلى/أسفل)
-var ASPECTS=[
-  {cls:'fc', lbl:'↕ عادي'},
-  {cls:'fv', lbl:'⛶ ملء'},
-  {cls:'ff', lbl:'↔ مضغوط'}
-];
+var ASPECTS=[{cls:'fc',lbl:'↕ عادي'},{cls:'fv',lbl:'⛶ ملء'},{cls:'ff',lbl:'↔ مضغوط'}];
 var aspectIdx=parseInt(localStorage.getItem('aspectIdx')||'0');
-function applyAspect(i){
-  // إزالة جميع التأثيرات السابقة
-  vid.style.cssText='';
-  vid.className=ASPECTS[i].cls;
-  fitBtn.textContent=ASPECTS[i].lbl;
-  fitBtn.classList.toggle('on',i!==0);
-  localStorage.setItem('aspectIdx',i);
-}
-function cycleAspect(){
-  aspectIdx=(aspectIdx+1)%ASPECTS.length;
-  applyAspect(aspectIdx);
-}
+function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[i].lbl;fitBtn.classList.toggle('on',i!==0);localStorage.setItem('aspectIdx',i);}
+function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
 
 // سرعة النت
@@ -219,7 +182,6 @@ var speedOn=localStorage.getItem('speedOn')!=='0';
 function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);}
 function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}
 applySpeedVis();
-
 var lastBytes=0,lastBytesTime=Date.now();
 function updateSpeed(){
   try{
@@ -263,6 +225,7 @@ function load(idx){
   if(idx<0||idx>=CH.length)return;
   cur=idx;localStorage.setItem('lastCh',idx);
   if(retryT){clearTimeout(retryT);retryT=null;}
+  if(autoT){clearTimeout(autoT);autoT=null;}
   document.querySelectorAll('.ch').forEach(function(b,i){b.classList.toggle('on',i===idx);});
   chTitle.textContent=CH[idx].n;chTitle.style.display='block';
   showLoader('جاري تحميل '+CH[idx].n+'...');
@@ -270,12 +233,36 @@ function load(idx){
   vid.removeAttribute('src');vid.load();
   lastBytes=0;lastBytesTime=Date.now();
   try{performance.clearResourceTimings();}catch(e){}
+  // إعادة زر الجودة للحيادي
   qBtn.classList.remove('manual');
   var url=CH[idx].u;
   if(Hls.isSupported()){
-    hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:0});
+    hls=new Hls({
+      enableWorker:true,
+      maxBufferLength:30,
+      maxMaxBufferLength:60,
+      manifestLoadingMaxRetry:5,
+      manifestLoadingRetryDelay:1000,
+      levelLoadingMaxRetry:5,
+      fragLoadingMaxRetry:5,
+      // يبدأ بأدنى جودة
+      startLevel:0,
+      // بعد التحميل يرجع تلقائياً
+      abrEwmaDefaultEstimate:500000
+    });
     hls.loadSource(url);hls.attachMedia(vid);
-    hls.on(Hls.Events.MANIFEST_PARSED,function(){hideLoader();vid.play().catch(function(){});buildQ();});
+    hls.on(Hls.Events.MANIFEST_PARSED,function(){
+      hideLoader();
+      vid.play().catch(function(){});
+      buildQ();
+      // بعد 3 ثواني: انتقل لتلقائي إذا لم يختر المستخدم يدوياً
+      autoT=setTimeout(function(){
+        if(!qBtn.classList.contains('manual')){
+          hls.currentLevel=-1; // تلقائي
+          updateQActive();
+        }
+      },3000);
+    });
     hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
     hls.on(Hls.Events.ERROR,function(e,d){
       if(d.fatal){
@@ -298,16 +285,29 @@ function buildQ(){
   if(!hls)return;
   var auto=document.createElement('button');
   auto.textContent='تلقائي';
-  auto.onclick=function(){hls.currentLevel=-1;qBtn.classList.remove('manual');updateQActive();closeQ();};
+  auto.onclick=function(){
+    hls.currentLevel=-1;
+    qBtn.classList.remove('manual');
+    updateQActive();
+    closeQ();
+  };
   qm.appendChild(auto);
   hls.levels.forEach(function(lv,i){
     var b=document.createElement('button');
     b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
-    b.onclick=function(){hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};
+    b.onclick=function(){
+      // عند الاختيار اليدوي: ألغ التلقائي
+      if(autoT){clearTimeout(autoT);autoT=null;}
+      hls.currentLevel=i;
+      qBtn.classList.add('manual');
+      updateQActive();
+      closeQ();
+    };
     qm.appendChild(b);
   });
   updateQActive();
 }
+
 function updateQActive(){
   var btns=qm.querySelectorAll('button');
   btns.forEach(function(b,i){
@@ -333,7 +333,6 @@ function toggleFullscreen(){
   else{pw.requestFullscreen&&pw.requestFullscreen();}
 }
 
-// سحب
 var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0,txStart=0;
 function showSwipe(type,val){
   clearTimeout(swTimer);
@@ -343,7 +342,6 @@ function showSwipe(type,val){
   swTimer=setTimeout(function(){swInd.style.display='none';},1200);
 }
 
-// ضغطتان = دوران
 var lastTap=0,dblTimer=null,dblHintTimer=null;
 function doRotate(){
   var p=Promise.resolve();
