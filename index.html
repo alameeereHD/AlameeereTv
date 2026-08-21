@@ -76,10 +76,10 @@ video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center cente
     <h2>إضافة / تعديل قناة</h2>
     <input id="ch-name" placeholder="اسم القناة">
     <input id="ch-url" placeholder="رابط البث">
-    <select id="ch-type"><option value="hls">HLS (.m3u8)</option><option value="iframe">Iframe (صفحة ويب)</option></select>
+    <select id="ch-type"><option value="hls">HLS (.m3u8)</option><option value="iframe">Iframe</option></select>
     <div class="row"><input id="ch-idx" placeholder="رقم القناة للتعديل" type="number" min="1"></div>
     <div style="margin-top:8px">
-      <button class="mbtn" onclick="saveChannel()">حفظ</button>
+      <button class="mbtn" onclick="saveChannel()">حفظ القناة</button>
       <button class="mbtn cancel" onclick="toggleAdd()">إلغاء</button>
     </div>
   </div>
@@ -159,11 +159,12 @@ var CH=JSON.parse(localStorage.getItem('channels')||'null')||[
   {n:"Zain TV 1",u:"https://zaintv1.zaintvpro.workers.dev/live/z1.m3u8",t:"hls"},
   {n:"Zain TV 2",u:"https://zaintv1.zaintvpro.workers.dev/live/z2.m3u8",t:"hls"},
   {n:"Sigma TV",u:"https://sl3.sigmatv.com/hls/live.m3u8",t:"hls"},
-  // beIN MAX - iframe
-  {n:"beIN MAX 1",u:"https://pl.koralive1.cc/albaplayer/1bein1/?serv=2",t:"iframe"},
   {n:"beIN MAX S3",u:"https://cup.tvkora-online.net/albaplayer/sports-1/",t:"iframe"},
   {n:"beIN MAX S4",u:"https://go.pkju.online/albaplayer/max1/",t:"iframe"},
-  {n:"beIN MAX S5",u:"https://live.bb6.dpdns.org/albaplayer/ch1/",t:"iframe"}
+  {n:"beIN MAX S5",u:"https://live.bb6.dpdns.org/albaplayer/ch1/",t:"iframe"},
+  // جديدتين
+  {n:"beIN MAX Live",u:"https://pl.koralive1.cc/albaplayer/1bein1/?serv=2",t:"iframe"},
+  {n:"Match Live",u:"https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4741712&key=9f39972b67d6ce22189507d008acwc26",t:"iframe"}
 ];
 
 var hls=null,cur=-1,retryT=null;
@@ -197,36 +198,24 @@ function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspect
 applyAspect(aspectIdx);
 
 var speedOn=localStorage.getItem('speedOn')!=='0';
-var isTesting=false;
-var speedInterval=null;
+var isTesting=false,speedInterval=null;
 var TEST_URLS=['https://httpbin.org/bytes/200000','https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'];
 var urlIdx=0;
 function runSpeedTest(){
   if(isTesting)return;
-  isTesting=true;
-  speedBadge.textContent='📶 ...';
-  speedBadge.style.color='#aaa';
+  isTesting=true;speedBadge.textContent='📶 ...';speedBadge.style.color='#aaa';
   var url=TEST_URLS[urlIdx%TEST_URLS.length]+'?r='+Date.now();
   var t0=Date.now();
-  fetch(url,{cache:'no-store'})
-    .then(function(res){return res.blob();})
-    .then(function(blob){var elapsed=(Date.now()-t0)/1000;var bytes=blob.size||200000;var bps=(bytes*8)/elapsed;showSpeed(bps);isTesting=false;})
-    .catch(function(){urlIdx++;isTesting=false;if(urlIdx<TEST_URLS.length){setTimeout(runSpeedTest,500);}else{urlIdx=0;speedBadge.textContent='📶 خطأ';speedBadge.style.color='#f44';}});
+  fetch(url,{cache:'no-store'}).then(function(r){return r.blob();}).then(function(b){
+    var elapsed=(Date.now()-t0)/1000;var bps=((b.size||200000)*8)/elapsed;showSpeed(bps);isTesting=false;
+  }).catch(function(){urlIdx++;isTesting=false;if(urlIdx<TEST_URLS.length)setTimeout(runSpeedTest,500);else{urlIdx=0;speedBadge.textContent='📶 خطأ';speedBadge.style.color='#f44';}});
 }
 function showSpeed(bps){
-  var lbl;
-  if(bps>=1000000)lbl='📶 '+(bps/1000000).toFixed(1)+' Mbps';
-  else if(bps>=1000)lbl='📶 '+Math.round(bps/1000)+' Kbps';
-  else lbl='📶 '+Math.round(bps)+' bps';
+  var lbl=bps>=1000000?'📶 '+(bps/1000000).toFixed(1)+' Mbps':bps>=1000?'📶 '+Math.round(bps/1000)+' Kbps':'📶 '+Math.round(bps)+' bps';
   speedBadge.textContent=lbl;
   speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';
 }
-function applySpeedVis(){
-  speedBadge.classList.toggle('hide',!speedOn);
-  spdBtn.classList.toggle('on',speedOn);
-  if(speedOn){if(!speedInterval){runSpeedTest();speedInterval=setInterval(runSpeedTest,15000);}}
-  else{if(speedInterval){clearInterval(speedInterval);speedInterval=null;}}
-}
+function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);if(speedOn){if(!speedInterval){runSpeedTest();speedInterval=setInterval(runSpeedTest,15000);}}else{if(speedInterval){clearInterval(speedInterval);speedInterval=null;}}}
 function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}
 applySpeedVis();
 
@@ -235,13 +224,11 @@ function hideLoader(){loader.style.display='none';}
 function toast(msg){var t=document.getElementById('err-toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},4000);}
 
 function buildChannels(){
-  var box=document.getElementById('channels');
-  box.innerHTML='';
+  var box=document.getElementById('channels');box.innerHTML='';
   CH.forEach(function(c,i){
     var b=document.createElement('button');
     b.className='ch'+(c.t==='iframe'?' iframe-ch':'');
-    b.textContent=c.n;
-    b.onclick=function(){load(i);};
+    b.textContent=c.n;b.onclick=function(){load(i);};
     box.appendChild(b);
   });
 }
@@ -259,7 +246,7 @@ function load(idx){
     iframeWrap.style.display='block';
     showLoader('جاري تحميل '+CH[idx].n+'...');
     iframePlayer.src='';
-    setTimeout(function(){iframePlayer.src=CH[idx].u;hideLoader();},300);
+    setTimeout(function(){iframePlayer.src=CH[idx].u;hideLoader();},400);
     qm.innerHTML='';
     return;
   }
@@ -279,8 +266,8 @@ function load(idx){
     hls.on(Hls.Events.ERROR,function(e,d){
       if(d.fatal){
         if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur);},8000);}
-        else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}
-        else{retryT=setTimeout(function(){load(cur);},5000);}
+        else if(d.type===Hls.ErrorTypes.MEDIA_ERROR)hls.recoverMediaError();
+        else retryT=setTimeout(function(){load(cur);},5000);
       }
     });
   }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
@@ -290,41 +277,32 @@ function load(idx){
 
 function buildQ(){
   qm.innerHTML='';if(!hls)return;
-  var autoBtn=document.createElement('button');
-  autoBtn.textContent='تلقائي';
-  autoBtn.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};
-  qm.appendChild(autoBtn);
+  var a=document.createElement('button');a.textContent='تلقائي';
+  a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};
+  qm.appendChild(a);
   hls.levels.forEach(function(lv,i){
     var b=document.createElement('button');
     b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
     b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};
     qm.appendChild(b);
-  });
-  updateQActive();
+  });updateQActive();
 }
-function updateQActive(){
-  if(!hls)return;
-  var btns=qm.querySelectorAll('button');
-  btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});
-}
+function updateQActive(){if(!hls)return;var btns=qm.querySelectorAll('button');btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
 function closeQ(){qm.classList.remove('open');}
-function toggleQ(){
-  qm.classList.toggle('open');
-  if(qm.classList.contains('open')){updateQActive();setTimeout(function(){var r=qm.getBoundingClientRect();if(r.right>window.innerWidth){qm.style.right='0';qm.style.left='auto';}else if(r.left<0){qm.style.left='0';qm.style.right='auto';}},0);}
+function toggleQ(){qm.classList.toggle('open');if(qm.classList.contains('open')){updateQActive();setTimeout(function(){var r=qm.getBoundingClientRect();if(r.right>window.innerWidth){qm.style.right='0';qm.style.left='auto';}else if(r.left<0){qm.style.left='0';qm.style.right='auto';}},0);}
 }
 function togglePlay(){if(CH[cur]&&CH[cur].t==='iframe')return;vid.paused?vid.play():vid.pause();}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
 function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElementById('mute-btn').textContent=v==0?'🔇':'🔊';document.getElementById('vs').value=v;localStorage.setItem('vol',v);}
 function skip(s){if(CH[cur]&&CH[cur].t==='iframe')return;vid.currentTime+=s;}
-function toggleFullscreen(){if(document.fullscreenElement){document.exitFullscreen();}else{pw.requestFullscreen&&pw.requestFullscreen();}}
+function toggleFullscreen(){if(document.fullscreenElement)document.exitFullscreen();else pw.requestFullscreen&&pw.requestFullscreen();}
 
 var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0,txStart=0;
 function showSwipe(type,val){
   clearTimeout(swTimer);
   if(type==='vol'){siIcon.textContent=val>0?'🔊':'🔇';siLabel.textContent='الصوت '+Math.round(val*100)+'%';siBar.style.width=(val*100)+'%';siBar.style.background='#0f0';}
   else{siIcon.textContent='☀️';siLabel.textContent='الإضاءة '+Math.round((1-val/0.85)*100)+'%';siBar.style.width=((1-val/0.85)*100)+'%';siBar.style.background='#fbbf24';}
-  swInd.style.display='flex';
-  swTimer=setTimeout(function(){swInd.style.display='none';},1200);
+  swInd.style.display='flex';swTimer=setTimeout(function(){swInd.style.display='none';},1200);
 }
 var lastTap=0,dblTimer=null,dblHintTimer=null;
 function doRotate(){
@@ -344,10 +322,7 @@ document.addEventListener('touchend',function(e){
   if(isSwiping)return;
   var now=Date.now();
   if(now-lastTap<350){lastTap=0;clearTimeout(dblTimer);dblTimer=null;doRotate();}
-  else{
-    lastTap=now;clearTimeout(dblTimer);
-    if(e.target.closest('#player-wrap')){dblTimer=setTimeout(function(){pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);},350);}
-  }
+  else{lastTap=now;clearTimeout(dblTimer);if(e.target.closest('#player-wrap')){dblTimer=setTimeout(function(){pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);},350);}}
 },{passive:true});
 var hideCtrlT=null;
 pw.addEventListener('touchstart',function(e){
