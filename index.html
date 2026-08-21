@@ -9,192 +9,69 @@
 html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif}
 #player-wrap{width:100%;height:calc(100% - 80px);position:relative;user-select:none;}
 video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
-
-/* طبقة الإضاءة */
-#brightness-layer{
-  position:absolute;inset:0;background:#000;
-  opacity:0;pointer-events:none;z-index:4;
-  transition:opacity .1s;
-}
-
-#loader{
-  position:absolute;inset:0;display:none;
-  flex-direction:column;align-items:center;justify-content:center;gap:12px;
-  background:rgba(0,0,0,.7);z-index:10;
-}
-#loader .spinner{
-  width:48px;height:48px;
-  border:4px solid rgba(255,255,255,.15);
-  border-top-color:#0f0;border-radius:50%;
-  animation:spin .8s linear infinite;
-}
+#brightness-layer{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4;transition:opacity .1s;}
+#loader{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,.7);z-index:10;}
+#loader .spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.15);border-top-color:#0f0;border-radius:50%;animation:spin .8s linear infinite;}
 #loader span{color:rgba(255,255,255,.7);font-size:13px;}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-#ch-title{
-  position:absolute;top:12px;right:12px;
-  background:rgba(0,0,0,.6);backdrop-filter:blur(6px);
-  padding:5px 14px;border-radius:20px;
-  font-size:12px;font-weight:700;color:#fff;z-index:6;display:none;
-}
-
-/* مؤشر الصوت والإضاءة */
-#swipe-indicator{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  background:rgba(0,0,0,.75);backdrop-filter:blur(8px);
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:16px;padding:14px 22px;
-  display:none;flex-direction:column;
-  align-items:center;gap:8px;
-  z-index:20;pointer-events:none;
-  min-width:130px;
-}
+#ch-title{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;z-index:6;display:none;}
+#swipe-indicator{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:14px 22px;display:none;flex-direction:column;align-items:center;gap:8px;z-index:20;pointer-events:none;min-width:130px;}
 #swipe-indicator.show{display:flex;}
 #swipe-icon{font-size:26px;}
 #swipe-label{font-size:12px;color:rgba(255,255,255,.7);}
-#swipe-bar-wrap{
-  width:100%;height:6px;
-  background:rgba(255,255,255,.15);
-  border-radius:3px;overflow:hidden;
-}
-#swipe-bar{
-  height:100%;background:#0f0;
-  border-radius:3px;transition:width .1s;
-}
-#swipe-indicator.brightness #swipe-bar{background:#fbbf24;}
-
-/* مؤشر الضغط المزدوج */
-#dbl-hint{
-  position:absolute;inset:0;display:flex;
-  align-items:center;justify-content:center;
-  pointer-events:none;z-index:15;
-  opacity:0;transition:opacity .3s;
-}
-#dbl-hint span{
-  background:rgba(0,0,0,.7);color:#fff;
-  font-size:14px;padding:10px 20px;border-radius:20px;
-  border:1px solid rgba(255,255,255,.2);
-}
+#swipe-bar-wrap{width:100%;height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;}
+#swipe-bar{height:100%;background:#0f0;border-radius:3px;transition:width .1s;}
+#dbl-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:15;opacity:0;transition:opacity .3s;}
+#dbl-hint span{background:rgba(0,0,0,.7);color:#fff;font-size:14px;padding:10px 20px;border-radius:20px;border:1px solid rgba(255,255,255,.2);}
 #dbl-hint.show{opacity:1;}
-
-#controls-overlay{
-  position:absolute;bottom:0;left:0;right:0;
-  background:linear-gradient(transparent,rgba(0,0,0,.9));
-  padding:28px 14px 12px;display:flex;align-items:center;gap:10px;
-  opacity:0;transition:opacity .3s;pointer-events:none;
-  z-index:8;
-}
-#player-wrap:hover #controls-overlay,
-#player-wrap.show-ctrl #controls-overlay{opacity:1;pointer-events:auto;}
-.ctrl-btn{
-  background:rgba(255,255,255,.1);border:none;color:#fff;
-  padding:9px 16px;border-radius:6px;cursor:pointer;font-size:13px;
-  backdrop-filter:blur(6px);transition:.2s;
-}
+#controls-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.9));padding:28px 14px 12px;display:flex;align-items:center;gap:10px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:8;}
+#player-wrap:hover #controls-overlay,#player-wrap.show-ctrl #controls-overlay{opacity:1;pointer-events:auto;}
+.ctrl-btn{background:rgba(255,255,255,.1);border:none;color:#fff;padding:9px 16px;border-radius:6px;cursor:pointer;font-size:13px;backdrop-filter:blur(6px);transition:.2s;}
 .ctrl-btn:hover{background:rgba(255,255,255,.3);}
 #vol-wrap{display:flex;align-items:center;gap:6px;}
-#vol-slider{
-  -webkit-appearance:none;appearance:none;
-  width:70px;height:4px;border-radius:2px;
-  background:rgba(255,255,255,.3);outline:none;cursor:pointer;
-}
-#vol-slider::-webkit-slider-thumb{
-  -webkit-appearance:none;width:14px;height:14px;
-  border-radius:50%;background:#0f0;cursor:pointer;
-}
+#vol-slider{-webkit-appearance:none;appearance:none;width:70px;height:4px;border-radius:2px;background:rgba(255,255,255,.3);outline:none;cursor:pointer;}
+#vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#0f0;cursor:pointer;}
 #quality-wrap{position:relative;}
-#quality-menu{
-  position:absolute;
-  bottom:calc(100% + 8px);
-  right:0;
-  background:rgba(8,8,8,.96);border:1px solid #333;border-radius:8px;
-  display:none;flex-direction:column;
-  min-width:120px;max-height:200px;overflow-y:auto;
-  z-index:999;
-}
-#quality-menu button{
-  background:none;border:none;color:#fff;padding:11px 16px;
-  cursor:pointer;text-align:center;font-size:13px;
-}
+#quality-menu{position:absolute;bottom:calc(100% + 8px);right:0;background:rgba(8,8,8,.96);border:1px solid #333;border-radius:8px;display:none;flex-direction:column;min-width:120px;max-height:200px;overflow-y:auto;z-index:999;}
+#quality-menu button{background:none;border:none;color:#fff;padding:11px 16px;cursor:pointer;text-align:center;font-size:13px;}
 #quality-menu button:hover{background:rgba(255,255,255,.08);}
 #quality-menu button.active{color:#0f0;}
-
-#channels{
-  height:80px;background:#030303;display:flex;gap:5px;
-  padding:10px;overflow-x:auto;align-items:center;border-top:1px solid #111;
-}
+#channels{height:80px;background:#030303;display:flex;gap:5px;padding:10px;overflow-x:auto;align-items:center;border-top:1px solid #111;}
 #channels::-webkit-scrollbar{height:4px;}
 #channels::-webkit-scrollbar-thumb{background:#222;border-radius:2px;}
-.ch-btn{
-  min-width:82px;height:55px;background:#0a0a0a;border:1px solid #1a1a1a;
-  color:#bbb;font-size:12px;font-weight:700;border-radius:8px;
-  cursor:pointer;transition:.2s;flex-shrink:0;display:flex;
-  align-items:center;justify-content:center;flex-direction:column;
-}
+.ch-btn{min-width:82px;height:55px;background:#0a0a0a;border:1px solid #1a1a1a;color:#bbb;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;transition:.2s;flex-shrink:0;display:flex;align-items:center;justify-content:center;flex-direction:column;}
 .ch-btn:hover{background:#151515;border-color:#0f0;color:#fff;}
 .ch-btn.on{background:#0f0;color:#000;border-color:#0f0;}
-#add-ch{
-  position:fixed;top:10px;left:10px;z-index:1000;
-  background:rgba(0,0,0,.7);border:1px solid #333;
-  color:#0f0;font-size:13px;padding:8px 14px;border-radius:7px;cursor:pointer;
-}
-.modal{
-  position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;
-  display:none;align-items:center;justify-content:center;
-}
-.modal-box{
-  background:#0a0a0a;border:1px solid #222;border-radius:14px;
-  padding:26px;width:92%;max-width:500px;
-}
+#add-ch{position:fixed;top:10px;left:10px;z-index:1000;background:rgba(0,0,0,.7);border:1px solid #333;color:#0f0;font-size:13px;padding:8px 14px;border-radius:7px;cursor:pointer;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:none;align-items:center;justify-content:center;}
+.modal-box{background:#0a0a0a;border:1px solid #222;border-radius:14px;padding:26px;width:92%;max-width:500px;}
 .modal-box h2{color:#fff;margin-bottom:16px;font-size:17px;}
-.modal-box input,.modal-box select{
-  width:100%;padding:11px;margin:6px 0;background:#111;
-  border:1px solid #2a2a2a;border-radius:7px;color:#fff;font-size:13px;
-}
-.modal-box button{
-  padding:11px 24px;background:#0f0;color:#000;border:none;
-  border-radius:7px;cursor:pointer;font-weight:700;margin-top:12px;font-size:13px;
-}
+.modal-box input,.modal-box select{width:100%;padding:11px;margin:6px 0;background:#111;border:1px solid #2a2a2a;border-radius:7px;color:#fff;font-size:13px;}
+.modal-box button{padding:11px 24px;background:#0f0;color:#000;border:none;border-radius:7px;cursor:pointer;font-weight:700;margin-top:12px;font-size:13px;}
 .modal-box .cancel{background:#1a1a1a;color:#fff;margin-right:8px;}
 .row{display:flex;gap:8px;}
 .row input{flex:1;}
-.status{
-  position:fixed;top:10px;right:10px;z-index:1000;color:#0f0;
-  font-size:12px;background:rgba(0,0,0,.75);padding:7px 14px;border-radius:7px;display:none;
-}
-#err-toast{
-  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
-  background:#a00;color:#fff;padding:10px 20px;border-radius:8px;
-  font-size:13px;display:none;z-index:9999;
-}
+.status{position:fixed;top:10px;right:10px;z-index:1000;color:#0f0;font-size:12px;background:rgba(0,0,0,.75);padding:7px 14px;border-radius:7px;display:none;}
+#err-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:9999;}
 </style>
 </head>
 <body>
-
 <button id="add-ch" onclick="toggleAdd()">+ قناة</button>
 <div class="status" id="status">● جاري البث</div>
 <div id="err-toast"></div>
-
 <div class="modal" id="add-modal" onclick="if(event.target===this)toggleAdd()">
   <div class="modal-box">
     <h2>➕ إضافة / تعديل قناة</h2>
     <input id="ch-name" placeholder="اسم القناة">
     <input id="ch-url" placeholder="رابط البث (m3u8)">
-    <select id="ch-type">
-      <option value="hls">HLS (.m3u8)</option>
-      <option value="auto">كشف تلقائي</option>
-    </select>
-    <div class="row">
-      <input id="ch-idx" placeholder="رقم القناة" type="number" min="1">
-    </div>
+    <select id="ch-type"><option value="hls">HLS (.m3u8)</option><option value="auto">كشف تلقائي</option></select>
+    <div class="row"><input id="ch-idx" placeholder="رقم القناة" type="number" min="1"></div>
     <div style="margin-top:8px">
       <button onclick="saveChannel()">حفظ القناة</button>
       <button class="cancel" onclick="toggleAdd()">إلغاء</button>
     </div>
   </div>
 </div>
-
 <div id="player-wrap">
   <video id="vid" playsinline webkit-playsinline></video>
   <div id="brightness-layer"></div>
@@ -205,7 +82,7 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
     <div id="swipe-bar-wrap"><div id="swipe-bar" style="width:100%"></div></div>
     <div id="swipe-label">الصوت</div>
   </div>
-  <div id="dbl-hint"><span>دوران الشاشة ⬕</span></div>
+  <div id="dbl-hint"><span id="dbl-txt">دوران الشاشة</span></div>
   <div id="controls-overlay">
     <button class="ctrl-btn" onclick="togglePlay()">⏯️</button>
     <div id="vol-wrap">
@@ -221,35 +98,33 @@ video{width:100%;height:100%;display:block;object-fit:contain;background:#000}
     </div>
   </div>
 </div>
-
 <div id="channels"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
-const DEFAULT_CHANNELS = [
-  {n:"الجزيرة",         u:"https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8"},
-  {n:"الجزيرة مباشر",   u:"https://live-hls-web-ajm-gcp.thehlive.com/AJM/index.m3u8"},
-  {n:"الجزيرة وثائق",   u:"https://live-hls-web-ajd-gcp.thehlive.com/AJD/index.m3u8"},
-  {n:"العربية",          u:"https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8"},
-  {n:"الحدث",           u:"https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8"},
-  {n:"سكاي نيوز",       u:"https://stream.skynewsarabia.com/hls/sna.m3u8"},
-  {n:"الكأس 1",         u:"https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8"},
-  {n:"الكأس 2",         u:"https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8"},
-  {n:"الكأس 3",         u:"https://liveeu-gcp.alkassdigital.net/alkass3-p/main.m3u8"},
-  {n:"الكأس 4",         u:"https://liveeu-gcp.alkassdigital.net/alkass4-p/main.m3u8"},
-  {n:"الكأس 5",         u:"https://liveeu-gcp.alkassdigital.net/alkass5-p/main.m3u8"},
-  {n:"الكأس 6",         u:"https://liveeu-gcp.alkassdigital.net/alkass6-p/main.m3u8"},
-  {n:"البحرين سبورت 1", u:"https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8"},
-  {n:"البحرين سبورت 2", u:"https://5c7b683162943.streamlock.net/live/ngrp:bahrainsportstwo_all/playlist.m3u8"},
-  {n:"العراقية رياضية",  u:"https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8"},
-  {n:"MBC 1",     u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2F3050%2Findex.m3u8%3Ftoken%3D%3D"},
-  {n:"MBC 2",     u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D"},
+const DEFAULT_CHANNELS=[
+  {n:"الجزيرة",u:"https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8"},
+  {n:"الجزيرة مباشر",u:"https://live-hls-web-ajm-gcp.thehlive.com/AJM/index.m3u8"},
+  {n:"الجزيرة وثائق",u:"https://live-hls-web-ajd-gcp.thehlive.com/AJD/index.m3u8"},
+  {n:"العربية",u:"https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8"},
+  {n:"الحدث",u:"https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8"},
+  {n:"سكاي نيوز",u:"https://stream.skynewsarabia.com/hls/sna.m3u8"},
+  {n:"الكأس 1",u:"https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8"},
+  {n:"الكأس 2",u:"https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8"},
+  {n:"الكأس 3",u:"https://liveeu-gcp.alkassdigital.net/alkass3-p/main.m3u8"},
+  {n:"الكأس 4",u:"https://liveeu-gcp.alkassdigital.net/alkass4-p/main.m3u8"},
+  {n:"الكأس 5",u:"https://liveeu-gcp.alkassdigital.net/alkass5-p/main.m3u8"},
+  {n:"الكأس 6",u:"https://liveeu-gcp.alkassdigital.net/alkass6-p/main.m3u8"},
+  {n:"البحرين سبورت 1",u:"https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8"},
+  {n:"البحرين سبورت 2",u:"https://5c7b683162943.streamlock.net/live/ngrp:bahrainsportstwo_all/playlist.m3u8"},
+  {n:"العراقية رياضية",u:"https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8"},
+  {n:"MBC 1",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2F3050%2Findex.m3u8%3Ftoken%3D%3D"},
+  {n:"MBC 2",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D"},
   {n:"MBC Action",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBCAction%2Findex.m3u8%3Ftoken%3D%3D"},
-  {n:"MBC Masr",  u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FsatMBCMASR%2Findex.m3u8%3Ftoken%3D%3D"},
+  {n:"MBC Masr",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FsatMBCMASR%2Findex.m3u8%3Ftoken%3D%3D"},
   {n:"OSN Action",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FOSNACTIONHD%2Findex.m3u8%3Ftoken%3D%3D"},
   {n:"beIN Drama",u:"https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fstream.woodfencepods.com%2Fpdf%2FIC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ%2Findex.m3u8%3Ftoken%3D%3D"},
-  {n:"القرآن الكريم", u:"https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8"},
-  {n:"السنة النبوية", u:"https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8"}
+  {n:"القرآن الكريم",u:"https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8"},
+  {n:"السنة النبوية",u:"https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8"}
 ];
 
 let CH=JSON.parse(localStorage.getItem('channels'))||DEFAULT_CHANNELS;
@@ -260,6 +135,7 @@ const loader=document.getElementById('loader');
 const loaderTxt=document.getElementById('loader-txt');
 const chTitle=document.getElementById('ch-title');
 const dblHint=document.getElementById('dbl-hint');
+const dblTxt=document.getElementById('dbl-txt');
 const swipeInd=document.getElementById('swipe-indicator');
 const swipeIcon=document.getElementById('swipe-icon');
 const swipeBar=document.getElementById('swipe-bar');
@@ -268,12 +144,13 @@ const brightnessLayer=document.getElementById('brightness-layer');
 const lastCh=parseInt(localStorage.getItem('lastCh'));
 
 let brightness=parseFloat(localStorage.getItem('brightness'))||0;
+brightnessLayer.style.opacity=brightness;
+
 function applyBrightness(v){
   brightness=Math.max(0,Math.min(0.85,v));
   brightnessLayer.style.opacity=brightness;
   localStorage.setItem('brightness',brightness);
 }
-applyBrightness(brightness);
 
 function showLoader(txt){loader.style.display='flex';loaderTxt.textContent=txt||'جاري التحميل...';}
 function hideLoader(){loader.style.display='none';}
@@ -319,7 +196,7 @@ function load(idx){
       if(d.fatal){
         if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hlsPlayer.startLoad();retryTimer=setTimeout(()=>load(cur),8000);}
         else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hlsPlayer.recoverMediaError();}
-        else{toast('خطأ في البث، إعادة المحاولة...');retryTimer=setTimeout(()=>load(cur),5000);}
+        else{toast('خطأ، إعادة المحاولة...');retryTimer=setTimeout(()=>load(cur),5000);}
       }
     });
   }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
@@ -366,109 +243,118 @@ function toggleFullscreen(){
   document.fullscreenElement?document.exitFullscreen():el.requestFullscreen?.();
 }
 
-// ===== السحب: صوت (يمين) + إضاءة (يسار) =====
+// ===== السحب =====
 let swipeType=null,swipeStartY=0,swipeStartVal=0,swipeTimer=null;
+let isSwiping=false;
 
 function showSwipeIndicator(type,val){
   clearTimeout(swipeTimer);
-  swipeInd.classList.remove('brightness');
   if(type==='vol'){
-    swipeInd.classList.remove('brightness');
     swipeIcon.textContent=val>0?'🔊':'🔇';
     swipeLabel.textContent='الصوت '+(Math.round(val*100))+'%';
     swipeBar.style.width=(val*100)+'%';
     swipeBar.style.background='#0f0';
   }else{
-    swipeInd.classList.add('brightness');
     swipeIcon.textContent='☀️';
-    swipeLabel.textContent='الإضاءة '+(Math.round((1-val)*100))+'%';
-    swipeBar.style.width=((1-val)*100)+'%';
+    swipeLabel.textContent='الإضاءة '+(Math.round((1-val/0.85)*100))+'%';
+    swipeBar.style.width=((1-val/0.85)*100)+'%';
     swipeBar.style.background='#fbbf24';
   }
-  swipeInd.classList.add('show');
   swipeInd.style.display='flex';
-  swipeTimer=setTimeout(()=>{
-    swipeInd.style.display='none';
-    swipeInd.classList.remove('show');
-  },1200);
+  swipeInd.classList.add('show');
+  swipeTimer=setTimeout(()=>{swipeInd.style.display='none';swipeInd.classList.remove('show');},1200);
 }
 
-const pw=document.getElementById('player-wrap');
-
-pw.addEventListener('touchstart',e=>{
-  if(e.target.closest('#controls-overlay')||e.target.closest('#loader'))return;
-  const touch=e.touches[0];
-  const rect=pw.getBoundingClientRect();
-  const x=touch.clientX-rect.left;
-  const isRight=x>(rect.width/2);
-  swipeType=isRight?'vol':'brightness';
-  swipeStartY=touch.clientY;
-  swipeStartVal=swipeType==='vol'?vid.volume:brightness;
-},{passive:true});
-
-pw.addEventListener('touchmove',e=>{
-  if(!swipeType)return;
-  if(e.target.closest('#controls-overlay'))return;
-  const touch=e.touches[0];
-  const dy=swipeStartY-touch.clientY;
-  const rect=pw.getBoundingClientRect();
-  const delta=dy/rect.height;
-  if(swipeType==='vol'){
-    const newVol=Math.max(0,Math.min(1,swipeStartVal+delta));
-    setVolume(newVol);
-    showSwipeIndicator('vol',newVol);
-  }else{
-    const newBr=Math.max(0,Math.min(0.85,swipeStartVal-delta));
-    applyBrightness(newBr);
-    showSwipeIndicator('brightness',newBr);
-  }
-},{passive:true});
-
-pw.addEventListener('touchend',e=>{
-  swipeType=null;
-},{passive:true});
-
-// ===== ضغطة مزدوجة = دوران الشاشة =====
+// ===== ضغطة مزدوجة =====
 let dblTapTimer=null,dblHintTimer=null;
 
-async function requestLandscape(){
+async function doRotate(){
   try{
     if(screen.orientation&&screen.orientation.lock){
       if(screen.orientation.type.startsWith('landscape')){
         await screen.orientation.lock('portrait');
-        dblHint.querySelector('span').textContent='عودة للعمودي ⬕';
+        dblTxt.textContent='عودة للعمودي ⬕';
       }else{
         await screen.orientation.lock('landscape');
-        dblHint.querySelector('span').textContent='وضع أفقي ⬕';
+        dblTxt.textContent='وضع أفقي ⭮';
       }
     }else{
+      // لا يدعم قفل الدوران: نفتح fullscreen
       toggleFullscreen();
-      dblHint.querySelector('span').textContent='شاشة كاملة ⛶';
+      dblTxt.textContent='شاشة كاملة ⛶';
     }
   }catch(e){
-    dblHint.querySelector('span').textContent='تحتاج إذن الدوران';
+    // متصفح يرفض قفل الدوران بدون fullscreen: نجرب fullscreen
+    toggleFullscreen();
+    dblTxt.textContent='شاشة كاملة ⛶';
   }
   dblHint.classList.add('show');
   clearTimeout(dblHintTimer);
   dblHintTimer=setTimeout(()=>dblHint.classList.remove('show'),1500);
 }
 
-let hideCtrlTimer;
-pw.addEventListener('touchend',e=>{
-  if(e.target.closest('#controls-overlay')||e.target.closest('#loader'))return;
-  if(swipeType)return;
-  if(dblTapTimer){
-    clearTimeout(dblTapTimer);dblTapTimer=null;
-    requestLandscape();
+// المستمعون على document ليمسك الضغط من أي مكان في الصفحة
+let lastTapTime=0;
+
+document.addEventListener('touchend',e=>{
+  // تجاهل النقر على الأزرار والإدخالات
+  if(e.target.closest('#controls-overlay')||e.target.closest('#channels')||e.target.closest('#add-ch')||e.target.closest('.modal'))return;
+  // تجاهل السحب
+  if(isSwiping)return;
+  const now=Date.now();
+  if(now-lastTapTime<350){
+    // ضغطة مزدوجة
+    lastTapTime=0;
+    clearTimeout(dblTapTimer);
+    dblTapTimer=null;
+    doRotate();
   }else{
-    dblTapTimer=setTimeout(()=>{
-      dblTapTimer=null;
-      pw.classList.add('show-ctrl');
-      clearTimeout(hideCtrlTimer);
-      hideCtrlTimer=setTimeout(()=>pw.classList.remove('show-ctrl'),3000);
-    },280);
+    lastTapTime=now;
+    clearTimeout(dblTapTimer);
+    // ضغطة أولى: إظهار التحكم فقط في المشغل
+    if(e.target.closest('#player-wrap')){
+      const pw=document.getElementById('player-wrap');
+      dblTapTimer=setTimeout(()=>{
+        pw.classList.add('show-ctrl');
+        clearTimeout(hideCtrlTimer);
+        hideCtrlTimer=setTimeout(()=>pw.classList.remove('show-ctrl'),3000);
+      },350);
+    }
   }
 },{passive:true});
+
+const pw=document.getElementById('player-wrap');
+let hideCtrlTimer;
+
+pw.addEventListener('touchstart',e=>{
+  if(e.target.closest('#controls-overlay')||e.target.closest('#loader'))return;
+  const touch=e.touches[0];
+  const rect=pw.getBoundingClientRect();
+  const x=touch.clientX-rect.left;
+  swipeType=x>(rect.width/2)?'vol':'brightness';
+  swipeStartY=touch.clientY;
+  swipeStartVal=swipeType==='vol'?vid.volume:brightness;
+  isSwiping=false;
+},{passive:true});
+
+pw.addEventListener('touchmove',e=>{
+  if(!swipeType||e.target.closest('#controls-overlay'))return;
+  const touch=e.touches[0];
+  const dy=swipeStartY-touch.clientY;
+  if(!isSwiping&&Math.abs(dy)>12){isSwiping=true;}
+  if(!isSwiping)return;
+  const rect=pw.getBoundingClientRect();
+  const delta=dy/rect.height;
+  if(swipeType==='vol'){
+    const v=Math.max(0,Math.min(1,swipeStartVal+delta));
+    setVolume(v);showSwipeIndicator('vol',v);
+  }else{
+    const v=Math.max(0,Math.min(0.85,swipeStartVal-delta));
+    applyBrightness(v);showSwipeIndicator('brightness',v);
+  }
+},{passive:true});
+
+pw.addEventListener('touchend',()=>{swipeType=null;setTimeout(()=>isSwiping=false,50);},{passive:true});
 
 pw.addEventListener('click',e=>{
   if(e.target.closest('#controls-overlay')||e.target.closest('#loader'))return;
@@ -485,7 +371,6 @@ function toggleAdd(){
   const m=document.getElementById('add-modal');
   m.style.display=m.style.display!=='flex'?'flex':'none';
 }
-
 function saveChannel(){
   const name=document.getElementById('ch-name').value.trim();
   const url=document.getElementById('ch-url').value.trim();
