@@ -37,39 +37,24 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 #vs::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#0f0;cursor:pointer;}
 #fg{flex:1;min-width:2px;}
 #qw{position:relative;flex-shrink:0;}
-/* قائمة الجودة - تظهر داخل الشاشة دائماً */
+/* قائمة الجودة: تفتح للأعلى داخل player-wrap وليس خارجه */
 #qm{
   position:fixed;
-  bottom:60px;
-  left:50%;
-  transform:translateX(-50%);
   background:rgba(10,10,10,.97);
   border:1px solid #333;
   border-radius:10px;
   display:none;
-  flex-direction:row;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:6px;
-  padding:10px;
-  min-width:200px;
-  max-width:90vw;
+  flex-direction:column;
+  min-width:110px;
+  max-height:200px;
+  overflow-y:auto;
   z-index:99999;
   box-shadow:0 -4px 20px rgba(0,0,0,.8);
 }
 #qm.open{display:flex;}
-#qm button{
-  background:rgba(255,255,255,.1);
-  border:1px solid #333;
-  color:#fff;
-  padding:8px 14px;
-  cursor:pointer;
-  text-align:center;
-  font-size:13px;
-  border-radius:6px;
-}
-#qm button:hover{background:rgba(255,255,255,.2);}
-#qm button.active{color:#0f0;font-weight:700;border-color:#0f0;background:rgba(0,200,0,.15);}
+#qm button{background:none;border:none;color:#fff;padding:10px 16px;cursor:pointer;text-align:center;font-size:13px;}
+#qm button:hover{background:rgba(255,255,255,.08);}
+#qm button.active{color:#0f0;font-weight:700;}
 #q-btn.manual{background:rgba(0,200,0,.2);color:#0f0;border:1px solid rgba(0,255,0,.35);}
 #ch-rows{flex-shrink:0;background:#030303;border-top:1px solid #111;display:flex;flex-direction:column;}
 .ch-row{height:80px;display:flex;align-items:center;border-bottom:1px solid #0a0a0a;}
@@ -133,13 +118,13 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
     <div id="qw"><button class="cb" id="q-btn" onclick="toggleQ()">جودة</button></div>
   </div>
 </div>
-<!-- قائمة الجودة خارج player-wrap لتكون دائماً مرئية -->
-<div id="qm"></div>
 <div id="ch-rows">
   <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-0"></div></div>
   <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-1"></div></div>
   <div class="ch-row"><div class="row-label"><span class="ico">🏆</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-2"></div></div>
 </div>
+<!-- قائمة الجودة خارج controls-overlay لتموضع صحيح -->
+<div id="qm"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
@@ -225,6 +210,7 @@ function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
 
+// Fullscreen
 var isFS=false;
 function doFullscreen(){
   if(isFS){exitFS();}else{enterFS();}
@@ -243,32 +229,18 @@ function exitFS(){
   isFS=false;
   app.classList.remove('fs');
   pw.classList.remove('fullscreen-mode');
+  closeQ();
   if(document.fullscreenElement)document.exitFullscreen().catch(function(){});
   if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();
 }
-document.addEventListener('fullscreenchange',function(){
-  if(!document.fullscreenElement&&isFS)exitFS();
-});
+document.addEventListener('fullscreenchange',function(){if(!document.fullscreenElement&&isFS)exitFS();});
 
 var speedOn=localStorage.getItem('speedOn')!=='0';
 var isTesting=false,speedInterval=null;
 var TEST_URLS=['https://httpbin.org/bytes/200000','https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'];
 var urlIdx=0;
-function runSpeedTest(){
-  if(isTesting)return;
-  isTesting=true;speedBadge.textContent='📡 ...';
-  var url=TEST_URLS[urlIdx%TEST_URLS.length]+'?r='+Date.now();
-  var t0=Date.now();
-  fetch(url,{cache:'no-store'}).then(function(r){return r.blob();}).then(function(b){
-    var elapsed=(Date.now()-t0)/1000;var bps=((b.size||200000)*8)/elapsed;
-    showSpeed(bps);isTesting=false;
-  }).catch(function(){urlIdx++;isTesting=false;});
-}
-function showSpeed(bps){
-  var lbl=bps>=1000000?'📡 '+(bps/1000000).toFixed(1)+' Mbps':'📡 '+Math.round(bps/1000)+' Kbps';
-  speedBadge.textContent=lbl;
-  speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';
-}
+function runSpeedTest(){if(isTesting)return;isTesting=true;speedBadge.textContent='📡 ...';var url=TEST_URLS[urlIdx%TEST_URLS.length]+'?r='+Date.now();var t0=Date.now();fetch(url,{cache:'no-store'}).then(function(r){return r.blob();}).then(function(b){var elapsed=(Date.now()-t0)/1000;var bps=((b.size||200000)*8)/elapsed;showSpeed(bps);isTesting=false;}).catch(function(){urlIdx++;isTesting=false;});}
+function showSpeed(bps){var lbl=bps>=1000000?'📡 '+(bps/1000000).toFixed(1)+' Mbps':'📡 '+Math.round(bps/1000)+' Kbps';speedBadge.textContent=lbl;speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';}
 function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);if(speedOn){if(!speedInterval){runSpeedTest();speedInterval=setInterval(runSpeedTest,15000);}}else{if(speedInterval){clearInterval(speedInterval);speedInterval=null;}}}
 function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}
 applySpeedVis();
@@ -299,7 +271,6 @@ function load(ri,ci){
   if(btn)btn.classList.add('on');
   var ch=ROWS[ri].channels[ci];
   chTitle.textContent=ch.n;chTitle.style.display='block';
-  closeQ();
   var type=ch.t||'hls';
   if(type==='iframe'){
     if(hls){hls.destroy();hls=null;}
@@ -307,7 +278,7 @@ function load(ri,ci){
     showLoader('جاري تحميل '+ch.n+'...');
     iframePlayer.src='';
     setTimeout(function(){iframePlayer.src=ch.u;hideLoader();},400);
-    qm.innerHTML='';return;
+    qm.innerHTML='';closeQ();return;
   }
   vid.style.display='block';iframeWrap.style.display='none';iframePlayer.src='';
   showLoader('جاري تحميل '+ch.n+'...');
@@ -318,23 +289,15 @@ function load(ri,ci){
     hls.loadSource(ch.u);hls.attachMedia(vid);
     hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hideLoader();vid.play().catch(function(){});buildQ();});
     hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
-    hls.on(Hls.Events.ERROR,function(e,d){
-      if(d.fatal){
-        if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur.r,cur.i);},8000);}
-        else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}
-        else{retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}
-      }
-    });
+    hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur.r,cur.i);},8000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}}});
   }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
     vid.src=ch.u;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
   }else{hideLoader();toast('المتصفح غير متوافق');}
 }
 
 function buildQ(){
-  qm.innerHTML='';
-  if(!hls)return;
-  var a=document.createElement('button');
-  a.textContent='تلقائي';
+  qm.innerHTML='';if(!hls)return;
+  var a=document.createElement('button');a.textContent='تلقائي';
   a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};
   qm.appendChild(a);
   hls.levels.forEach(function(lv,i){
@@ -342,22 +305,24 @@ function buildQ(){
     b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
     b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};
     qm.appendChild(b);
-  });
-  updateQActive();
+  });updateQActive();
 }
-function updateQActive(){
-  if(!hls)return;
-  var btns=qm.querySelectorAll('button');
-  btns.forEach(function(b,i){
-    if(i===0)b.classList.toggle('active',hls.currentLevel===-1);
-    else b.classList.toggle('active',hls.currentLevel===(i-1));
-  });
-}
+function updateQActive(){if(!hls)return;var btns=qm.querySelectorAll('button');btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
 function closeQ(){qm.classList.remove('open');}
 function toggleQ(){
-  if(qm.innerHTML===''){return;}
-  qm.classList.toggle('open');
-  if(qm.classList.contains('open'))updateQActive();
+  if(qm.classList.contains('open')){closeQ();return;}
+  // موضع القائمة: فوق زر الجودة دائماً داخل الشاشة
+  var btnR=qBtn.getBoundingClientRect();
+  var qH=Math.min(200, (hls?hls.levels.length+1:1)*41);
+  var top=btnR.top-qH-8;
+  if(top<0)top=btnR.bottom+8; // إذا ما في مساحة فوق افتح للأسفل
+  var right=window.innerWidth-btnR.right;
+  qm.style.top=top+'px';
+  qm.style.right=right+'px';
+  qm.style.left='auto';
+  qm.style.bottom='auto';
+  qm.classList.add('open');
+  updateQActive();
 }
 function togglePlay(){if(cur.r>=0&&ROWS[cur.r].channels[cur.i].t==='iframe')return;vid.paused?vid.play():vid.pause();}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
@@ -365,12 +330,7 @@ function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElemen
 function skip(s){vid.currentTime+=s;}
 
 var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0;
-function showSwipe(type,val){
-  clearTimeout(swTimer);
-  if(type==='vol'){siIcon.textContent='🔊';siLabel.textContent='الصوت '+Math.round(val*100)+'%';siBar.style.width=(val*100)+'%';siBar.style.background='#0f0';}
-  else{siIcon.textContent='☀️';siLabel.textContent='الإضاءة '+Math.round((1-val/0.85)*100)+'%';siBar.style.width=((1-val/0.85)*100)+'%';siBar.style.background='#fbbf24';}
-  swInd.style.display='flex';swTimer=setTimeout(function(){swInd.style.display='none';},1200);
-}
+function showSwipe(type,val){clearTimeout(swTimer);if(type==='vol'){siIcon.textContent='🔊';siLabel.textContent='الصوت '+Math.round(val*100)+'%';siBar.style.width=(val*100)+'%';siBar.style.background='#0f0';}else{siIcon.textContent='☀️';siLabel.textContent='الإضاءة '+Math.round((1-val/0.85)*100)+'%';siBar.style.width=((1-val/0.85)*100)+'%';siBar.style.background='#fbbf24';}swInd.style.display='flex';swTimer=setTimeout(function(){swInd.style.display='none';},1200);}
 
 var lastTap=0,dblTimer=null,dblHintTimer=null;
 function showDblHint(txt){dblTxt.textContent=txt;dblHint.classList.add('show');clearTimeout(dblHintTimer);dblHintTimer=setTimeout(function(){dblHint.classList.remove('show');},1500);}
@@ -386,11 +346,7 @@ document.addEventListener('touchend',function(e){
   }else{
     lastTap=now;clearTimeout(dblTimer);
     if(e.target.closest('#player-wrap')){
-      dblTimer=setTimeout(function(){
-        lastTap=0;
-        pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);
-        hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
-      },400);
+      dblTimer=setTimeout(function(){lastTap=0;pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);},400);
     }
   }
 },{passive:true});
@@ -418,9 +374,7 @@ pw.addEventListener('click',function(e){
   pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);
   hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
 });
-document.addEventListener('click',function(e){
-  if(!e.target.closest('#qm')&&!e.target.closest('#q-btn'))closeQ();
-});
+document.addEventListener('click',function(e){if(!e.target.closest('#qw')&&!e.target.closest('#qm'))closeQ();});
 
 function toggleAdd(){var m=document.getElementById('add-modal');m.style.display=m.style.display!=='flex'?'flex':'none';}
 function saveChannel(){
