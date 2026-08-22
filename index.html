@@ -43,11 +43,9 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 .row-label{flex-shrink:0;width:52px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#050505;border-left:1px solid #111;}
 .row-label .ico{font-size:18px;}.row-label .lbl{font-size:9px;color:#666;font-weight:700;}
 .row-scroll{flex:1;display:flex;gap:5px;padding:10px 8px;overflow-x:auto;align-items:center;}
-.row-scroll::-webkit-scrollbar{height:4px;}
-.row-scroll::-webkit-scrollbar-thumb{background:#222;border-radius:2px;}
+.row-scroll::-webkit-scrollbar{height:4px;}.row-scroll::-webkit-scrollbar-thumb{background:#222;border-radius:2px;}
 .ch{min-width:78px;height:52px;background:#0a0a0a;border:1px solid #1a1a1a;color:#bbb;font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;transition:.2s;flex-shrink:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;}
-.ch:hover{background:#151515;border-color:#0f0;color:#fff;}
-.ch.on{background:#0f0;color:#000;border-color:#0f0;}
+.ch:hover{background:#151515;border-color:#0f0;color:#fff;}.ch.on{background:#0f0;color:#000;border-color:#0f0;}
 .ch.iframe-ch{border-color:#f80;}.ch.iframe-ch.on{background:#f80;color:#000;border-color:#f80;}
 #add-ch{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,0,0,.75);border:1px solid #333;color:#0f0;font-size:12px;padding:7px 14px;border-radius:7px;cursor:pointer;}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:none;align-items:center;justify-content:center;}
@@ -56,7 +54,7 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 .modal-box input,.modal-box select{width:100%;padding:11px;margin:6px 0;background:#111;border:1px solid #2a2a2a;border-radius:7px;color:#fff;font-size:13px;}
 .mbtn{padding:11px 24px;background:#0f0;color:#000;border:none;border-radius:7px;cursor:pointer;font-weight:700;margin-top:12px;font-size:13px;}
 .mbtn.cancel{background:#1a1a1a;color:#fff;margin-right:8px;}
-.row-f{display:flex;gap:8px;}.row-f input{flex:1;}
+.row{display:flex;gap:8px;}.row input{flex:1;}
 #err-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:9999;}
 </style>
 </head>
@@ -70,10 +68,14 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
     <input id="ch-name" placeholder="اسم القناة">
     <input id="ch-url" placeholder="رابط البث">
     <select id="ch-type"><option value="hls">HLS (.m3u8)</option><option value="iframe">إطار مضمن</option></select>
-    <select id="ch-cat"><option value="0">أخبار</option><option value="1">رياضة</option><option value="2">وقت اللعب</option></select>
-    <div class="row-f"><input id="ch-idx" placeholder="رقم القناة للتعديل" type="number" min="1"></div>
+    <select id="ch-cat">
+      <option value="0">أخبار</option>
+      <option value="1">رياضة</option>
+      <option value="2">وقت اللعب</option>
+    </select>
+    <div class="row"><input id="ch-idx" placeholder="رقم القناة للتعديل" type="number" min="1"></div>
     <div style="margin-top:8px">
-      <button class="mbtn" onclick="saveChannel()">حفظ القناة</button>
+      <button class="mbtn" onclick="saveChannel()">حفظ</button>
       <button class="mbtn cancel" onclick="toggleAdd()">إلغاء</button>
     </div>
   </div>
@@ -86,7 +88,7 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
   <div id="ch-title"></div>
   <div id="speed-badge" onclick="runSpeedTest()">📡 السرعة</div>
   <div id="swipe-ind"><div id="si-icon">🔊</div><div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div><div id="si-label">الصوت</div></div>
-  <div id="dbl-hint"><span id="dbl-txt">شاشة كاملة</span></div>
+  <div id="dbl-hint"><span id="dbl-txt">⛶ شاشة كاملة</span></div>
   <div id="controls-overlay">
     <button class="cb" onclick="togglePlay()">⏯️</button>
     <div id="vw">
@@ -97,15 +99,24 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
     <button class="cb" onclick="skip(10)">⏩</button>
     <button class="cb" id="fit-btn" onclick="cycleAspect()">↕ عادي</button>
     <button class="cb" id="spd-btn" onclick="toggleSpeed()">📡</button>
-    <button class="cb" onclick="toggleFullscreen()">⛶</button>
+    <button class="cb" onclick="doFullscreen()">⛶</button>
     <div id="fg"></div>
     <div id="qw"><button class="cb" id="q-btn" onclick="toggleQ()"> </button><div id="qm"></div></div>
   </div>
 </div>
 <div id="ch-rows">
-  <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-0"></div></div>
-  <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-1"></div></div>
-  <div class="ch-row"><div class="row-label"><span class="ico">🏆</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-2"></div></div>
+  <div class="ch-row">
+    <div class="row-label"><span class="ico">📺</span><span class="lbl">أخبار</span></div>
+    <div class="row-scroll" id="row-0"></div>
+  </div>
+  <div class="ch-row">
+    <div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div>
+    <div class="row-scroll" id="row-1"></div>
+  </div>
+  <div class="ch-row">
+    <div class="row-label"><span class="ico">🏆</span><span class="lbl">وقت اللعب</span></div>
+    <div class="row-scroll" id="row-2"></div>
+  </div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
@@ -140,6 +151,8 @@ var ROWS=[
     {n:"Sport TV 1",u:"http://94.130.32.19:8080/sporttv1/index.m3u8",t:"hls"},
     {n:"Sport TV 2",u:"http://94.130.32.19:8080/sporttv2/index.m3u8",t:"hls"},
     {n:"Sport TV 3",u:"http://94.130.32.19:8080/sporttv3/index.m3u8",t:"hls"},
+    {n:"Sport TV 4",u:"http://94.130.32.19:8080/sporttv4/index.m3u8",t:"hls"},
+    {n:"Sport TV 5",u:"http://94.130.32.19:8080/sporttv5/index.m3u8",t:"hls"},
     {n:"TSN 1",u:"http://40.160.24.55/TSN_1/index.m3u8",t:"hls"},
     {n:"TSN 2",u:"http://40.160.24.55/TSN_2/index.m3u8",t:"hls"},
     {n:"TSN 3",u:"http://40.160.24.55/TSN_3/index.m3u8",t:"hls"},
@@ -160,7 +173,7 @@ var ROWS=[
   ]}
 ];
 
-var hls=null,cur={r:0,i:0},retryT=null;
+var hls=null,cur={r:-1,i:-1},retryT=null;
 var vid=document.getElementById('vid');
 var iframeWrap=document.getElementById('iframe-wrap');
 var iframePlayer=document.getElementById('iframe-player');
@@ -189,12 +202,40 @@ function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
 
+// fullscreen + orientation lock
+function doFullscreen(){
+  if(document.fullscreenElement){document.exitFullscreen();return;}
+  var el=pw;
+  var p=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():Promise.resolve();
+  Promise.resolve(p).then(function(){
+    if(screen.orientation&&screen.orientation.lock){
+      screen.orientation.lock('landscape').catch(function(){});
+    }
+  }).catch(function(){});
+}
+document.addEventListener('fullscreenchange',function(){
+  if(!document.fullscreenElement&&screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();
+});
+
 var speedOn=localStorage.getItem('speedOn')!=='0';
 var isTesting=false,speedInterval=null;
 var TEST_URLS=['https://httpbin.org/bytes/200000','https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'];
 var urlIdx=0;
-function runSpeedTest(){if(isTesting)return;isTesting=true;speedBadge.textContent='📡 ...';var url=TEST_URLS[urlIdx%TEST_URLS.length]+'?r='+Date.now();var t0=Date.now();fetch(url,{cache:'no-store'}).then(function(r){return r.blob();}).then(function(b){var elapsed=(Date.now()-t0)/1000;var bps=((b.size||200000)*8)/elapsed;showSpeed(bps);isTesting=false;}).catch(function(){urlIdx++;isTesting=false;});}
-function showSpeed(bps){var lbl=bps>=1000000?'📡 '+(bps/1000000).toFixed(1)+' Mbps':'📡 '+Math.round(bps/1000)+' Kbps';speedBadge.textContent=lbl;speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';}
+function runSpeedTest(){
+  if(isTesting)return;
+  isTesting=true;speedBadge.textContent='📡 ...';
+  var url=TEST_URLS[urlIdx%TEST_URLS.length]+'?r='+Date.now();
+  var t0=Date.now();
+  fetch(url,{cache:'no-store'}).then(function(r){return r.blob();}).then(function(b){
+    var elapsed=(Date.now()-t0)/1000;var bps=((b.size||200000)*8)/elapsed;
+    showSpeed(bps);isTesting=false;
+  }).catch(function(){urlIdx++;isTesting=false;});
+}
+function showSpeed(bps){
+  var lbl=bps>=1000000?'📡 '+(bps/1000000).toFixed(1)+' Mbps':'📡 '+Math.round(bps/1000)+' Kbps';
+  speedBadge.textContent=lbl;
+  speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';
+}
 function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);if(speedOn){if(!speedInterval){runSpeedTest();speedInterval=setInterval(runSpeedTest,15000);}}else{if(speedInterval){clearInterval(speedInterval);speedInterval=null;}}}
 function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}
 applySpeedVis();
@@ -205,11 +246,13 @@ function toast(msg){var t=document.getElementById('err-toast');t.textContent=msg
 
 function buildChannels(){
   ROWS.forEach(function(row,ri){
-    var box=document.getElementById('row-'+ri);box.innerHTML='';
+    var box=document.getElementById('row-'+ri);
+    box.innerHTML='';
     row.channels.forEach(function(c,ci){
       var b=document.createElement('button');
       b.className='ch'+(c.t==='iframe'?' iframe-ch':'');
-      b.textContent=c.n;b.id='ch-'+ri+'-'+ci;
+      b.textContent=c.n;
+      b.id='ch-'+ri+'-'+ci;
       b.onclick=function(){load(ri,ci);};
       box.appendChild(b);
     });
@@ -228,106 +271,116 @@ function load(ri,ci){
   var type=ch.t||'hls';
   if(type==='iframe'){
     if(hls){hls.destroy();hls=null;}
-    vid.style.display='none';iframeWrap.style.display='block';
+    vid.style.display='none';
+    iframeWrap.style.display='block';
     showLoader('جاري تحميل '+ch.n+'...');
     iframePlayer.src='';
     setTimeout(function(){iframePlayer.src=ch.u;hideLoader();},400);
-    qm.innerHTML='';return;
+    qm.innerHTML='';
+    return;
   }
-  vid.style.display='block';iframeWrap.style.display='none';iframePlayer.src='';
+  vid.style.display='block';
+  iframeWrap.style.display='none';
+  iframePlayer.src='';
   showLoader('جاري تحميل '+ch.n+'...');
   if(hls){hls.destroy();hls=null;}
-  vid.removeAttribute('src');vid.load();qBtn.classList.remove('manual');
+  vid.removeAttribute('src');vid.load();
+  qBtn.classList.remove('manual');
+  var url=ch.u;
   if(Hls.isSupported()){
     hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:0,autoLevelEnabled:false,capLevelToPlayerSize:false});
-    hls.loadSource(ch.u);hls.attachMedia(vid);
+    hls.loadSource(url);hls.attachMedia(vid);
     hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hideLoader();vid.play().catch(function(){});buildQ();});
     hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
-    hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur.r,cur.i);},8000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}}});
+    hls.on(Hls.Events.ERROR,function(e,d){
+      if(d.fatal){
+        if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur.r,cur.i);},8000);}
+        else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}
+        else{retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}
+      }
+    });
   }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
-    vid.src=ch.u;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
+    vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
   }else{hideLoader();toast('المتصفح غير متوافق');}
 }
 
-function buildQ(){qm.innerHTML='';if(!hls)return;var a=document.createElement('button');a.textContent='تلقائي';a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};qm.appendChild(a);hls.levels.forEach(function(lv,i){var b=document.createElement('button');b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};qm.appendChild(b);});updateQActive();}
-function updateQActive(){if(!hls)return;var btns=qm.querySelectorAll('button');btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
+function buildQ(){
+  qm.innerHTML='';if(!hls)return;
+  var a=document.createElement('button');a.textContent='تلقائي';
+  a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};
+  qm.appendChild(a);
+  hls.levels.forEach(function(lv,i){
+    var b=document.createElement('button');
+    b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
+    b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};
+    qm.appendChild(b);
+  });updateQActive();
+}
+function updateQActive(){
+  if(!hls)return;
+  var btns=qm.querySelectorAll('button');
+  btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});
+}
 function closeQ(){qm.classList.remove('open');}
 function toggleQ(){qm.classList.toggle('open');if(qm.classList.contains('open'))updateQActive();}
-function togglePlay(){vid.paused?vid.play():vid.pause();}
+function togglePlay(){if(cur.r>=0&&ROWS[cur.r].channels[cur.i].t==='iframe')return;vid.paused?vid.play():vid.pause();}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
 function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElementById('mute-btn').textContent=v==0?'🔇':'🔊';document.getElementById('vs').value=v;localStorage.setItem('vol',v);}
 function skip(s){vid.currentTime+=s;}
-function toggleFullscreen(){if(document.fullscreenElement){document.exitFullscreen();}else{var el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();}}
 
-// دوران الشاشة
-function doRotate(){
-  var hint='شاشة كاملة ⛶';
-  try{
-    if(screen.orientation&&screen.orientation.lock){
-      var cur_type=screen.orientation.type||'';
-      if(cur_type.indexOf('landscape')>-1){
-        screen.orientation.lock('portrait-primary').catch(function(){toggleFullscreen();});
-        hint='عودة للعمودي ↑';
-      }else{
-        screen.orientation.lock('landscape').catch(function(){toggleFullscreen();});
-        hint='وضع أفقي ↔';
-      }
-    }else{
-      toggleFullscreen();
-    }
-  }catch(e){toggleFullscreen();}
-  dblTxt.textContent=hint;
-  dblHint.classList.add('show');
-  clearTimeout(dblHintT);
-  dblHintT=setTimeout(function(){dblHint.classList.remove('show');},1500);
+var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0;
+function showSwipe(type,val){
+  clearTimeout(swTimer);
+  if(type==='vol'){siIcon.textContent='🔊';siLabel.textContent='الصوت '+Math.round(val*100)+'%';siBar.style.width=(val*100)+'%';siBar.style.background='#0f0';}
+  else{siIcon.textContent='☀️';siLabel.textContent='الإضاءة '+Math.round((1-val/0.85)*100)+'%';siBar.style.width=((1-val/0.85)*100)+'%';siBar.style.background='#fbbf24';}
+  swInd.style.display='flex';swTimer=setTimeout(function(){swInd.style.display='none';},1200);
 }
 
-var dblHintT=null;
+// ضغطتين للدخول fullscreen + تدوير
+var lastTap=0,dblTimer=null,dblHintTimer=null;
+function showDblHint(txt){
+  dblTxt.textContent=txt;
+  dblHint.classList.add('show');
+  clearTimeout(dblHintTimer);
+  dblHintTimer=setTimeout(function(){dblHint.classList.remove('show');},1500);
+}
+
 var hideCtrlT=null;
 
-// الضغط مرتين - باستخدام touchstart للدقة
-var tapCount=0,tapTimer=null,tapX=0,tapY=0;
-
-pw.addEventListener('touchstart',function(e){
-  // تجاهل الضغط على عناصر التحكم
-  if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
-  var t=e.touches[0];
-  tapX=t.clientX;tapY=t.clientY;
-
-  // تتبع عدد الضغطات
-  tapCount++;
-  clearTimeout(tapTimer);
-
-  if(tapCount>=2){
-    tapCount=0;
-    // ضغط مزدوج: تدوير
-    doRotate();
-  }else{
-    tapTimer=setTimeout(function(){
-      if(tapCount===1){
-        // ضغطة واحدة: إظهار/إخفاء التحكم
+document.addEventListener('touchend',function(e){
+  if(e.target.closest('#controls-overlay')||e.target.closest('#ch-rows')||e.target.closest('#add-ch')||e.target.closest('.modal')||e.target.closest('#qm')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
+  if(isSwiping)return;
+  var now=Date.now();
+  if(now-lastTap<400&&lastTap>0){
+    // ضغطتين
+    lastTap=0;
+    clearTimeout(dblTimer);dblTimer=null;
+    doFullscreen();
+    showDblHint('⛶ شاشة كاملة');
+  } else {
+    lastTap=now;
+    clearTimeout(dblTimer);
+    if(e.target.closest('#player-wrap')){
+      dblTimer=setTimeout(function(){
+        lastTap=0;
         pw.classList.add('show-ctrl');
         clearTimeout(hideCtrlT);
         hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
-      }
-      tapCount=0;
-    },300);
+      },400);
+    }
   }
 },{passive:true});
 
-// سحب للصوت والسطوع
-var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false;
 pw.addEventListener('touchstart',function(e){
   if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
-  var t=e.touches[0];
+  var t=e.touches[0];tyStart=t.clientY;isSwiping=false;
   var rect=pw.getBoundingClientRect();
   swType=(t.clientX-rect.left)>(rect.width/2)?'vol':'brightness';
   swStartY=t.clientY;swStartVal=swType==='vol'?vid.volume:brightness;
-  isSwiping=false;
 },{passive:true});
 pw.addEventListener('touchmove',function(e){
   if(!swType||e.target.closest('#controls-overlay')||e.target.closest('#iframe-wrap'))return;
-  var t=e.touches[0];var dy=swStartY-t.clientY;
+  var t=e.touches[0];var dy=tyStart-t.clientY;
   if(!isSwiping&&Math.abs(dy)>12)isSwiping=true;
   if(!isSwiping)return;
   var delta=dy/pw.getBoundingClientRect().height;
@@ -336,13 +389,11 @@ pw.addEventListener('touchmove',function(e){
 },{passive:true});
 pw.addEventListener('touchend',function(){swType=null;setTimeout(function(){isSwiping=false;},50);},{passive:true});
 
-function showSwipe(type,val){
-  clearTimeout(swTimer);
-  if(type==='vol'){siIcon.textContent='🔊';siLabel.textContent='الصوت '+Math.round(val*100)+'%';siBar.style.width=(val*100)+'%';siBar.style.background='#0f0';}
-  else{siIcon.textContent='☀️';siLabel.textContent='الإضاءة '+Math.round((1-val/0.85)*100)+'%';siBar.style.width=((1-val/0.85)*100)+'%';siBar.style.background='#fbbf24';}
-  swInd.style.display='flex';swTimer=setTimeout(function(){swInd.style.display='none';},1200);
-}
-
+pw.addEventListener('click',function(e){
+  if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
+  pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);
+  hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
+});
 document.addEventListener('click',function(e){if(!e.target.closest('#qw'))closeQ();});
 
 function toggleAdd(){var m=document.getElementById('add-modal');m.style.display=m.style.display!=='flex'?'flex':'none';}
@@ -360,7 +411,7 @@ function saveChannel(){
 document.addEventListener('keydown',function(e){
   if(e.target.tagName==='INPUT')return;
   if(e.key===' '){e.preventDefault();togglePlay();}
-  else if(e.key==='f'||e.key==='F')toggleFullscreen();
+  else if(e.key==='f'||e.key==='F')doFullscreen();
   else if(e.key==='m'||e.key==='M')toggleMute();
   else if(e.key==='a'||e.key==='A')cycleAspect();
 });
