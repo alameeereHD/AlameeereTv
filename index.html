@@ -9,6 +9,8 @@
 html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
 #app{display:flex;flex-direction:column;width:100%;height:100%;}
 #player-wrap{flex:0 0 auto;height:calc(100% - 240px);position:relative;user-select:none;overflow:hidden;}
+#player-wrap.fullscreen-mode{position:fixed;inset:0;width:100%;height:100%;z-index:9999;}
+#app.fs #ch-rows{display:none;}
 video{width:100%;height:100%;display:block;background:#000;}
 video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center center;}
 #iframe-wrap{position:absolute;inset:0;display:none;z-index:5;}
@@ -26,7 +28,7 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 #dbl-hint.show{opacity:1;}
 #swipe-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:14px 22px;display:none;flex-direction:column;align-items:center;gap:8px;z-index:20;pointer-events:none;min-width:130px;}
 #si-icon{font-size:26px;}#si-bar-bg{width:100%;height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;}#si-bar{height:100%;background:#0f0;border-radius:3px;}#si-label{font-size:12px;color:rgba(255,255,255,.75);}
-#controls-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.92));padding:30px 8px 10px;display:flex;align-items:center;gap:5px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100;overflow:visible;}
+#controls-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.92));padding:30px 8px 10px;display:flex;align-items:center;gap:5px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100;}
 #player-wrap.show-ctrl #controls-overlay{opacity:1;pointer-events:auto;}
 .cb{background:rgba(255,255,255,.12);border:none;color:#fff;padding:7px 10px;border-radius:6px;cursor:pointer;font-size:12px;backdrop-filter:blur(6px);transition:.2s;white-space:nowrap;flex-shrink:0;}
 .cb:hover{background:rgba(255,255,255,.28);}.cb.on{background:rgba(0,200,0,.2);color:#0f0;border:1px solid rgba(0,255,0,.3);}
@@ -35,9 +37,39 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 #vs::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#0f0;cursor:pointer;}
 #fg{flex:1;min-width:2px;}
 #qw{position:relative;flex-shrink:0;}
-#qm{position:absolute;bottom:calc(100% + 6px);right:0;background:rgba(10,10,10,.97);border:1px solid #333;border-radius:10px;display:none;flex-direction:column;min-width:110px;max-height:50vh;overflow-y:auto;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.8);}
-#qm.open{display:flex;}#qm button{background:none;border:none;color:#fff;padding:10px 16px;cursor:pointer;text-align:center;font-size:13px;}#qm button:hover{background:rgba(255,255,255,.08);}#qm button.active{color:#0f0;font-weight:700;}
-#q-btn{min-width:44px;}
+/* قائمة الجودة - تظهر داخل الشاشة دائماً */
+#qm{
+  position:fixed;
+  bottom:60px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(10,10,10,.97);
+  border:1px solid #333;
+  border-radius:10px;
+  display:none;
+  flex-direction:row;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:6px;
+  padding:10px;
+  min-width:200px;
+  max-width:90vw;
+  z-index:99999;
+  box-shadow:0 -4px 20px rgba(0,0,0,.8);
+}
+#qm.open{display:flex;}
+#qm button{
+  background:rgba(255,255,255,.1);
+  border:1px solid #333;
+  color:#fff;
+  padding:8px 14px;
+  cursor:pointer;
+  text-align:center;
+  font-size:13px;
+  border-radius:6px;
+}
+#qm button:hover{background:rgba(255,255,255,.2);}
+#qm button.active{color:#0f0;font-weight:700;border-color:#0f0;background:rgba(0,200,0,.15);}
 #q-btn.manual{background:rgba(0,200,0,.2);color:#0f0;border:1px solid rgba(0,255,0,.35);}
 #ch-rows{flex-shrink:0;background:#030303;border-top:1px solid #111;display:flex;flex-direction:column;}
 .ch-row{height:80px;display:flex;align-items:center;border-bottom:1px solid #0a0a0a;}
@@ -65,7 +97,7 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 <div id="err-toast"></div>
 <div class="modal" id="add-modal" onclick="if(event.target===this)toggleAdd()">
   <div class="modal-box">
-    <h2>إضافة / تعديل قناة</h2>
+    <h2>إضافة / تعديل القناة</h2>
     <input id="ch-name" placeholder="اسم القناة">
     <input id="ch-url" placeholder="رابط البث">
     <select id="ch-type"><option value="hls">HLS (.m3u8)</option><option value="iframe">إطار مضمن</option></select>
@@ -98,12 +130,11 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
     <button class="cb" id="spd-btn" onclick="toggleSpeed()">📡</button>
     <button class="cb" onclick="doFullscreen()">⛶</button>
     <div id="fg"></div>
-    <div id="qw">
-      <button class="cb" id="q-btn" onclick="toggleQ()">جودة</button>
-      <div id="qm"></div>
-    </div>
+    <div id="qw"><button class="cb" id="q-btn" onclick="toggleQ()">جودة</button></div>
   </div>
 </div>
+<!-- قائمة الجودة خارج player-wrap لتكون دائماً مرئية -->
+<div id="qm"></div>
 <div id="ch-rows">
   <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-0"></div></div>
   <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-1"></div></div>
@@ -168,6 +199,7 @@ var hls=null,cur={r:-1,i:-1},retryT=null;
 var vid=document.getElementById('vid');
 var iframeWrap=document.getElementById('iframe-wrap');
 var iframePlayer=document.getElementById('iframe-player');
+var app=document.getElementById('app');
 var qm=document.getElementById('qm');
 var qBtn=document.getElementById('q-btn');
 var loader=document.getElementById('loader');
@@ -181,8 +213,6 @@ var siBar=document.getElementById('si-bar');
 var siLabel=document.getElementById('si-label');
 var brightL=document.getElementById('brightness-layer');
 var pw=document.getElementById('player-wrap');
-var chRows=document.getElementById('ch-rows');
-var addCh=document.getElementById('add-ch');
 var fitBtn=document.getElementById('fit-btn');
 var speedBadge=document.getElementById('speed-badge');
 var spdBtn=document.getElementById('spd-btn');
@@ -195,32 +225,50 @@ function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
 
+var isFS=false;
 function doFullscreen(){
-  if(document.fullscreenElement||document.webkitFullscreenElement){
-    if(document.exitFullscreen)document.exitFullscreen();
-    else if(document.webkitExitFullscreen)document.webkitExitFullscreen();
-    return;
-  }
+  if(isFS){exitFS();}else{enterFS();}
+}
+function enterFS(){
+  isFS=true;
+  app.classList.add('fs');
+  pw.classList.add('fullscreen-mode');
+  showDblHint('⛶ اضغط مرتين للخروج');
+  if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});
   var el=document.documentElement;
-  var p=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():Promise.resolve();
-  Promise.resolve(p).then(function(){
-    if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});
-    setFullUI(true);
-  }).catch(function(){setFullUI(true);});
+  if(el.requestFullscreen)el.requestFullscreen().catch(function(){});
+  else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();
 }
-function setFullUI(isFs){
-  if(isFs){pw.style.height='100%';chRows.style.display='none';addCh.style.display='none';}
-  else{pw.style.height='';chRows.style.display='flex';addCh.style.display='';if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}
+function exitFS(){
+  isFS=false;
+  app.classList.remove('fs');
+  pw.classList.remove('fullscreen-mode');
+  if(document.fullscreenElement)document.exitFullscreen().catch(function(){});
+  if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();
 }
-document.addEventListener('fullscreenchange',function(){setFullUI(!!document.fullscreenElement);});
-document.addEventListener('webkitfullscreenchange',function(){setFullUI(!!(document.fullscreenElement||document.webkitFullscreenElement));});
+document.addEventListener('fullscreenchange',function(){
+  if(!document.fullscreenElement&&isFS)exitFS();
+});
 
 var speedOn=localStorage.getItem('speedOn')!=='0';
 var isTesting=false,speedInterval=null;
 var TEST_URLS=['https://httpbin.org/bytes/200000','https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'];
 var urlIdx=0;
-function runSpeedTest(){if(isTesting)return;isTesting=true;speedBadge.textContent='📡 ...';var url=TEST_URLS[urlIdx%TEST_URLS.length]+'?r='+Date.now();var t0=Date.now();fetch(url,{cache:'no-store'}).then(function(r){return r.blob();}).then(function(b){var elapsed=(Date.now()-t0)/1000;var bps=((b.size||200000)*8)/elapsed;showSpeed(bps);isTesting=false;}).catch(function(){urlIdx++;isTesting=false;});}
-function showSpeed(bps){var lbl=bps>=1000000?'📡 '+(bps/1000000).toFixed(1)+' Mbps':'📡 '+Math.round(bps/1000)+' Kbps';speedBadge.textContent=lbl;speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';}
+function runSpeedTest(){
+  if(isTesting)return;
+  isTesting=true;speedBadge.textContent='📡 ...';
+  var url=TEST_URLS[urlIdx%TEST_URLS.length]+'?r='+Date.now();
+  var t0=Date.now();
+  fetch(url,{cache:'no-store'}).then(function(r){return r.blob();}).then(function(b){
+    var elapsed=(Date.now()-t0)/1000;var bps=((b.size||200000)*8)/elapsed;
+    showSpeed(bps);isTesting=false;
+  }).catch(function(){urlIdx++;isTesting=false;});
+}
+function showSpeed(bps){
+  var lbl=bps>=1000000?'📡 '+(bps/1000000).toFixed(1)+' Mbps':'📡 '+Math.round(bps/1000)+' Kbps';
+  speedBadge.textContent=lbl;
+  speedBadge.style.color=bps>=10000000?'#0f0':bps>=2000000?'#ff0':bps>=500000?'#f80':'#f44';
+}
 function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);if(speedOn){if(!speedInterval){runSpeedTest();speedInterval=setInterval(runSpeedTest,15000);}}else{if(speedInterval){clearInterval(speedInterval);speedInterval=null;}}}
 function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}
 applySpeedVis();
@@ -251,10 +299,8 @@ function load(ri,ci){
   if(btn)btn.classList.add('on');
   var ch=ROWS[ri].channels[ci];
   chTitle.textContent=ch.n;chTitle.style.display='block';
+  closeQ();
   var type=ch.t||'hls';
-  // إعادة ضبط زر الجودة
-  qBtn.textContent='جودة';
-  qBtn.classList.remove('manual');
   if(type==='iframe'){
     if(hls){hls.destroy();hls=null;}
     vid.style.display='none';iframeWrap.style.display='block';
@@ -266,59 +312,65 @@ function load(ri,ci){
   vid.style.display='block';iframeWrap.style.display='none';iframePlayer.src='';
   showLoader('جاري تحميل '+ch.n+'...');
   if(hls){hls.destroy();hls=null;}
-  vid.removeAttribute('src');vid.load();
+  vid.removeAttribute('src');vid.load();qBtn.classList.remove('manual');
   if(Hls.isSupported()){
     hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:0,autoLevelEnabled:false,capLevelToPlayerSize:false});
     hls.loadSource(ch.u);hls.attachMedia(vid);
     hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hideLoader();vid.play().catch(function(){});buildQ();});
     hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
-    hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur.r,cur.i);},8000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}}});
+    hls.on(Hls.Events.ERROR,function(e,d){
+      if(d.fatal){
+        if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur.r,cur.i);},8000);}
+        else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}
+        else{retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}
+      }
+    });
   }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
     vid.src=ch.u;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
   }else{hideLoader();toast('المتصفح غير متوافق');}
 }
 
 function buildQ(){
-  qm.innerHTML='';if(!hls)return;
-  // تحديث نص الزر بالجودة الحالية
-  var lvls=hls.levels;
-  if(lvls&&lvls.length>0){
-    var lv0=lvls[0];
-    qBtn.textContent=lv0.height?lv0.height+'p':Math.round(lv0.bitrate/1000)+'k';
-  }
-  var a=document.createElement('button');a.textContent='تلقائي';
-  a.onclick=function(){
-    hls.currentLevel=-1;hls.autoLevelEnabled=true;
-    qBtn.textContent='تلقائي';qBtn.classList.remove('manual');
-    updateQActive();closeQ();
-  };
+  qm.innerHTML='';
+  if(!hls)return;
+  var a=document.createElement('button');
+  a.textContent='تلقائي';
+  a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};
   qm.appendChild(a);
-  lvls.forEach(function(lv,i){
+  hls.levels.forEach(function(lv,i){
     var b=document.createElement('button');
-    var lbl=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
-    b.textContent=lbl;
-    b.onclick=function(){
-      hls.autoLevelEnabled=false;hls.currentLevel=i;
-      qBtn.textContent=lbl;qBtn.classList.add('manual');
-      updateQActive();closeQ();
-    };
+    b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
+    b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};
     qm.appendChild(b);
-  });updateQActive();
+  });
+  updateQActive();
 }
 function updateQActive(){
   if(!hls)return;
   var btns=qm.querySelectorAll('button');
-  btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});
+  btns.forEach(function(b,i){
+    if(i===0)b.classList.toggle('active',hls.currentLevel===-1);
+    else b.classList.toggle('active',hls.currentLevel===(i-1));
+  });
 }
 function closeQ(){qm.classList.remove('open');}
-function toggleQ(){if(!hls&&!qm.innerHTML){return;}qm.classList.toggle('open');if(qm.classList.contains('open'))updateQActive();}
-function togglePlay(){vid.paused?vid.play():vid.pause();}
+function toggleQ(){
+  if(qm.innerHTML===''){return;}
+  qm.classList.toggle('open');
+  if(qm.classList.contains('open'))updateQActive();
+}
+function togglePlay(){if(cur.r>=0&&ROWS[cur.r].channels[cur.i].t==='iframe')return;vid.paused?vid.play():vid.pause();}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
 function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElementById('mute-btn').textContent=v==0?'🔇':'🔊';document.getElementById('vs').value=v;localStorage.setItem('vol',v);}
 function skip(s){vid.currentTime+=s;}
 
 var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0;
-function showSwipe(type,val){clearTimeout(swTimer);if(type==='vol'){siIcon.textContent='🔊';siLabel.textContent='الصوت '+Math.round(val*100)+'%';siBar.style.width=(val*100)+'%';siBar.style.background='#0f0';}else{siIcon.textContent='☀️';siLabel.textContent='الإضاءة '+Math.round((1-val/0.85)*100)+'%';siBar.style.width=((1-val/0.85)*100)+'%';siBar.style.background='#fbbf24';}swInd.style.display='flex';swTimer=setTimeout(function(){swInd.style.display='none';},1200);}
+function showSwipe(type,val){
+  clearTimeout(swTimer);
+  if(type==='vol'){siIcon.textContent='🔊';siLabel.textContent='الصوت '+Math.round(val*100)+'%';siBar.style.width=(val*100)+'%';siBar.style.background='#0f0';}
+  else{siIcon.textContent='☀️';siLabel.textContent='الإضاءة '+Math.round((1-val/0.85)*100)+'%';siBar.style.width=((1-val/0.85)*100)+'%';siBar.style.background='#fbbf24';}
+  swInd.style.display='flex';swTimer=setTimeout(function(){swInd.style.display='none';},1200);
+}
 
 var lastTap=0,dblTimer=null,dblHintTimer=null;
 function showDblHint(txt){dblTxt.textContent=txt;dblHint.classList.add('show');clearTimeout(dblHintTimer);dblHintTimer=setTimeout(function(){dblHint.classList.remove('show');},1500);}
@@ -330,11 +382,15 @@ document.addEventListener('touchend',function(e){
   var now=Date.now();
   if(now-lastTap<400&&lastTap>0){
     lastTap=0;clearTimeout(dblTimer);dblTimer=null;
-    doFullscreen();showDblHint('⛶ شاشة كاملة');
+    doFullscreen();
   }else{
     lastTap=now;clearTimeout(dblTimer);
     if(e.target.closest('#player-wrap')){
-      dblTimer=setTimeout(function(){lastTap=0;pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);},400);
+      dblTimer=setTimeout(function(){
+        lastTap=0;
+        pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);
+        hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
+      },400);
     }
   }
 },{passive:true});
@@ -356,12 +412,15 @@ pw.addEventListener('touchmove',function(e){
   else{var b=Math.max(0,Math.min(0.85,swStartVal-delta));brightness=b;brightL.style.opacity=b;localStorage.setItem('brightness',b);showSwipe('brightness',b);}
 },{passive:true});
 pw.addEventListener('touchend',function(){swType=null;setTimeout(function(){isSwiping=false;},50);},{passive:true});
+
 pw.addEventListener('click',function(e){
   if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
   pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);
   hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
 });
-document.addEventListener('click',function(e){if(!e.target.closest('#qw'))closeQ();});
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#qm')&&!e.target.closest('#q-btn'))closeQ();
+});
 
 function toggleAdd(){var m=document.getElementById('add-modal');m.style.display=m.style.display!=='flex'?'flex':'none';}
 function saveChannel(){
@@ -373,6 +432,7 @@ function saveChannel(){
   ROWS[cat].channels.push({n:name,u:url,t:type});
   buildChannels();toggleAdd();
   load(cat,ROWS[cat].channels.length-1);
+  ['ch-name','ch-url','ch-idx'].forEach(function(id){document.getElementById(id).value='';});
 }
 document.addEventListener('keydown',function(e){
   if(e.target.tagName==='INPUT')return;
@@ -380,6 +440,7 @@ document.addEventListener('keydown',function(e){
   else if(e.key==='f'||e.key==='F')doFullscreen();
   else if(e.key==='m'||e.key==='M')toggleMute();
   else if(e.key==='a'||e.key==='A')cycleAspect();
+  else if(e.key==='Escape'&&isFS)exitFS();
 });
 var sv=localStorage.getItem('vol');
 if(sv){vid.volume=parseFloat(sv);document.getElementById('vs').value=sv;}
