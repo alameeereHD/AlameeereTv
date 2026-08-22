@@ -35,8 +35,8 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 #vs::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#0f0;cursor:pointer;}
 #fg{flex:1;min-width:2px;}
 #qw{position:relative;flex-shrink:0;margin-left:6px;}
-/* قائمة الجودة - أنحف */
-#qm{position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(10,10,10,.97);border:1px solid #333;border-radius:8px;display:none;flex-direction:column;min-width:80px;max-height:50vh;overflow-y:auto;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.8);}
+/* قائمة الجودة - position:fixed تُحسب بالـ JS */
+#qm{position:fixed;background:rgba(10,10,10,.97);border:1px solid #333;border-radius:8px;display:none;flex-direction:column;min-width:80px;max-height:50vh;overflow-y:auto;z-index:99999;box-shadow:0 -4px 20px rgba(0,0,0,.8);}
 #qm.open{display:flex;}
 #qm button{background:none;border:none;color:#fff;padding:6px 14px;cursor:pointer;text-align:center;font-size:12px;}
 #qm button:hover{background:rgba(255,255,255,.08);}
@@ -103,7 +103,6 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
     <div id="fg"></div>
     <div id="qw">
       <button class="cb" id="q-btn" onclick="toggleQ()">جودة</button>
-      <div id="qm"></div>
     </div>
   </div>
 </div>
@@ -112,6 +111,8 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
   <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-1"></div></div>
   <div class="ch-row"><div class="row-label"><span class="ico">🏆</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-2"></div></div>
 </div>
+<!-- قائمة الجودة خارج controls-overlay تماماً -->
+<div id="qm"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
@@ -254,6 +255,7 @@ function load(ri,ci){
   if(btn)btn.classList.add('on');
   var ch=ROWS[ri].channels[ci];
   chTitle.textContent=ch.n;chTitle.style.display='block';
+  closeQ();
   var type=ch.t||'hls';
   if(type==='iframe'){
     if(hls){hls.destroy();hls=null;}
@@ -305,7 +307,22 @@ function updateQActive(){
   btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});
 }
 function closeQ(){qm.classList.remove('open');}
-function toggleQ(){if(!hls&&!qm.innerHTML){return;}qm.classList.toggle('open');if(qm.classList.contains('open'))updateQActive();}
+function toggleQ(){
+  if(qm.classList.contains('open')){closeQ();return;}
+  if(!qm.children.length)return;
+  // حساب الموضع بـ JS - position:fixed دائماً داخل الشاشة
+  var r=qBtn.getBoundingClientRect();
+  var qH=Math.min(window.innerHeight*0.5, qm.children.length*33+4);
+  var top=r.top-qH-8;
+  if(top<4)top=r.bottom+8;
+  var left=r.left;
+  if(left+90>window.innerWidth)left=window.innerWidth-94;
+  if(left<4)left=4;
+  qm.style.top=top+'px';
+  qm.style.left=left+'px';
+  qm.classList.add('open');
+  updateQActive();
+}
 function togglePlay(){vid.paused?vid.play():vid.pause();}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
 function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElementById('mute-btn').textContent=v==0?'🔇':'🔊';document.getElementById('vs').value=v;localStorage.setItem('vol',v);}
@@ -355,7 +372,7 @@ pw.addEventListener('click',function(e){
   pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);
   hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
 });
-document.addEventListener('click',function(e){if(!e.target.closest('#qw'))closeQ();});
+document.addEventListener('click',function(e){if(!e.target.closest('#qw')&&!e.target.closest('#qm'))closeQ();});
 
 function toggleAdd(){var m=document.getElementById('add-modal');m.style.display=m.style.display!=='flex'?'flex':'none';}
 function saveChannel(){
