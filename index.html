@@ -6,7 +6,7 @@
 <title>AlameeereTv</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif;}
 #app{display:flex;flex-direction:column;width:100%;height:100%;}
 #player-wrap{flex:0 0 auto;height:calc(100% - 240px);position:relative;user-select:none;overflow:hidden;}
 video{width:100%;height:100%;display:block;background:#000;}
@@ -51,6 +51,9 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 .ch:hover{background:#151515;border-color:#0f0;color:#fff;}.ch.on{background:#0f0;color:#000;border-color:#0f0;}
 .ch.iframe-ch{border-color:#f80;}.ch.iframe-ch.on{background:#f80;color:#000;border-color:#f80;}
 #err-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:9999;}
+/* fullscreen: player fills entire viewport edge-to-edge including notch */
+.fs-mode #player-wrap{position:fixed;inset:0;height:100%!important;width:100%!important;z-index:9000;}
+.fs-mode #ch-rows{display:none!important;}
 </style>
 </head>
 <body>
@@ -171,6 +174,7 @@ var chRows=document.getElementById('ch-rows');
 var fitBtn=document.getElementById('fit-btn');
 var speedBadge=document.getElementById('speed-badge');
 var spdBtn=document.getElementById('spd-btn');
+var appEl=document.getElementById('app');
 var brightness=parseFloat(localStorage.getItem('brightness')||'0');
 brightL.style.opacity=brightness;
 
@@ -180,25 +184,35 @@ function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
 
+var isFsMode=false;
 function doFullscreen(){
-  if(document.fullscreenElement||document.webkitFullscreenElement){
-    if(document.exitFullscreen)document.exitFullscreen();
-    else if(document.webkitExitFullscreen)document.webkitExitFullscreen();
-    return;
-  }
+  if(isFsMode){exitFsMode();return;}
+  // Try native fullscreen first
   var el=document.documentElement;
-  var p=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():Promise.resolve();
-  Promise.resolve(p).then(function(){
+  var p=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():null;
+  if(p){Promise.resolve(p).then(function(){
     if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});
-    setFullUI(true);
-  }).catch(function(){setFullUI(true);});
+  }).catch(function(){});}
+  // Always apply CSS full-mode so player fills screen including notch area
+  enterFsMode();
 }
-function setFullUI(isFs){
-  if(isFs){pw.style.height='100%';chRows.style.display='none';}
-  else{pw.style.height='';chRows.style.display='flex';if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}
+function enterFsMode(){
+  isFsMode=true;
+  document.body.classList.add('fs-mode');
 }
-document.addEventListener('fullscreenchange',function(){setFullUI(!!document.fullscreenElement);});
-document.addEventListener('webkitfullscreenchange',function(){setFullUI(!!(document.fullscreenElement||document.webkitFullscreenElement));});
+function exitFsMode(){
+  isFsMode=false;
+  document.body.classList.remove('fs-mode');
+  if(document.exitFullscreen)document.exitFullscreen().catch(function(){});
+  else if(document.webkitExitFullscreen)document.webkitExitFullscreen();
+  if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();
+}
+document.addEventListener('fullscreenchange',function(){
+  if(!document.fullscreenElement&&isFsMode)exitFsMode();
+});
+document.addEventListener('webkitfullscreenchange',function(){
+  if(!(document.fullscreenElement||document.webkitFullscreenElement)&&isFsMode)exitFsMode();
+});
 
 var speedOn=localStorage.getItem('speedOn')!=='0';
 var isTesting=false,speedInterval=null;
@@ -289,12 +303,12 @@ function showDblHint(txt){dblTxt.textContent=txt;dblHint.classList.add('show');c
 var hideCtrlT=null;
 
 document.addEventListener('touchend',function(e){
-  if(e.target.closest('#controls-overlay')||e.target.closest('#ch-rows')||e.target.closest('.modal')||e.target.closest('#qm')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
+  if(e.target.closest('#controls-overlay')||e.target.closest('#ch-rows')||e.target.closest('#qm')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
   if(isSwiping)return;
   var now=Date.now();
   if(now-lastTap<400&&lastTap>0){
     lastTap=0;clearTimeout(dblTimer);dblTimer=null;
-    doFullscreen();showDblHint('⛶ شاشة كاملة');
+    doFullscreen();showDblHint(isFsMode?'⛶ شاشة كاملة':'↩ خروج');
   }else{
     lastTap=now;clearTimeout(dblTimer);
     if(e.target.closest('#player-wrap')){
