@@ -50,35 +50,12 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 .ch{min-width:78px;height:52px;background:#0a0a0a;border:1px solid #1a1a1a;color:#bbb;font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;transition:.2s;flex-shrink:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;}
 .ch:hover{background:#151515;border-color:#0f0;color:#fff;}.ch.on{background:#0f0;color:#000;border-color:#0f0;}
 .ch.iframe-ch{border-color:#f80;}.ch.iframe-ch.on{background:#f80;color:#000;border-color:#f80;}
-#add-ch{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,0,0,.75);border:1px solid #333;color:#0f0;font-size:12px;padding:7px 14px;border-radius:7px;cursor:pointer;}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:none;align-items:center;justify-content:center;}
-.modal-box{background:#0a0a0a;border:1px solid #222;border-radius:14px;padding:26px;width:92%;max-width:500px;}
-.modal-box h2{color:#fff;margin-bottom:16px;font-size:17px;}
-.modal-box input,.modal-box select{width:100%;padding:11px;margin:6px 0;background:#111;border:1px solid #2a2a2a;border-radius:7px;color:#fff;font-size:13px;}
-.mbtn{padding:11px 24px;background:#0f0;color:#000;border:none;border-radius:7px;cursor:pointer;font-weight:700;margin-top:12px;font-size:13px;}
-.mbtn.cancel{background:#1a1a1a;color:#fff;margin-right:8px;}
-.row{display:flex;gap:8px;}.row input{flex:1;}
 #err-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:9999;}
 </style>
 </head>
 <body>
 <div id="app">
-<button id="add-ch" onclick="toggleAdd()">+ قناة</button>
 <div id="err-toast"></div>
-<div class="modal" id="add-modal" onclick="if(event.target===this)toggleAdd()">
-  <div class="modal-box">
-    <h2>إضافة / تعديل قناة</h2>
-    <input id="ch-name" placeholder="اسم القناة">
-    <input id="ch-url" placeholder="رابط البث">
-    <select id="ch-type"><option value="hls">HLS (.m3u8)</option><option value="iframe">إطار مضمن</option></select>
-    <select id="ch-cat"><option value="0">أخبار</option><option value="1">رياضة</option><option value="2">وقت اللعب</option></select>
-    <div class="row"><input id="ch-idx" placeholder="رقم القناة للتعديل" type="number" min="1"></div>
-    <div style="margin-top:8px">
-      <button class="mbtn" onclick="saveChannel()">حفظ</button>
-      <button class="mbtn cancel" onclick="toggleAdd()">إلغاء</button>
-    </div>
-  </div>
-</div>
 <div id="player-wrap">
   <video id="vid" class="fc" playsinline webkit-playsinline></video>
   <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"></iframe></div>
@@ -191,7 +168,6 @@ var siLabel=document.getElementById('si-label');
 var brightL=document.getElementById('brightness-layer');
 var pw=document.getElementById('player-wrap');
 var chRows=document.getElementById('ch-rows');
-var addCh=document.getElementById('add-ch');
 var fitBtn=document.getElementById('fit-btn');
 var speedBadge=document.getElementById('speed-badge');
 var spdBtn=document.getElementById('spd-btn');
@@ -218,8 +194,8 @@ function doFullscreen(){
   }).catch(function(){setFullUI(true);});
 }
 function setFullUI(isFs){
-  if(isFs){pw.style.height='100%';chRows.style.display='none';addCh.style.display='none';}
-  else{pw.style.height='';chRows.style.display='flex';addCh.style.display='';if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}
+  if(isFs){pw.style.height='100%';chRows.style.display='none';}
+  else{pw.style.height='';chRows.style.display='flex';if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}
 }
 document.addEventListener('fullscreenchange',function(){setFullUI(!!document.fullscreenElement);});
 document.addEventListener('webkitfullscreenchange',function(){setFullUI(!!(document.fullscreenElement||document.webkitFullscreenElement));});
@@ -313,7 +289,7 @@ function showDblHint(txt){dblTxt.textContent=txt;dblHint.classList.add('show');c
 var hideCtrlT=null;
 
 document.addEventListener('touchend',function(e){
-  if(e.target.closest('#controls-overlay')||e.target.closest('#ch-rows')||e.target.closest('#add-ch')||e.target.closest('.modal')||e.target.closest('#qm')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
+  if(e.target.closest('#controls-overlay')||e.target.closest('#ch-rows')||e.target.closest('.modal')||e.target.closest('#qm')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
   if(isSwiping)return;
   var now=Date.now();
   if(now-lastTap<400&&lastTap>0){
@@ -351,24 +327,6 @@ pw.addEventListener('click',function(e){
 });
 document.addEventListener('click',function(e){if(!e.target.closest('#qw'))closeQ();});
 
-function toggleAdd(){var m=document.getElementById('add-modal');m.style.display=m.style.display!=='flex'?'flex':'none';}
-function saveChannel(){
-  var name=document.getElementById('ch-name').value.trim();
-  var url=document.getElementById('ch-url').value.trim();
-  var type=document.getElementById('ch-type').value||'hls';
-  var cat=parseInt(document.getElementById('ch-cat').value)||0;
-  if(!name||!url){toast('أدخل الاسم والرابط');return;}
-  ROWS[cat].channels.push({n:name,u:url,t:type});
-  buildChannels();toggleAdd();
-  load(cat,ROWS[cat].channels.length-1);
-}
-document.addEventListener('keydown',function(e){
-  if(e.target.tagName==='INPUT')return;
-  if(e.key===' '){e.preventDefault();togglePlay();}
-  else if(e.key==='f'||e.key==='F')doFullscreen();
-  else if(e.key==='m'||e.key==='M')toggleMute();
-  else if(e.key==='a'||e.key==='A')cycleAspect();
-});
 var sv=localStorage.getItem('vol');
 if(sv){vid.volume=parseFloat(sv);document.getElementById('vs').value=sv;}
 buildChannels();
