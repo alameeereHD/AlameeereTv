@@ -26,7 +26,7 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 #dbl-hint.show{opacity:1;}
 #swipe-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:14px 22px;display:none;flex-direction:column;align-items:center;gap:8px;z-index:20;pointer-events:none;min-width:130px;}
 #si-icon{font-size:26px;}#si-bar-bg{width:100%;height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;}#si-bar{height:100%;background:#0f0;border-radius:3px;}#si-label{font-size:12px;color:rgba(255,255,255,.75);}
-#controls-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.92));padding:30px 8px 10px;display:flex;align-items:center;gap:4px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100;}
+#controls-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.92));padding:30px 8px 10px;display:flex;align-items:center;gap:4px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100;overflow:visible;}
 #player-wrap.show-ctrl #controls-overlay{opacity:1;pointer-events:auto;}
 .cb{background:rgba(255,255,255,.12);border:none;color:#fff;padding:5px 8px;border-radius:5px;cursor:pointer;font-size:11px;backdrop-filter:blur(6px);transition:.2s;white-space:nowrap;flex-shrink:0;}
 .cb:hover{background:rgba(255,255,255,.28);}.cb.on{background:rgba(0,200,0,.2);color:#0f0;border:1px solid rgba(0,255,0,.3);}
@@ -35,20 +35,7 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 #vs::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#0f0;cursor:pointer;}
 #fg{flex:1;min-width:2px;}
 #qw{position:relative;flex-shrink:0;margin-left:6px;}
-/* قائمة الجودة - fixed خارج controls-overlay تماماً */
-#qm{
-  position:fixed;
-  background:rgba(10,10,10,.97);
-  border:1px solid #333;
-  border-radius:8px;
-  display:none;
-  flex-direction:column;
-  min-width:80px;
-  max-height:50vh;
-  overflow-y:auto;
-  z-index:99999;
-  box-shadow:0 -4px 20px rgba(0,0,0,.8);
-}
+#qm{position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(10,10,10,.97);border:1px solid #333;border-radius:8px;display:none;flex-direction:column;min-width:80px;max-height:50vh;overflow-y:auto;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.8);}
 #qm.open{display:flex;}
 #qm button{background:none;border:none;color:#fff;padding:6px 14px;cursor:pointer;text-align:center;font-size:12px;}
 #qm button:hover{background:rgba(255,255,255,.08);}
@@ -113,7 +100,10 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
     <button class="cb" id="spd-btn" onclick="toggleSpeed()">📡</button>
     <button class="cb" onclick="doFullscreen()">⛶</button>
     <div id="fg"></div>
-    <div id="qw"><button class="cb" id="q-btn" onclick="toggleQ()">جودة</button></div>
+    <div id="qw">
+      <button class="cb" id="q-btn" onclick="toggleQ()">جودة</button>
+      <div id="qm"></div>
+    </div>
   </div>
 </div>
 <div id="ch-rows">
@@ -121,8 +111,6 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
   <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-1"></div></div>
   <div class="ch-row"><div class="row-label"><span class="ico">🏆</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-2"></div></div>
 </div>
-<!-- قائمة الجودة خارج player-wrap تماماً - position:fixed -->
-<div id="qm"></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
@@ -265,7 +253,6 @@ function load(ri,ci){
   if(btn)btn.classList.add('on');
   var ch=ROWS[ri].channels[ci];
   chTitle.textContent=ch.n;chTitle.style.display='block';
-  closeQ();
   var type=ch.t||'hls';
   if(type==='iframe'){
     if(hls){hls.destroy();hls=null;}
@@ -303,27 +290,9 @@ function buildQ(){
     qm.appendChild(b);
   });updateQActive();
 }
-function updateQActive(){
-  if(!hls)return;
-  var btns=qm.querySelectorAll('button');
-  btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});
-}
+function updateQActive(){if(!hls)return;var btns=qm.querySelectorAll('button');btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
 function closeQ(){qm.classList.remove('open');}
-function toggleQ(){
-  if(qm.classList.contains('open')){closeQ();return;}
-  if(!qm.children.length)return;
-  // حساب موضع القائمة بناءً على موضع الزر
-  var r=qBtn.getBoundingClientRect();
-  var qH=Math.min(window.innerHeight*0.5, qm.children.length*32+8);
-  var top=r.top-qH-8;
-  if(top<8)top=r.bottom+8;
-  var left=r.left;
-  if(left+90>window.innerWidth)left=window.innerWidth-94;
-  qm.style.top=top+'px';
-  qm.style.left=left+'px';
-  qm.classList.add('open');
-  updateQActive();
-}
+function toggleQ(){if(!hls&&!qm.innerHTML){return;}qm.classList.toggle('open');if(qm.classList.contains('open'))updateQActive();}
 function togglePlay(){vid.paused?vid.play():vid.pause();}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
 function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElementById('mute-btn').textContent=v==0?'🔇':'🔊';document.getElementById('vs').value=v;localStorage.setItem('vol',v);}
@@ -373,7 +342,7 @@ pw.addEventListener('click',function(e){
   pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);
   hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
 });
-document.addEventListener('click',function(e){if(!e.target.closest('#qw')&&!e.target.closest('#qm'))closeQ();});
+document.addEventListener('click',function(e){if(!e.target.closest('#qw'))closeQ();});
 
 function toggleAdd(){var m=document.getElementById('add-modal');m.style.display=m.style.display!=='flex'?'flex':'none';}
 function saveChannel(){
