@@ -21,7 +21,7 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 #loader span{color:rgba(255,255,255,.7);font-size:12px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 #ch-title{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.65);padding:4px 10px;border-radius:16px;font-size:11px;color:#fff;z-index:6;display:none;}
-#speed-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.65);padding:4px 10px;border-radius:16px;font-size:10px;font-weight:700;color:#0f0;z-index:6;transition:opacity .3s;cursor:pointer;}
+#speed-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.65);padding:4px 10px;border-radius:16px;font-size:10px;font-weight:700;color:#0f0;z-index:6;cursor:pointer;}
 #speed-badge.hide{opacity:0;pointer-events:none;}
 #dbl-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:15;opacity:0;transition:opacity .3s;}
 #dbl-hint span{background:rgba(0,0,0,.78);color:#fff;font-size:13px;padding:10px 20px;border-radius:18px;}
@@ -29,31 +29,38 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 #swipe-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.8);border-radius:14px;padding:12px 18px;display:none;flex-direction:column;align-items:center;gap:6px;z-index:20;pointer-events:none;min-width:110px;}
 #si-icon{font-size:22px;}#si-bar-bg{width:100%;height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;}#si-bar{height:100%;background:#0f0;border-radius:3px;}#si-label{font-size:11px;color:rgba(255,255,255,.8);}
 
-/* شريط التحكم - صف واحد مع أزرار مضغوطة */
+/* شريط التحكم - اتجاه LTR دائماً */
 #controls-overlay{
   position:absolute;bottom:0;left:0;right:0;
   background:linear-gradient(transparent,rgba(0,0,0,.9));
-  padding:20px 6px 8px;
-  display:flex;align-items:center;
-  gap:4px;
+  padding:24px 8px 8px;
+  display:flex;
+  flex-direction:row; /* LTR */
+  direction:ltr;
+  align-items:center;
+  gap:5px;
   opacity:0;transition:opacity .3s;
   pointer-events:none;z-index:100;
-  overflow:hidden;
 }
 #player-wrap.show-ctrl #controls-overlay{opacity:1;pointer-events:auto;}
 
 .cb{
   background:rgba(255,255,255,.13);border:none;color:#fff;
-  padding:6px 8px;border-radius:5px;cursor:pointer;
-  font-size:11px;white-space:nowrap;flex-shrink:0;
+  padding:6px 9px;border-radius:5px;cursor:pointer;
+  font-size:12px;white-space:nowrap;flex-shrink:0;
+  line-height:1;
 }
+.cb:active{background:rgba(255,255,255,.3);}
 .cb.on{background:rgba(0,200,0,.25);color:#0f0;}
 
-/* شريط الصوت */
-#vs{-webkit-appearance:none;appearance:none;width:46px;height:3px;border-radius:2px;background:rgba(255,255,255,.3);outline:none;cursor:pointer;flex-shrink:0;}
-#vs::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#0f0;}
+#vs{
+  -webkit-appearance:none;appearance:none;
+  width:50px;height:3px;border-radius:2px;
+  background:rgba(255,255,255,.3);outline:none;cursor:pointer;flex-shrink:0;
+}
+#vs::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#0f0;}
 
-#fg{flex:1;} /* فراغ مرن */
+#fg{flex:1;}
 
 /* قائمة الجودة */
 #qm{
@@ -66,7 +73,11 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
   box-shadow:0 -6px 24px rgba(0,0,0,.85);
 }
 #qm.open{display:flex;}
-#qm button{background:none;border:none;color:#fff;padding:10px 16px;cursor:pointer;font-size:12px;text-align:center;}
+#qm button{
+  background:none;border:none;color:#fff;
+  padding:10px 16px;cursor:pointer;font-size:12px;
+  text-align:center;direction:ltr;
+}
 #qm button:hover{background:rgba(255,255,255,.09);}
 #qm button.active{color:#0f0;font-weight:700;}
 #q-btn.manual{background:rgba(0,200,0,.25);color:#0f0;}
@@ -74,9 +85,9 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 /* صفوف القنوات */
 #ch-rows{flex-shrink:0;background:#030303;border-top:1px solid #111;display:flex;flex-direction:column;}
 .ch-row{height:80px;display:flex;align-items:center;border-bottom:1px solid #0a0a0a;}
-.row-label{flex-shrink:0;width:46px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#050505;border-left:1px solid #111;}
+.row-label{flex-shrink:0;width:46px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#050505;border-right:1px solid #111;}
 .row-label .ico{font-size:15px;}.row-label .lbl{font-size:8px;color:#555;font-weight:700;}
-.row-scroll{flex:1;display:flex;gap:5px;padding:8px 6px;overflow-x:auto;align-items:center;}
+.row-scroll{flex:1;display:flex;gap:5px;padding:8px 6px;overflow-x:auto;align-items:center;direction:ltr;}
 .row-scroll::-webkit-scrollbar{height:3px;}.row-scroll::-webkit-scrollbar-thumb{background:#1a1a1a;border-radius:2px;}
 .ch{min-width:70px;height:48px;background:#0a0a0a;border:1px solid #1a1a1a;color:#bbb;font-size:10px;font-weight:700;border-radius:7px;cursor:pointer;transition:.2s;flex-shrink:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;}
 .ch:hover{border-color:#0f0;color:#fff;}
@@ -90,7 +101,6 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 .modal-box input,.modal-box select{width:100%;padding:10px;margin:4px 0;background:#111;border:1px solid #2a2a2a;border-radius:7px;color:#fff;font-size:13px;}
 .mbtn{padding:10px 20px;background:#0f0;color:#000;border:none;border-radius:7px;cursor:pointer;font-weight:700;margin-top:10px;font-size:13px;}
 .mbtn.cancel{background:#1a1a1a;color:#fff;margin-right:8px;}
-.mrow{display:flex;gap:8px;}.mrow input{flex:1;}
 #err-toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;display:none;z-index:9999;}
 </style>
 </head>
@@ -123,12 +133,12 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
   <div id="swipe-ind"><div id="si-icon">🔊</div><div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div><div id="si-label">الصوت</div></div>
   <div id="dbl-hint"><span id="dbl-txt">⛶ شاشة كاملة</span></div>
 
-  <!-- شريط التحكم: ⏯ 🔇 ━━ | ↕ | ⛶ | [فراغ] | جودة -->
+  <!-- شريط التحكم: اتجاه LTR - الترتيب: ⏯ 🔊 ━━ ⇅ ⛶ [فراغ] جودة -->
   <div id="controls-overlay">
     <button class="cb" onclick="togglePlay()">⏯</button>
     <button class="cb" id="mute-btn" onclick="toggleMute()">🔊</button>
     <input type="range" id="vs" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)">
-    <button class="cb" id="fit-btn" onclick="cycleAspect()">↕</button>
+    <button class="cb" id="fit-btn" onclick="cycleAspect()">⇅</button>
     <button class="cb" onclick="doFullscreen()">⛶</button>
     <div id="fg"></div>
     <button class="cb" id="q-btn" onclick="toggleQ()">جودة</button>
@@ -175,15 +185,11 @@ var ROWS=[
     {n:"Sport TV 1",u:"http://94.130.32.19:8080/sporttv1/index.m3u8",t:"hls"},
     {n:"Sport TV 2",u:"http://94.130.32.19:8080/sporttv2/index.m3u8",t:"hls"},
     {n:"Sport TV 3",u:"http://94.130.32.19:8080/sporttv3/index.m3u8",t:"hls"},
-    {n:"Sport TV 4",u:"http://94.130.32.19:8080/sporttv4/index.m3u8",t:"hls"},
-    {n:"Sport TV 5",u:"http://94.130.32.19:8080/sporttv5/index.m3u8",t:"hls"},
     {n:"TSN 1",u:"http://40.160.24.55/TSN_1/index.m3u8",t:"hls"},
     {n:"TSN 2",u:"http://40.160.24.55/TSN_2/index.m3u8",t:"hls"},
-    {n:"TSN 3",u:"http://40.160.24.55/TSN_3/index.m3u8",t:"hls"},
     {n:"Zain TV 1",u:"https://zaintv1.zaintvpro.workers.dev/live/z1.m3u8",t:"hls"},
     {n:"Zain TV 2",u:"https://zaintv1.zaintvpro.workers.dev/live/z2.m3u8",t:"hls"},
-    {n:"Sigma TV",u:"https://sl3.sigmatv.com/hls/live.m3u8",t:"hls"},
-    {n:"Super TV 1",u:"https://super-livetv.pages.dev/SUPER_TV_1.m3u8",t:"hls"}
+    {n:"Sigma TV",u:"https://sl3.sigmatv.com/hls/live.m3u8",t:"hls"}
   ]},
   {label:'وقت اللعب',channels:[
     {n:"beIN MAX S3",u:"https://cup.tvkora-online.net/albaplayer/sports-1/",t:"iframe"},
@@ -220,7 +226,7 @@ var speedBadge=document.getElementById('speed-badge');
 var brightness=parseFloat(localStorage.getItem('brightness')||'0');
 brightL.style.opacity=brightness;
 
-var ASPECTS=[{cls:'fc',lbl:'↕'},{cls:'fv',lbl:'⛶'},{cls:'ff',lbl:'↔'}];
+var ASPECTS=[{cls:'fc',lbl:'⇅'},{cls:'fv',lbl:'⛶'},{cls:'ff',lbl:'⇔'}];
 var aspectIdx=parseInt(localStorage.getItem('aspectIdx')||'0');
 function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[i].lbl;fitBtn.classList.toggle('on',i!==0);localStorage.setItem('aspectIdx',i);}
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
@@ -341,14 +347,18 @@ function closeQ(){qm.classList.remove('open');}
 function toggleQ(){
   if(qm.classList.contains('open')){closeQ();return;}
   if(!qm.children.length)return;
-  // موضع القائمة: فوق الزر دائماً
   var r=qBtn.getBoundingClientRect();
-  var h=Math.min(200,qm.children.length*40+8);
+  var h=Math.min(200,qm.children.length*40+10);
   var top=r.top-h-8;
   if(top<4)top=r.bottom+8;
+  // موضع أفقي - يبدأ من يسار الزر
+  var left=r.left;
+  if(left+100>window.innerWidth)left=window.innerWidth-104;
+  if(left<4)left=4;
   qm.style.top=top+'px';
-  qm.style.right=(window.innerWidth-r.right)+'px';
-  qm.style.left='auto';qm.style.bottom='auto';
+  qm.style.left=left+'px';
+  qm.style.right='auto';
+  qm.style.bottom='auto';
   qm.classList.add('open');updateQActive();
 }
 
@@ -364,7 +374,7 @@ function setVolume(v){
   localStorage.setItem('vol',v);
 }
 
-var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0;
+var swType=null,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0;
 function showSwipe(type,val){
   clearTimeout(swTimer);
   if(type==='vol'){siIcon.textContent='🔊';siLabel.textContent='الصوت '+Math.round(val*100)+'%';siBar.style.width=(val*100)+'%';siBar.style.background='#0f0';}
@@ -399,7 +409,7 @@ pw.addEventListener('touchstart',function(e){
   var t=e.touches[0];tyStart=t.clientY;isSwiping=false;
   var rect=pw.getBoundingClientRect();
   swType=(t.clientX-rect.left)>(rect.width/2)?'vol':'brightness';
-  swStartY=t.clientY;swStartVal=swType==='vol'?vid.volume:brightness;
+  swStartVal=swType==='vol'?vid.volume:brightness;
 },{passive:true});
 pw.addEventListener('touchmove',function(e){
   if(!swType||e.target.closest('#controls-overlay')||e.target.closest('#iframe-wrap'))return;
