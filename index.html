@@ -41,7 +41,7 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 #qm button:hover{background:rgba(255,255,255,.08);}
 #qm button.active{color:#0f0;font-weight:700;}
 #q-btn.manual{background:rgba(0,200,0,.2);color:#0f0;border:1px solid rgba(0,255,0,.35);}
-#ch-rows{flex:0 0 240px;background:#030303;border-top:1px solid #111;display:flex;flex-direction:column;}
+#ch-rows{flex:0 0 320px;background:#030303;border-top:1px solid #111;display:flex;flex-direction:column;}
 .ch-row{flex:1;display:flex;align-items:center;border-bottom:1px solid #0a0a0a;}
 .row-label{flex-shrink:0;width:52px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#050505;border-left:1px solid #111;}
 .row-label .ico{font-size:18px;}.row-label .lbl{font-size:9px;color:#666;font-weight:700;}
@@ -87,6 +87,7 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
   <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-0"></div></div>
   <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-1"></div></div>
   <div class="ch-row"><div class="row-label"><span class="ico">🏆</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-2"></div></div>
+  <div class="ch-row"><div class="row-label"><span class="ico">🎯</span><span class="lbl">شوت</span></div><div class="row-scroll" id="row-3"></div></div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
@@ -147,6 +148,10 @@ var ROWS=[
     {n:"Stream 1",u:"https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8",t:"hls"},
     {n:"Smarop SP",u:"https://we.smarop.store/spoos1.m3u8",t:"hls"},
     {n:"Drama 49",u:"https://main.xui-fute.site/Drama_IOS@@@@/Drama_IOS@@@@/49.m3u8",t:"hls"}
+  ]},
+  {label:'شوت',channels:[
+    {n:"m3u8",u:"https://panel.tofi-xtv.com/tofixtv12222/tofixtv12222/24.m3u8",t:"hls"},
+    {n:"tofi-24",u:"https://panel.tofi-xtv.com/tofixtv12222/tofixtv12222/24?tofiUrlname=HD",t:"hls"}
   ]}
 ];
 
