@@ -255,28 +255,75 @@ function load(ri,ci){
   if(hls){hls.destroy();hls=null;}
   vid.removeAttribute('src');vid.load();
   if(Hls.isSupported()){
-    hls=new Hls({enableWorker:true,maxBufferLength:30,maxMaxBufferLength:60,manifestLoadingMaxRetry:5,manifestLoadingRetryDelay:1000,levelLoadingMaxRetry:5,fragLoadingMaxRetry:5,startLevel:0,autoLevelEnabled:false,capLevelToPlayerSize:false});
+    hls=new Hls({
+      enableWorker:true,
+      // بدء من أقل جودة للتشغيل الفوري ثم الارتقاء تلقائياً
+      startLevel:-1,
+      autoLevelEnabled:true,
+      capLevelToPlayerSize:true,
+      // تقليل البافر الأولي للبدء أسرع
+      maxBufferLength:10,
+      maxMaxBufferLength:30,
+      maxBufferSize:20*1000*1000,
+      // تقليل وقت إعادة المحاولة
+      manifestLoadingMaxRetry:4,
+      manifestLoadingRetryDelay:500,
+      manifestLoadingMaxRetryTimeout:4000,
+      levelLoadingMaxRetry:4,
+      levelLoadingRetryDelay:500,
+      fragLoadingMaxRetry:4,
+      fragLoadingRetryDelay:500,
+      // إعدادات live
+      liveSyncDurationCount:2,
+      liveMaxLatencyDurationCount:4,
+      lowLatencyMode:true
+    });
     hls.loadSource(ch.u);hls.attachMedia(vid);
-    hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hideLoader();vid.play().catch(function(){});buildQ();});
+    hls.on(Hls.Events.MANIFEST_PARSED,function(){
+      hideLoader();
+      vid.play().catch(function(){});
+      buildQ();
+    });
     hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
-    hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur.r,cur.i);},8000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}}});
+    hls.on(Hls.Events.ERROR,function(e,d){
+      if(d.fatal){
+        if(d.type===Hls.ErrorTypes.NETWORK_ERROR){
+          loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';
+          loader.style.display='flex';
+          hls.startLoad();
+          retryT=setTimeout(function(){load(cur.r,cur.i);},5000);
+        }else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){
+          hls.recoverMediaError();
+        }else{
+          retryT=setTimeout(function(){load(cur.r,cur.i);},5000);
+        }
+      }
+    });
   }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
-    vid.src=ch.u;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
-  }else{hideLoader();toast('المتصفح غير متوافق');}
+    vid.src=ch.u;
+    vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});
+    vid.play().catch(function(){});
+  }else{
+    hideLoader();toast('المتصفح غير متوافق');
+  }
 }
 
 function buildQ(){
   qm.innerHTML='';if(!hls)return;
+  var lvls=hls.levels;
+  if(!lvls||!lvls.length)return;
   var a=document.createElement('button');a.textContent='تلقائي';
   a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};
   qm.appendChild(a);
-  hls.levels.forEach(function(lv,i){
+  // ترتيب الجودات من الأعلى للأقل
+  lvls.forEach(function(lv,i){
     var b=document.createElement('button');
     var lbl=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
     b.textContent=lbl;
     b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};
     qm.appendChild(b);
-  });updateQActive();
+  });
+  updateQActive();
 }
 function updateQActive(){if(!hls)return;var btns=qm.querySelectorAll('button');btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
 function closeQ(){qm.classList.remove('open');}
