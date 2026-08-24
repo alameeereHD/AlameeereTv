@@ -47,13 +47,10 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 .row-label .ico{font-size:18px;}.row-label .lbl{font-size:9px;color:#666;font-weight:700;}
 .row-scroll{flex:1;display:flex;gap:5px;padding:10px 8px;overflow-x:auto;align-items:center;}
 .row-scroll::-webkit-scrollbar{height:4px;}.row-scroll::-webkit-scrollbar-thumb{background:#222;border-radius:2px;}
-.ch-wrap{display:flex;flex-direction:column;gap:3px;align-items:center;flex-shrink:0;}
-.ch{min-width:78px;height:52px;background:#0a0a0a;border:1px solid #1a1a1a;color:#bbb;font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;transition:.2s;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;}
+.ch{min-width:78px;height:52px;background:#0a0a0a;border:1px solid #1a1a1a;color:#bbb;font-size:11px;font-weight:700;border-radius:8px;cursor:pointer;transition:.2s;flex-shrink:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:3px;}
 .ch:hover{background:#151515;border-color:#0f0;color:#fff;}.ch.on{background:#0f0;color:#000;border-color:#0f0;}
 .ch.iframe-ch{border-color:#f80;}.ch.iframe-ch.on{background:#f80;color:#000;border-color:#f80;}
 .ch.worker-ch{border-color:#0af;}.ch.worker-ch.on{background:#0af;color:#000;border-color:#0af;}
-.q-toggle{font-size:9px;background:rgba(255,255,255,.08);border:1px solid #333;color:#888;padding:2px 8px;border-radius:4px;cursor:pointer;width:100%;text-align:center;}
-.q-toggle:hover{background:rgba(0,175,255,.2);color:#0af;border-color:#0af;}
 #err-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:9999;}
 </style>
 </head>
@@ -88,16 +85,17 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
   </div>
 </div>
 <div id="ch-rows">
-  <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-0"></div></div>
-  <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-1"></div></div>
-  <div class="ch-row"><div class="row-label"><span class="ico">🏆</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-2"></div></div>
-  <div class="ch-row"><div class="row-label"><span class="ico">🔧</span><span class="lbl">شوت</span></div><div class="row-scroll" id="row-3"></div></div>
-  <div class="ch-row"><div class="row-label"><span class="ico">⭐</span><span class="lbl">خاص</span></div><div class="row-scroll" id="row-4"></div></div>
+  <div class="ch-row"><div class="row-label"><span class="ico">📡</span><span class="lbl">bein</span></div><div class="row-scroll" id="row-0"></div></div>
+  <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-1"></div></div>
+  <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-2"></div></div>
+  <div class="ch-row"><div class="row-label"><span class="ico">🏆</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-3"></div></div>
+  <div class="ch-row"><div class="row-label"><span class="ico">🎨</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-4"></div></div>
+  <div class="ch-row"><div class="row-label"><span class="ico">🌅</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-5"></div></div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
-var WORKER='https://alameeere-proxy.vercel.app';
+var WORKER='https://alameeere-proxy.alameeeretv.workers.dev';
 var workerToken=null,tokenExpiry=0;
 async function getToken(){
   if(workerToken&&Date.now()<tokenExpiry)return workerToken;
@@ -112,7 +110,17 @@ async function getToken(){
 setInterval(function(){workerToken=null;getToken();},60*60*1000);
 getToken();
 
+var BEIN_BASE='http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/';
+var ALWAN_BASE='http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/';
+
+var beinChannels=[];
+for(var i=325794;i<=325812;i++){beinChannels.push({n:'bein '+i,u:BEIN_BASE+i+'.ts',t:'hls'});}
+
+var alwanChannels=[];
+for(var i=418113;i<=418134;i++){alwanChannels.push({n:'الوان '+i,u:ALWAN_BASE+i+'.ts',t:'hls'});}
+
 var ROWS=[
+  {label:'bein',channels:beinChannels},
   {label:'أخبار',channels:[
     {n:"الجزيرة",u:"https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8",t:"hls"},
     {n:"الجزيرة المباشرة",u:"https://live-hls-web-ajm-gcp.thehlive.com/AJM/index.m3u8",t:"hls"},
@@ -157,26 +165,16 @@ var ROWS=[
     {n:"Stream 1",u:"https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8",t:"hls"},
     {n:"Smarop SP",u:"https://we.smarop.store/spoos1.m3u8",t:"hls"}
   ]},
-  {label:'شوت',channels:[
-    {n:"m3u8",u:"https://panel.tofi-xtv.com/tofixtv12222/tofixtv12222/24.m3u8",t:"hls"},
-    {n:"tofi-xtv",u:"https://panel.tofi-xtv.com/tofixtv12222/tofixtv12222/24?tofiUrlname=HD",t:"hls"}
-  ]},
-  {label:'خاص',channels:[
-    {n:"bein1",t:"worker",q:["bein1"]},
-    {n:"bein2",t:"worker",q:["bein2"]},
-    {n:"bein3",t:"worker",q:["bein3"]},
-    {n:"bein4",t:"worker",q:["bein4"]},
-    {n:"bein5",t:"worker",q:["bein5"]},
-    {n:"8 الأولى",t:"worker",q:["8a-j1","8a-j2"]},
-    {n:"8 الثانية",t:"worker",q:["8b"]},
-    {n:"8 الثالثة",t:"worker",q:["8c-j1","8c-j2"]},
-    {n:"الوان 1",t:"worker",q:["alwan1-j1","alwan1-j2"]},
-    {n:"الوان 2",t:"worker",q:["alwan2-j1","alwan2-j2"]},
-    {n:"الوان 3",t:"worker",q:["alwan3-j1","alwan3-j2"]}
+  {label:'الوان',channels:alwanChannels},
+  {label:'الفجر',channels:[
+    {n:"الفجر 1",u:"fajer1",t:"worker"},
+    {n:"الفجر 2",u:"fajer2",t:"worker"},
+    {n:"الفجر 3",u:"fajer3",t:"worker"},
+    {n:"الفجر 4",u:"fajer4",t:"worker"},
+    {n:"الفجر 5",u:"fajer5",t:"worker"}
   ]}
 ];
 
-var qIdx={};
 var hls=null,cur={r:-1,i:-1},retryT=null;
 var vid=document.getElementById('vid');
 var iframeWrap=document.getElementById('iframe-wrap');
@@ -268,33 +266,14 @@ function buildChannels(){
     var box=document.getElementById('row-'+ri);if(!box)return;
     box.innerHTML='';
     row.channels.forEach(function(c,ci){
-      var key=ri+'-'+ci;
-      if(!qIdx[key])qIdx[key]=0;
-      var wrap=document.createElement('div');
-      wrap.className='ch-wrap';
       var b=document.createElement('button');
       var cls='ch';
       if(c.t==='iframe')cls+=' iframe-ch';
       if(c.t==='worker')cls+=' worker-ch';
       b.className=cls;
-      b.textContent=c.n;
-      b.id='ch-'+key;
+      b.textContent=c.n;b.id='ch-'+ri+'-'+ci;
       b.onclick=function(){load(ri,ci);};
-      wrap.appendChild(b);
-      if(c.q&&c.q.length>1){
-        var qt=document.createElement('button');
-        qt.className='q-toggle';
-        qt.id='qt-'+key;
-        qt.textContent='j'+(qIdx[key]+1)+'/'+(c.q.length);
-        qt.onclick=function(e){
-          e.stopPropagation();
-          qIdx[key]=(qIdx[key]+1)%c.q.length;
-          qt.textContent='j'+(qIdx[key]+1)+'/'+(c.q.length);
-          if(cur.r===ri&&cur.i===ci)load(ri,ci);
-        };
-        wrap.appendChild(qt);
-      }
-      box.appendChild(wrap);
+      box.appendChild(b);
     });
   });
 }
@@ -304,18 +283,16 @@ function load(ri,ci){
   cur={r:ri,i:ci};
   if(retryT){clearTimeout(retryT);retryT=null;}
   document.querySelectorAll('.ch').forEach(function(b){b.classList.remove('on');});
-  var key=ri+'-'+ci;
-  var btn=document.getElementById('ch-'+key);
+  var btn=document.getElementById('ch-'+ri+'-'+ci);
   if(btn)btn.classList.add('on');
   var ch=ROWS[ri].channels[ci];
   chTitle.textContent=ch.n;chTitle.style.display='block';
   var type=ch.t||'hls';
   if(type==='worker'){
-    var chKey=ch.q?(ch.q[qIdx[key]||0]):ch.u;
     showLoader('جاري تحميل '+ch.n+'...');
     getToken().then(function(tok){
       if(!tok){hideLoader();toast('خطأ في الاتصال بالسيرفر');return;}
-      var url=WORKER+'/stream?ch='+chKey+'&token='+tok;
+      var url=WORKER+'/stream?ch='+ch.u+'&token='+tok;
       loadHls(url,ch.n);
     });
     return;
