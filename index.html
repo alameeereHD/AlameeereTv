@@ -97,7 +97,7 @@ video.fc{object-fit:contain;}video.fv{object-fit:fill;}video.ff{object-fit:conta
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
-var WORKER='https://alameeere-proxy.alameeeretv.workers.dev';
+var WORKER='https://alameeere-proxy.vercel.app';
 var workerToken=null,tokenExpiry=0;
 async function getToken(){
   if(workerToken&&Date.now()<tokenExpiry)return workerToken;
@@ -112,7 +112,6 @@ async function getToken(){
 setInterval(function(){workerToken=null;getToken();},60*60*1000);
 getToken();
 
-// ROWS: channels with optional variants (q array = multiple qualities, toggle between them)
 var ROWS=[
   {label:'أخبار',channels:[
     {n:"الجزيرة",u:"https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8",t:"hls"},
@@ -176,9 +175,7 @@ var ROWS=[
   ]}
 ];
 
-// Track current quality index per channel
 var qIdx={};
-
 var hls=null,cur={r:-1,i:-1},retryT=null;
 var vid=document.getElementById('vid');
 var iframeWrap=document.getElementById('iframe-wrap');
@@ -283,7 +280,6 @@ function buildChannels(){
       b.id='ch-'+key;
       b.onclick=function(){load(ri,ci);};
       wrap.appendChild(b);
-      // زر الجودة فقط إذا فيه أكثر من جودة
       if(c.q&&c.q.length>1){
         var qt=document.createElement('button');
         qt.className='q-toggle';
@@ -293,7 +289,6 @@ function buildChannels(){
           e.stopPropagation();
           qIdx[key]=(qIdx[key]+1)%c.q.length;
           qt.textContent='j'+(qIdx[key]+1)+'/'+(c.q.length);
-          // إذا القناة شغالة الآن، أعد التشغيل بالجودة الجديدة
           if(cur.r===ri&&cur.i===ci)load(ri,ci);
         };
         wrap.appendChild(qt);
