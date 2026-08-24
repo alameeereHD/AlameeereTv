@@ -147,6 +147,7 @@ var ROWS=[
   {label:'وقت اللعب',channels:[
     {n:"beIN S1",u:"https://28.1yalla-shoot.space/albaplayer/live1/",t:"iframe"},
     {n:"beIN 1",u:"https://pl.koralive1.cc/albaplayer/1bein1/?serv=0",t:"iframe"},
+    {n:"be1",u:"https://razkomax2.blogspot.com/?m=0",t:"iframe"},
     {n:"beIN 2",u:"https://23.1yallashoot.site/albaplayer/live2/",t:"iframe"},
     {n:"beIN 3",u:"https://28.1yalla-shoot.space/albaplayer/live3",t:"iframe"},
     {n:"beIN 4",u:"https://28.1yalla-shoot.space/albaplayer/live4",t:"iframe"},
@@ -199,33 +200,15 @@ var speedBadge=document.getElementById('speed-badge');
 var spdBtn=document.getElementById('spd-btn');
 var brightness=parseFloat(localStorage.getItem('brightness')||'0');
 brightL.style.opacity=brightness;
-
 var ASPECTS=[{cls:'fc',lbl:'↕ عادي'},{cls:'fv',lbl:'⛶ ملء'},{cls:'ff',lbl:'↔ مفيد'}];
 var aspectIdx=parseInt(localStorage.getItem('aspectIdx')||'0');
 function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[i].lbl;fitBtn.classList.toggle('on',i!==0);localStorage.setItem('aspectIdx',i);}
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
-
-function doFullscreen(){
-  if(document.fullscreenElement||document.webkitFullscreenElement){
-    if(document.exitFullscreen)document.exitFullscreen();
-    else if(document.webkitExitFullscreen)document.webkitExitFullscreen();
-    return;
-  }
-  var el=document.documentElement;
-  var p=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():Promise.resolve();
-  Promise.resolve(p).then(function(){
-    if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});
-    setFullUI(true);
-  }).catch(function(){setFullUI(true);});
-}
-function setFullUI(isFs){
-  if(isFs){chRows.style.display='none';}
-  else{chRows.style.display='flex';if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}
-}
+function doFullscreen(){if(document.fullscreenElement||document.webkitFullscreenElement){if(document.exitFullscreen)document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();return;}var el=document.documentElement;var p=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():Promise.resolve();Promise.resolve(p).then(function(){if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});setFullUI(true);}).catch(function(){setFullUI(true);});}
+function setFullUI(isFs){if(isFs){chRows.style.display='none';}else{chRows.style.display='flex';if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}}
 document.addEventListener('fullscreenchange',function(){setFullUI(!!document.fullscreenElement);});
 document.addEventListener('webkitfullscreenchange',function(){setFullUI(!!(document.fullscreenElement||document.webkitFullscreenElement));});
-
 var speedOn=localStorage.getItem('speedOn')!=='0';
 var isTesting=false,speedInterval=null;
 var TEST_URLS=['https://httpbin.org/bytes/200000','https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'];
@@ -235,117 +218,13 @@ function showSpeed(bps){var lbl=bps>=1000000?'📡 '+(bps/1000000).toFixed(1)+' 
 function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);if(speedOn){if(!speedInterval){runSpeedTest();speedInterval=setInterval(runSpeedTest,15000);}}else{if(speedInterval){clearInterval(speedInterval);speedInterval=null;}}}
 function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}
 applySpeedVis();
-
 function showLoader(t){loader.style.display='flex';loaderTxt.textContent=t||'جاري التحميل...';}
 function hideLoader(){loader.style.display='none';}
 function toast(msg){var t=document.getElementById('err-toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},4000);}
-
-function loadHls(url,name){
-  vid.style.display='block';iframeWrap.style.display='none';iframePlayer.src='';
-  showLoader('جاري تحميل '+name+'...');
-  if(hls){hls.destroy();hls=null;}
-  vid.removeAttribute('src');vid.load();
-  if(Hls.isSupported()){
-    hls=new Hls({enableWorker:true,startLevel:-1,autoLevelEnabled:true,capLevelToPlayerSize:true,maxBufferLength:10,maxMaxBufferLength:30,maxBufferSize:20*1000*1000,manifestLoadingMaxRetry:4,manifestLoadingRetryDelay:500,levelLoadingMaxRetry:4,fragLoadingMaxRetry:4,fragLoadingRetryDelay:500,liveSyncDurationCount:2,liveMaxLatencyDurationCount:4,lowLatencyMode:true});
-    hls.loadSource(url);hls.attachMedia(vid);
-    hls.on(Hls.Events.MANIFEST_PARSED,function(){hideLoader();vid.play().catch(function(){});buildQ();});
-    hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
-    hls.on(Hls.Events.ERROR,function(e,d){
-      if(d.fatal){
-        if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}
-        else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}
-        else{retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}
-      }
-    });
-  }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
-    vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});
-  }else{hideLoader();toast('المتصفح غير متوافق');}
-}
-
-function buildChannels(){
-  ROWS.forEach(function(row,ri){
-    var box=document.getElementById('row-'+ri);if(!box)return;
-    box.innerHTML='';
-    row.channels.forEach(function(c,ci){
-      var key=ri+'-'+ci;
-      if(!qIdx[key])qIdx[key]=0;
-      var wrap=document.createElement('div');
-      wrap.className='ch-wrap';
-      var b=document.createElement('button');
-      var cls='ch';
-      if(c.t==='iframe')cls+=' iframe-ch';
-      if(c.t==='worker')cls+=' worker-ch';
-      b.className=cls;
-      b.textContent=c.n;
-      b.id='ch-'+key;
-      b.onclick=function(){load(ri,ci);};
-      wrap.appendChild(b);
-      if(c.q&&c.q.length>1){
-        var qt=document.createElement('button');
-        qt.className='q-toggle';
-        qt.id='qt-'+key;
-        qt.textContent='j'+(qIdx[key]+1)+'/'+(c.q.length);
-        qt.onclick=function(e){
-          e.stopPropagation();
-          qIdx[key]=(qIdx[key]+1)%c.q.length;
-          qt.textContent='j'+(qIdx[key]+1)+'/'+(c.q.length);
-          if(cur.r===ri&&cur.i===ci)load(ri,ci);
-        };
-        wrap.appendChild(qt);
-      }
-      box.appendChild(wrap);
-    });
-  });
-}
-
-function load(ri,ci){
-  if(ri<0||ri>=ROWS.length||ci<0||ci>=ROWS[ri].channels.length)return;
-  cur={r:ri,i:ci};
-  if(retryT){clearTimeout(retryT);retryT=null;}
-  document.querySelectorAll('.ch').forEach(function(b){b.classList.remove('on');});
-  var key=ri+'-'+ci;
-  var btn=document.getElementById('ch-'+key);
-  if(btn)btn.classList.add('on');
-  var ch=ROWS[ri].channels[ci];
-  chTitle.textContent=ch.n;chTitle.style.display='block';
-  var type=ch.t||'hls';
-  if(type==='worker'){
-    var chKey=ch.q?(ch.q[qIdx[key]||0]):ch.u;
-    showLoader('جاري تحميل '+ch.n+'...');
-    getToken().then(function(tok){
-      if(!tok){hideLoader();toast('خطأ في الاتصال بالسيرفر');return;}
-      var url=WORKER+'/stream?ch='+chKey+'&token='+tok;
-      loadHls(url,ch.n);
-    });
-    return;
-  }
-  if(type==='iframe'){
-    if(hls){hls.destroy();hls=null;}
-    vid.style.display='none';iframeWrap.style.display='block';
-    showLoader('جاري تحميل '+ch.n+'...');
-    iframePlayer.src='';
-    setTimeout(function(){iframePlayer.src=ch.u;hideLoader();},400);
-    qm.innerHTML='';return;
-  }
-  loadHls(ch.u,ch.n);
-}
-
-function buildQ(){
-  qm.innerHTML='';if(!hls)return;
-  var lvls=hls.levels;
-  if(!lvls||!lvls.length)return;
-  var a=document.createElement('button');a.textContent='تلقائي';
-  a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};
-  qm.appendChild(a);
-  lvls.forEach(function(lv,i){
-    var b=document.createElement('button');
-    var lbl=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';
-    b.textContent=lbl;
-    b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};
-    qm.appendChild(b);
-  });
-  updateQActive();
-}
+function loadHls(url,name){vid.style.display='block';iframeWrap.style.display='none';iframePlayer.src='';showLoader('جاري تحميل '+name+'...');if(hls){hls.destroy();hls=null;}vid.removeAttribute('src');vid.load();if(Hls.isSupported()){hls=new Hls({enableWorker:true,startLevel:-1,autoLevelEnabled:true,capLevelToPlayerSize:true,maxBufferLength:10,maxMaxBufferLength:30,maxBufferSize:20*1000*1000,manifestLoadingMaxRetry:4,manifestLoadingRetryDelay:500,levelLoadingMaxRetry:4,fragLoadingMaxRetry:4,fragLoadingRetryDelay:500,liveSyncDurationCount:2,liveMaxLatencyDurationCount:4,lowLatencyMode:true});hls.loadSource(url);hls.attachMedia(vid);hls.on(Hls.Events.MANIFEST_PARSED,function(){hideLoader();vid.play().catch(function(){});buildQ();});hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){loaderTxt.textContent='انقطع الاتصال، إعادة المحاولة...';loader.style.display='flex';hls.startLoad();retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}}});}else if(vid.canPlayType('application/vnd.apple.mpegurl')){vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();},{once:true});vid.play().catch(function(){});}else{hideLoader();toast('المتصفح غير متوافق');}}
+function buildChannels(){ROWS.forEach(function(row,ri){var box=document.getElementById('row-'+ri);if(!box)return;box.innerHTML='';row.channels.forEach(function(c,ci){var key=ri+'-'+ci;if(!qIdx[key])qIdx[key]=0;var wrap=document.createElement('div');wrap.className='ch-wrap';var b=document.createElement('button');var cls='ch';if(c.t==='iframe')cls+=' iframe-ch';if(c.t==='worker')cls+=' worker-ch';b.className=cls;b.textContent=c.n;b.id='ch-'+key;b.onclick=function(){load(ri,ci);};wrap.appendChild(b);if(c.q&&c.q.length>1){var qt=document.createElement('button');qt.className='q-toggle';qt.id='qt-'+key;qt.textContent='j'+(qIdx[key]+1)+'/'+(c.q.length);qt.onclick=function(e){e.stopPropagation();qIdx[key]=(qIdx[key]+1)%c.q.length;qt.textContent='j'+(qIdx[key]+1)+'/'+(c.q.length);if(cur.r===ri&&cur.i===ci)load(ri,ci);};wrap.appendChild(qt);}box.appendChild(wrap);});});}
+function load(ri,ci){if(ri<0||ri>=ROWS.length||ci<0||ci>=ROWS[ri].channels.length)return;cur={r:ri,i:ci};if(retryT){clearTimeout(retryT);retryT=null;}document.querySelectorAll('.ch').forEach(function(b){b.classList.remove('on');});var key=ri+'-'+ci;var btn=document.getElementById('ch-'+key);if(btn)btn.classList.add('on');var ch=ROWS[ri].channels[ci];chTitle.textContent=ch.n;chTitle.style.display='block';var type=ch.t||'hls';if(type==='worker'){var chKey=ch.q?(ch.q[qIdx[key]||0]):ch.u;showLoader('جاري تحميل '+ch.n+'...');getToken().then(function(tok){if(!tok){hideLoader();toast('خطأ في الاتصال بالسيرفر');return;}var url=WORKER+'/stream?ch='+chKey+'&token='+tok;loadHls(url,ch.n);});return;}if(type==='iframe'){if(hls){hls.destroy();hls=null;}vid.style.display='none';iframeWrap.style.display='block';showLoader('جاري تحميل '+ch.n+'...');iframePlayer.src='';setTimeout(function(){iframePlayer.src=ch.u;hideLoader();},400);qm.innerHTML='';return;}loadHls(ch.u,ch.n);}
+function buildQ(){qm.innerHTML='';if(!hls)return;var lvls=hls.levels;if(!lvls||!lvls.length)return;var a=document.createElement('button');a.textContent='تلقائي';a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};qm.appendChild(a);lvls.forEach(function(lv,i){var b=document.createElement('button');var lbl=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';b.textContent=lbl;b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};qm.appendChild(b);});updateQActive();}
 function updateQActive(){if(!hls)return;var btns=qm.querySelectorAll('button');btns.forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
 function closeQ(){qm.classList.remove('open');}
 function toggleQ(){if(!hls&&!qm.innerHTML){return;}qm.classList.toggle('open');if(qm.classList.contains('open'))updateQActive();}
@@ -353,53 +232,17 @@ function togglePlay(){vid.paused?vid.play():vid.pause();}
 function toggleMute(){vid.muted=!vid.muted;document.getElementById('mute-btn').textContent=vid.muted?'🔇':'🔊';document.getElementById('vs').value=vid.muted?0:vid.volume;}
 function setVolume(v){vid.volume=parseFloat(v);vid.muted=v==0;document.getElementById('mute-btn').textContent=v==0?'🔇':'🔊';document.getElementById('vs').value=v;localStorage.setItem('vol',v);}
 function skip(s){vid.currentTime+=s;}
-
 var swType=null,swStartY=0,swStartVal=0,swTimer=null,isSwiping=false,tyStart=0;
 function showSwipe(type,val){clearTimeout(swTimer);if(type==='vol'){siIcon.textContent='🔊';siLabel.textContent='الصوت '+Math.round(val*100)+'%';siBar.style.width=(val*100)+'%';siBar.style.background='#0f0';}else{siIcon.textContent='☀️';siLabel.textContent='الإضاءة '+Math.round((1-val/0.85)*100)+'%';siBar.style.width=((1-val/0.85)*100)+'%';siBar.style.background='#fbbf24';}swInd.style.display='flex';swTimer=setTimeout(function(){swInd.style.display='none';},1200);}
-
 var lastTap=0,dblTimer=null,dblHintTimer=null;
 function showDblHint(txt){dblTxt.textContent=txt;dblHint.classList.add('show');clearTimeout(dblHintTimer);dblHintTimer=setTimeout(function(){dblHint.classList.remove('show');},1500);}
 var hideCtrlT=null;
-
-document.addEventListener('touchend',function(e){
-  if(e.target.closest('#controls-overlay')||e.target.closest('#ch-rows')||e.target.closest('#qm')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
-  if(isSwiping)return;
-  var now=Date.now();
-  if(now-lastTap<400&&lastTap>0){
-    lastTap=0;clearTimeout(dblTimer);dblTimer=null;
-    doFullscreen();showDblHint('⛶ شاشة كاملة');
-  }else{
-    lastTap=now;clearTimeout(dblTimer);
-    if(e.target.closest('#player-wrap')){
-      dblTimer=setTimeout(function(){lastTap=0;pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);},400);
-    }
-  }
-},{passive:true});
-
-pw.addEventListener('touchstart',function(e){
-  if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
-  var t=e.touches[0];tyStart=t.clientY;isSwiping=false;
-  var rect=pw.getBoundingClientRect();
-  swType=(t.clientX-rect.left)>(rect.width/2)?'vol':'brightness';
-  swStartY=t.clientY;swStartVal=swType==='vol'?vid.volume:brightness;
-},{passive:true});
-pw.addEventListener('touchmove',function(e){
-  if(!swType||e.target.closest('#controls-overlay')||e.target.closest('#iframe-wrap'))return;
-  var t=e.touches[0];var dy=tyStart-t.clientY;
-  if(!isSwiping&&Math.abs(dy)>12)isSwiping=true;
-  if(!isSwiping)return;
-  var delta=dy/pw.getBoundingClientRect().height;
-  if(swType==='vol'){var v=Math.max(0,Math.min(1,swStartVal+delta));setVolume(v);showSwipe('vol',v);}
-  else{var b=Math.max(0,Math.min(0.85,swStartVal-delta));brightness=b;brightL.style.opacity=b;localStorage.setItem('brightness',b);showSwipe('brightness',b);}
-},{passive:true});
+document.addEventListener('touchend',function(e){if(e.target.closest('#controls-overlay')||e.target.closest('#ch-rows')||e.target.closest('#qm')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;if(isSwiping)return;var now=Date.now();if(now-lastTap<400&&lastTap>0){lastTap=0;clearTimeout(dblTimer);dblTimer=null;doFullscreen();showDblHint('⛶ شاشة كاملة');}else{lastTap=now;clearTimeout(dblTimer);if(e.target.closest('#player-wrap')){dblTimer=setTimeout(function(){lastTap=0;pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);},400);}}},{passive:true});
+pw.addEventListener('touchstart',function(e){if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;var t=e.touches[0];tyStart=t.clientY;isSwiping=false;var rect=pw.getBoundingClientRect();swType=(t.clientX-rect.left)>(rect.width/2)?'vol':'brightness';swStartY=t.clientY;swStartVal=swType==='vol'?vid.volume:brightness;},{passive:true});
+pw.addEventListener('touchmove',function(e){if(!swType||e.target.closest('#controls-overlay')||e.target.closest('#iframe-wrap'))return;var t=e.touches[0];var dy=tyStart-t.clientY;if(!isSwiping&&Math.abs(dy)>12)isSwiping=true;if(!isSwiping)return;var delta=dy/pw.getBoundingClientRect().height;if(swType==='vol'){var v=Math.max(0,Math.min(1,swStartVal+delta));setVolume(v);showSwipe('vol',v);}else{var b=Math.max(0,Math.min(0.85,swStartVal-delta));brightness=b;brightL.style.opacity=b;localStorage.setItem('brightness',b);showSwipe('brightness',b);}},{passive:true});
 pw.addEventListener('touchend',function(){swType=null;setTimeout(function(){isSwiping=false;},50);},{passive:true});
-pw.addEventListener('click',function(e){
-  if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;
-  pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);
-  hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);
-});
+pw.addEventListener('click',function(e){if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;pw.classList.add('show-ctrl');clearTimeout(hideCtrlT);hideCtrlT=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);});
 document.addEventListener('click',function(e){if(!e.target.closest('#qw'))closeQ();});
-
 var sv=localStorage.getItem('vol');
 if(sv){vid.volume=parseFloat(sv);document.getElementById('vs').value=sv;}
 buildChannels();
