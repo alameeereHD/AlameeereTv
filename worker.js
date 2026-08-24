@@ -1,98 +1,85 @@
-const BROWSER_HEADERS = {
-  'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-  'Accept':          '*/*',
-  'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8',
-  'Accept-Encoding': 'identity',
-  'Cache-Control':   'no-cache',
-  'Pragma':          'no-cache',
-  'Connection':      'keep-alive',
-  'Referer':         'http://lynovo.cc/'
-};
-
-const CORS = {
-  'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': '*'
-};
-
-function getContentType(url) {
-  if (url.includes('.m3u8')) return 'application/vnd.apple.mpegurl';
-  if (url.includes('.ts'))   return 'video/mp2t';
-  if (url.includes('.mp4'))  return 'video/mp4';
-  if (url.includes('.aac'))  return 'audio/aac';
-  return 'application/octet-stream';
-}
-
-function rewriteM3u8(text, originalUrl, proxyBase) {
-  const base = originalUrl.substring(0, originalUrl.lastIndexOf('/') + 1);
-  return text.split('\n').map(line => {
-    const t = line.trim();
-    if (!t || t.startsWith('#')) return line;
-    if (t.startsWith('http://') || t.startsWith('https://'))
-      return proxyBase + encodeURIComponent(t);
-    return proxyBase + encodeURIComponent(base + t);
-  }).join('\n');
-}
-
-async function fetchWithRedirect(url, headers, count = 0) {
-  if (count > 5) throw new Error('too many redirects');
-  const res = await fetch(url, { headers, redirect: 'manual' });
-  if ([301, 302, 303, 307, 308].includes(res.status)) {
-    const loc = res.headers.get('location');
-    if (!loc) throw new Error('redirect without location');
-    const next = loc.startsWith('http') ? loc : new URL(loc, url).href;
-    return fetchWithRedirect(next, headers, count + 1);
-  }
-  return res;
-}
-
 export default {
   async fetch(request) {
     const url = new URL(request.url);
+    const path = url.pathname;
 
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: CORS });
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "*",
+    };
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
     }
 
-    const targetUrl = url.searchParams.get('url');
-    if (!targetUrl) {
-      return new Response(JSON.stringify({ error: 'missing url param' }), {
-        status: 400, headers: { ...CORS, 'Content-Type': 'application/json' }
+    const SECRET = "Alam33re#2026";
+    const VALIDITY = 2 * 60 * 60 * 1000;
+
+    async function makeToken(ts) {
+      const w = Math.floor(ts / VALIDITY);
+      const data = new TextEncoder().encode(`${SECRET}:${w}`);
+      const hash = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hash))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("").substring(0, 24);
+    }
+
+    const CHANNELS = {
+      "fajer1": "http://pro.netmos.ovh:7355/live/MMTVO89S7DY7CNV7SD/P7HIDSPCN580WXH90/181686.ts",
+      "fajer2": "http://pro.netmos.ovh:7355/live/MMTVO89S7DY7CNV7SD/P7HIDSPCN580WXH90/181681.ts",
+      "fajer3": "http://pro.netmos.ovh:7355/live/MMTVO89S7DY7CNV7SD/P7HIDSPCN580WXH90/181683.ts",
+      "fajer4": "http://pro.netmos.ovh:7355/live/MMTVO89S7DY7CNV7SD/P7HIDSPCN580WXH90/181661.ts",
+      "bein5": "http://ahm79.store/live/0545580310/7337741654/14657.m3u8",
+    };
+
+    if (path === "/token") {
+      const now = Date.now();
+      const token = await makeToken(now);
+      const expires = VALIDITY - (now % VALIDITY);
+      return new Response(JSON.stringify({ token, expires }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
-    let decoded;
-    try { decoded = decodeURIComponent(targetUrl); }
-    catch { return new Response('invalid url', { status: 400, headers: CORS }); }
+    if (path === "/stream") {
+      const ch = url.searchParams.get("ch");
+      const token = url.searchParams.get("token");
 
-    if (!decoded.startsWith('http://') && !decoded.startsWith('https://')) {
-      return new Response('forbidden', { status: 403, headers: CORS });
-    }
-
-    try {
-      const resp = await fetchWithRedirect(decoded, BROWSER_HEADERS);
-      const ct   = getContentType(decoded);
-      const isM3u8 = ct.includes('mpegurl') || decoded.includes('.m3u8');
-
-      const proxyBase = 'https://alameeeretv.mkhtar80.workers.dev/?url=';
-
-      if (isM3u8) {
-        const text = await resp.text();
-        const rewritten = rewriteM3u8(text, decoded, proxyBase);
-        return new Response(rewritten, {
-          headers: { ...CORS, 'Content-Type': 'application/vnd.apple.mpegurl', 'Cache-Control': 'no-cache' }
-        });
+      if (!token || !ch) {
+        return new Response("Missing params", { status: 400, headers: corsHeaders });
       }
 
-      const body = await resp.arrayBuffer();
-      return new Response(body, {
-        headers: { ...CORS, 'Content-Type': ct, 'Cache-Control': 'no-cache' }
-      });
+      const now = Date.now();
+      const cur = await makeToken(now);
+      const prev = await makeToken(now - VALIDITY);
 
-    } catch (err) {
-      return new Response(JSON.stringify({ error: err.message }), {
-        status: 502, headers: { ...CORS, 'Content-Type': 'application/json' }
-      });
+      if (token !== cur && token !== prev) {
+        return new Response("Token Expired", { status: 403, headers: corsHeaders });
+      }
+
+      const streamUrl = CHANNELS[ch];
+      if (!streamUrl) {
+        return new Response("Not Found", { status: 404, headers: corsHeaders });
+      }
+
+      try {
+        const resp = await fetch(streamUrl, {
+          headers: { "User-Agent": "Mozilla/5.0" },
+          redirect: "follow",
+        });
+        return new Response(resp.body, {
+          status: resp.status,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": resp.headers.get("Content-Type") || "application/vnd.apple.mpegurl",
+          }
+        });
+      } catch (e) {
+        return new Response(`Error: ${e.message}`, { status: 500, headers: corsHeaders });
+      }
     }
+
+    return new Response("Not Found", { status: 404 });
   }
 };
