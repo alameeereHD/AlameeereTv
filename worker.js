@@ -26,10 +26,6 @@ export default {
     }
 
     const CHANNELS = {
-      "fajer1": "http://pro.netmos.ovh:7355/live/MMTVO89S7DY7CNV7SD/P7HIDSPCN580WXH90/181686.ts",
-      "fajer2": "http://pro.netmos.ovh:7355/live/MMTVO89S7DY7CNV7SD/P7HIDSPCN580WXH90/181681.ts",
-      "fajer3": "http://pro.netmos.ovh:7355/live/MMTVO89S7DY7CNV7SD/P7HIDSPCN580WXH90/181683.ts",
-      "fajer4": "http://pro.netmos.ovh:7355/live/MMTVO89S7DY7CNV7SD/P7HIDSPCN580WXH90/181661.ts",
       "bein5": "http://ahm79.store/live/0545580310/7337741654/14657.m3u8",
     };
 
