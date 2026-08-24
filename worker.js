@@ -16,24 +16,23 @@ export default {
       const hash = await crypto.subtle.digest("SHA-256", data);
       return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,"0")).join("").substring(0,24);
     }
-    const BASE = "http://ahm79.store/live/0545580310/7337741654/";
     const CHANNELS = {
-      "bein1":  BASE+"14670.m3u8",
-      "bein2":  BASE+"769629.m3u8",
-      "bein3":  BASE+"14672.m3u8",
-      "bein4":  BASE+"14673.m3u8",
-      "bein5":  BASE+"14657.m3u8",
-      "8a-j1":  BASE+"746713.m3u8",
-      "8a-j2":  BASE+"746716.m3u8",
-      "8b":     BASE+"746717.m3u8",
-      "8c-j1":  BASE+"746719.m3u8",
-      "8c-j2":  BASE+"746720.m3u8",
-      "alwan1-j1": BASE+"772277.m3u8",
-      "alwan1-j2": BASE+"772276.m3u8",
-      "alwan2-j1": BASE+"772274.m3u8",
-      "alwan2-j2": BASE+"772273.m3u8",
-      "alwan3-j1": BASE+"772270.m3u8",
-      "alwan3-j2": BASE+"772269.m3u8",
+      "bein1":     "http://ahm79.store/live/0545580310/7337741654/14670.m3u8",
+      "bein2":     "http://ahm79.store/live/0545580310/7337741654/769629.m3u8",
+      "bein3":     "http://ahm79.store/live/0545580310/7337741654/14672.m3u8",
+      "bein4":     "http://ahm79.store/live/0545580310/7337741654/14673.m3u8",
+      "bein5":     "http://ahm79.store/live/0545580310/7337741654/14657.m3u8",
+      "8a-j1":     "http://ahm79.store/live/0545580310/7337741654/746713.m3u8",
+      "8a-j2":     "http://ahm79.store/live/0545580310/7337741654/746716.m3u8",
+      "8b":        "http://ahm79.store/live/0545580310/7337741654/746717.m3u8",
+      "8c-j1":     "http://ahm79.store/live/0545580310/7337741654/746719.m3u8",
+      "8c-j2":     "http://ahm79.store/live/0545580310/7337741654/746720.m3u8",
+      "alwan1-j1": "http://ahm79.store/live/0545580310/7337741654/772277.m3u8",
+      "alwan1-j2": "http://ahm79.store/live/0545580310/7337741654/772276.m3u8",
+      "alwan2-j1": "http://ahm79.store/live/0545580310/7337741654/772274.m3u8",
+      "alwan2-j2": "http://ahm79.store/live/0545580310/7337741654/772273.m3u8",
+      "alwan3-j1": "http://ahm79.store/live/0545580310/7337741654/772270.m3u8",
+      "alwan3-j2": "http://ahm79.store/live/0545580310/7337741654/772269.m3u8"
     };
     if (path === "/token") {
       const now = Date.now();
