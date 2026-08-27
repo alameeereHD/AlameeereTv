@@ -567,6 +567,26 @@
             });
         }
 
+        function openWithMPV(url) {
+            // إزالة البروتوكول من الرابط
+            var cleanUrl = url.replace(/^https?:\/\//, '');
+            var mpvUrl = 'mpv://' + cleanUrl;
+            var vlcUrl = 'vlc://' + cleanUrl;
+
+            // محاولة فتح MPV
+            window.location.href = mpvUrl;
+
+            // بعد مهلة قصيرة، إذا لم يتم فتح التطبيق نعرض رسالة
+            setTimeout(function() {
+                // لا يمكننا معرفة النجاح بدقة، لكن نعرض تنبيهًا إذا كان لا يزال في الصفحة
+                if (!document.hidden) {
+                    toast('إذا لم يفتح MPV، تأكد من تثبيته أو اضغط مطولاً لنسخ الرابط');
+                    // فتح احتياطي في نافذة جديدة
+                    window.open(url, '_blank');
+                }
+            }, 800);
+        }
+
         function load(ri, ci) {
             if (ri < 0 || ri >= ROWS.length || ci < 0 || ci >= ROWS[ri].channels.length) return;
             cur = { r: ri, i: ci };
@@ -580,17 +600,7 @@
             var type = ch.t || 'hls';
 
             if (type === 'ts') {
-                var win = window.open(ch.u, '_blank');
-                if (!win) {
-                    var a = document.createElement('a');
-                    a.href = ch.u;
-                    a.target = '_blank';
-                    a.rel = 'noopener';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    toast('اضغط على الرابط إذا لم يفتح تلقائياً');
-                }
+                openWithMPV(ch.u);
                 return;
             }
 
