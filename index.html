@@ -569,33 +569,39 @@
 
         function openWithMPV(url) {
             var cleanUrl = url.replace(/^https?:\/\//, '');
-            var protocols = ['mpv://', 'vlc://', 'intent://'];
+            var rawUrl = url;
+
+            var intents = [
+                'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end',
+                'mpv://' + cleanUrl,
+                'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=is.xyz.mpv;action=android.intent.action.VIEW;end',
+                'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=info.t4w.vp;action=android.intent.action.VIEW;end',
+                'vlc://' + cleanUrl,
+                'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=org.videolan.vlc;action=android.intent.action.VIEW;end'
+            ];
+
             var currentIndex = 0;
 
-            function tryProtocol() {
-                if (currentIndex >= protocols.length) {
-                    // فشلت جميع المحاولات، نفتح في المتصفح
-                    window.open(url, '_blank');
-                    toast('تعذر فتح مشغل خارجي، تم الفتح في المتصفح');
+            function tryNextIntent() {
+                if (currentIndex >= intents.length) {
+                    window.open(rawUrl, '_blank');
+                    toast('تعذر العثور على مشغل مثبت، تم الفتح في المتصفح');
                     return;
                 }
-                var proto = protocols[currentIndex];
+
+                var targetUrl = intents[currentIndex];
                 currentIndex++;
-                var fullUrl;
-                if (proto === 'intent://') {
-                    fullUrl = 'intent://' + cleanUrl + '#Intent;type=video/*;end';
-                } else {
-                    fullUrl = proto + cleanUrl;
-                }
-                window.location.href = fullUrl;
+
+                window.location.href = targetUrl;
+
                 setTimeout(function() {
                     if (!document.hidden) {
-                        tryProtocol();
+                        tryNextIntent();
                     }
-                }, 600);
+                }, 500);
             }
 
-            tryProtocol();
+            tryNextIntent();
         }
 
         function load(ri, ci) {
