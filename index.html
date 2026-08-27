@@ -568,40 +568,93 @@
         }
 
         function openWithMPV(url) {
-            var cleanUrl = url.replace(/^https?:\/\//, '');
             var rawUrl = url;
+            var cleanUrl = url.replace(/^https?:\/\//, '');
+            var ua = navigator.userAgent;
 
-            var intents = [
-                'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end',
-                'mpv://' + cleanUrl,
-                'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=is.xyz.mpv;action=android.intent.action.VIEW;end',
-                'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=info.t4w.vp;action=android.intent.action.VIEW;end',
-                'vlc://' + cleanUrl,
-                'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=org.videolan.vlc;action=android.intent.action.VIEW;end'
-            ];
+            var isAndroid = /Android/i.test(ua);
+            var isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-            var currentIndex = 0;
+            if (isAndroid) {
+                var androidIntents = [
+                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end',
+                    'mpv://' + cleanUrl,
+                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=is.xyz.mpv;action=android.intent.action.VIEW;end',
+                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=info.t4w.vp;action=android.intent.action.VIEW;end',
+                    'vlc://' + cleanUrl,
+                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=org.videolan.vlc;action=android.intent.action.VIEW;end',
+                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=com.mxtech.videoplayer.ad;action=android.intent.action.VIEW;end'
+                ];
 
-            function tryNextIntent() {
-                if (currentIndex >= intents.length) {
-                    window.open(rawUrl, '_blank');
-                    toast('تعذر العثور على مشغل مثبت، تم الفتح في المتصفح');
-                    return;
-                }
-
-                var targetUrl = intents[currentIndex];
-                currentIndex++;
-
-                window.location.href = targetUrl;
-
-                setTimeout(function() {
-                    if (!document.hidden) {
-                        tryNextIntent();
+                var idx = 0;
+                function tryAndroidIntent() {
+                    if (idx >= androidIntents.length) {
+                        toast('تعذر فتح المشغل، يرجى التأكد من تثبيت مشغل فيديو على جهازك');
+                        return;
                     }
-                }, 500);
-            }
+                    var target = androidIntents[idx++];
+                    window.location.href = target;
 
-            tryNextIntent();
+                    setTimeout(function() {
+                        if (!document.hidden) {
+                            tryAndroidIntent();
+                        }
+                    }, 600);
+                }
+                tryAndroidIntent();
+
+            } else if (isIOS) {
+                var encodedUrl = encodeURIComponent(rawUrl);
+                var iosProtocols = [
+                    'vlc-x-callback://x-callback-url/stream?url=' + encodedUrl,
+                    'vlc://' + cleanUrl,
+                    'outplayer://' + rawUrl,
+                    'infuse://stream?url=' + encodedUrl,
+                    'kmplayer://' + rawUrl,
+                    'nplayer-' + rawUrl
+                ];
+
+                var iosIdx = 0;
+                function tryIOSProtocol() {
+                    if (iosIdx >= iosProtocols.length) {
+                        toast('تعذر فتح المشغل، يرجى تثبيت VLC أو Outplayer على الآيفون');
+                        return;
+                    }
+                    var target = iosProtocols[iosIdx++];
+                    window.location.href = target;
+
+                    setTimeout(function() {
+                        if (!document.hidden) {
+                            tryIOSProtocol();
+                        }
+                    }, 800);
+                }
+                tryIOSProtocol();
+
+            } else {
+                var pcProtocols = [
+                    'potplayer://' + rawUrl,
+                    'vlc://' + rawUrl,
+                    'mpv://' + cleanUrl
+                ];
+
+                var pcIdx = 0;
+                function tryPCProtocol() {
+                    if (pcIdx >= pcProtocols.length) {
+                        toast('تعذر فتح المشغل، يرجى تثبيت PotPlayer أو VLC على جهازك');
+                        return;
+                    }
+                    var target = pcProtocols[pcIdx++];
+                    window.location.href = target;
+
+                    setTimeout(function() {
+                        if (!document.hidden) {
+                            tryPCProtocol();
+                        }
+                    }, 700);
+                }
+                tryPCProtocol();
+            }
         }
 
         function load(ri, ci) {
