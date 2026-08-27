@@ -250,11 +250,11 @@
 
         var varietyChannels = [
             { n: "MBC 1", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8", t: "hls" },
-            { n: "MBC 2", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D", t: "hls" },
+            { n: "MBC 2", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-2/index.m3u8", t: "hls" },
             { n: "MBC 3", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8", t: "hls" },
             { n: "MBC 4", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8", t: "hls" },
             { n: "MBC 5", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8", t: "hls" },
-            { n: "MBC Action", u: "https://edge66.magictvbox.com/liveApple/MBC_Action/index.m3u8", t: "hls" },
+            { n: "MBC Action", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-action/index.m3u8", t: "hls" },
             { n: "MBC Masr", u: "https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8", t: "hls" },
             { n: "MBC Masr+", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-usa/cd8d40acdab28aac0582faa3bd3983f1/index.m3u8", t: "hls" },
             { n: "MBC Masr 2", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-2/754931856515075b0aabf0e583495c68/index.m3u8", t: "hls" },
@@ -364,18 +364,18 @@
             { n: "الوان 22", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418134.ts", t: "ts" }
         ];
 
-        // ===== صف قنوات MBC (بالبروكسي والتوكن) =====
+        // ===== صف قنوات MBC (تم التحديث بروابط مباشرة تعمل بكفاءة) =====
         var mbcNewChannels = [
-            { n: "MBC 1 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-1%2F15cf99af5de54063fdabfefe66adc075%2Findex.m3u8", t: "hls" },
-            { n: "MBC 2 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D", t: "hls" },
-            { n: "MBC 3 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-3-usa%2F5d58265a862a476dc7f97694addb5ded%2Findex.m3u8", t: "hls" },
-            { n: "MBC 4 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-4%2F24f134f1cd63db9346439e96b86ca6ed%2Findex.m3u8", t: "hls" },
-            { n: "MBC 5 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-5%2Fee6b000cee0629411b666ab26cb13e9b%2Findex.m3u8", t: "hls" },
-            { n: "MBC Action HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-action%2F0e5b9f7a8c3d421a9321588d92723700%2Findex.m3u8", t: "hls" },
-            { n: "MBC Drama HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-drama%2F2c28a458e2f3253e678b07ac7d13fe71%2Findex.m3u8", t: "hls" },
-            { n: "MBC Iraq HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-iraq%2Fe38c44b1b43474e1c39cb5b90203691e%2Findex.m3u8", t: "hls" },
-            { n: "MBC Masr HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.lg.mncdn.com%2Flive%2Fbitmovin-mbc-masr%2F956eac069c78a35d47245db6cdbb1575%2Findex.m3u8", t: "hls" },
-            { n: "MBC Persia HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-persia%2F818ee8e4b592dc497608f066d825bfb4%2Findex.m3u8", t: "hls" }
+            { n: "MBC 1 HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8", t: "hls" },
+            { n: "MBC 2 HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-2/index.m3u8", t: "hls" },
+            { n: "MBC 3 HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8", t: "hls" },
+            { n: "MBC 4 HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8", t: "hls" },
+            { n: "MBC 5 HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8", t: "hls" },
+            { n: "MBC Action HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-action/index.m3u8", t: "hls" },
+            { n: "MBC Drama HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8", t: "hls" },
+            { n: "MBC Iraq HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8", t: "hls" },
+            { n: "MBC Masr HD", u: "https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8", t: "hls" },
+            { n: "MBC Persia HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-persia/818ee8e4b592dc497608f066d825bfb4/index.m3u8", t: "hls" }
         ];
 
         var ROWS = [
