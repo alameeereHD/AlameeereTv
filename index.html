@@ -568,23 +568,34 @@
         }
 
         function openWithMPV(url) {
-            // إزالة البروتوكول من الرابط
             var cleanUrl = url.replace(/^https?:\/\//, '');
-            var mpvUrl = 'mpv://' + cleanUrl;
-            var vlcUrl = 'vlc://' + cleanUrl;
+            var protocols = ['mpv://', 'vlc://', 'intent://'];
+            var currentIndex = 0;
 
-            // محاولة فتح MPV
-            window.location.href = mpvUrl;
-
-            // بعد مهلة قصيرة، إذا لم يتم فتح التطبيق نعرض رسالة
-            setTimeout(function() {
-                // لا يمكننا معرفة النجاح بدقة، لكن نعرض تنبيهًا إذا كان لا يزال في الصفحة
-                if (!document.hidden) {
-                    toast('إذا لم يفتح MPV، تأكد من تثبيته أو اضغط مطولاً لنسخ الرابط');
-                    // فتح احتياطي في نافذة جديدة
+            function tryProtocol() {
+                if (currentIndex >= protocols.length) {
+                    // فشلت جميع المحاولات، نفتح في المتصفح
                     window.open(url, '_blank');
+                    toast('تعذر فتح مشغل خارجي، تم الفتح في المتصفح');
+                    return;
                 }
-            }, 800);
+                var proto = protocols[currentIndex];
+                currentIndex++;
+                var fullUrl;
+                if (proto === 'intent://') {
+                    fullUrl = 'intent://' + cleanUrl + '#Intent;type=video/*;end';
+                } else {
+                    fullUrl = proto + cleanUrl;
+                }
+                window.location.href = fullUrl;
+                setTimeout(function() {
+                    if (!document.hidden) {
+                        tryProtocol();
+                    }
+                }, 600);
+            }
+
+            tryProtocol();
         }
 
         function load(ri, ci) {
