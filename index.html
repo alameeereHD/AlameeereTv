@@ -605,31 +605,19 @@
 
             } else if (isIOS) {
                 var encodedUrl = encodeURIComponent(rawUrl);
-                var iosProtocols = [
-                    'vlc-x-callback://x-callback-url/stream?url=' + encodedUrl,
-                    'vlc://' + cleanUrl,
-                    'outplayer://' + rawUrl,
-                    'infuse://stream?url=' + encodedUrl,
-                    'kmplayer://' + rawUrl,
-                    'nplayer-' + rawUrl
-                ];
-
-                var iosIdx = 0;
-                function tryIOSProtocol() {
-                    if (iosIdx >= iosProtocols.length) {
-                        toast('تعذر فتح المشغل، يرجى تثبيت VLC أو Outplayer على الآيفون');
-                        return;
-                    }
-                    var target = iosProtocols[iosIdx++];
-                    window.location.href = target;
-
-                    setTimeout(function() {
-                        if (!document.hidden) {
-                            tryIOSProtocol();
-                        }
-                    }, 800);
+                var primaryUrl = 'vlc-x-callback://x-callback-url/stream?url=' + encodedUrl;
+                
+                try {
+                    window.location.href = primaryUrl;
+                } catch (e) {
+                    toast('يرجى التأكد من تثبيت تطبيق VLC أو Outplayer من App Store');
                 }
-                tryIOSProtocol();
+
+                setTimeout(function() {
+                    if (!document.hidden) {
+                        toast('لم يتم فتح المشغل، هل تطبيق VLC مثبت لديك؟');
+                    }
+                }, 2000);
 
             } else {
                 var pcProtocols = [
