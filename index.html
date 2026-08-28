@@ -6,7 +6,7 @@
     <title>AlameeereTv</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, sans-serif; }
+        html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; }
         #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
 
         #player-wrap {
@@ -214,12 +214,10 @@
             <div class="ch-row"><div class="row-label"><span class="ico">🌅</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-7"></div></div>
             <div class="ch-row"><div class="row-label"><span class="ico">📡</span><span class="lbl">ثمانية سبورت</span></div><div class="row-scroll" id="row-8"></div></div>
             <div class="ch-row"><div class="row-label"><span class="ico">🎨</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-9"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">🎬</span><span class="lbl">MBC</span></div><div class="row-scroll" id="row-10"></div></div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
     <script>
-        // ===== جميع القنوات =====
         var beinChannels = [
             { n: "bein 1 HD", u: "https://ye-m3u8.tofi-xtv.com/stream/4/index.m3u8", t: "hls" },
             { n: "bein 2 HD", u: "https://ye-m3u8.tofi-xtv.com/stream/5/index.m3u8", t: "hls" },
@@ -336,8 +334,7 @@
         var tamanyaSportChannels = [
             { n: "ثمانية سبورت 1", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421785.ts", t: "ts" },
             { n: "ثمانية سبورت 2", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421786.ts", t: "ts" },
-            { n: "ثمانية سبورت 3", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/429403.ts", t: "ts" },
-            { n: "الاولى", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fahm79.store%2Flive%2F0545580310%2F7337741654%2F746713.m3u8%3Ftoken%3D%3D", t: "hls" }
+            { n: "ثمانية سبورت 3", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/429403.ts", t: "ts" }
         ];
 
         var alwanChannels = [
@@ -365,20 +362,6 @@
             { n: "الوان 22", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418134.ts", t: "ts" }
         ];
 
-        // ===== صف قنوات MBC (بالبروكسي والتوكن) =====
-        var mbcNewChannels = [
-            { n: "MBC 1 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-1%2F15cf99af5de54063fdabfefe66adc075%2Findex.m3u8", t: "hls" },
-            { n: "MBC 2 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D", t: "hls" },
-            { n: "MBC 3 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-3-usa%2F5d58265a862a476dc7f97694addb5ded%2Findex.m3u8", t: "hls" },
-            { n: "MBC 4 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-4%2F24f134f1cd63db9346439e96b86ca6ed%2Findex.m3u8", t: "hls" },
-            { n: "MBC 5 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-5%2Fee6b000cee0629411b666ab26cb13e9b%2Findex.m3u8", t: "hls" },
-            { n: "MBC Action HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-action%2F0e5b9f7a8c3d421a9321588d92723700%2Findex.m3u8", t: "hls" },
-            { n: "MBC Drama HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-drama%2F2c28a458e2f3253e678b07ac7d13fe71%2Findex.m3u8", t: "hls" },
-            { n: "MBC Iraq HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-iraq%2Fe38c44b1b43474e1c39cb5b90203691e%2Findex.m3u8", t: "hls" },
-            { n: "MBC Masr HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.lg.mncdn.com%2Flive%2Fbitmovin-mbc-masr%2F956eac069c78a35d47245db6cdbb1575%2Findex.m3u8", t: "hls" },
-            { n: "MBC Persia HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-persia%2F818ee8e4b592dc497608f066d825bfb4%2Findex.m3u8", t: "hls" }
-        ];
-
         var ROWS = [
             { label: 'bein', channels: beinChannels, special: false },
             { label: 'bein متعدد', channels: beinMultiChannels, special: true },
@@ -389,11 +372,9 @@
             { label: 'ترفيه', channels: entertainmentChannels, special: false },
             { label: 'الفجر', channels: fajerChannels, special: false },
             { label: 'ثمانية سبورت', channels: tamanyaSportChannels, special: false },
-            { label: 'الوان', channels: alwanChannels, special: false },
-            { label: 'MBC', channels: mbcNewChannels, special: false }
+            { label: 'الوان', channels: alwanChannels, special: false }
         ];
 
-        // ===== باقي الكود (JavaScript) =====
         var hls = null, cur = { r: -1, i: -1 }, retryT = null;
         var vid = document.getElementById('vid');
         var iframeWrap = document.getElementById('iframe-wrap');
@@ -419,6 +400,7 @@
 
         var ASPECTS = [{ cls: 'fc', lbl: '↕ عادي' }, { cls: 'fv', lbl: '⛶ ملء' }, { cls: 'ff', lbl: '↔ مفيد' }];
         var aspectIdx = parseInt(localStorage.getItem('aspectIdx') || '0');
+        
         function applyAspect(i) {
             vid.className = ASPECTS[i].cls;
             fitBtn.textContent = ASPECTS[i].lbl;
@@ -453,17 +435,18 @@
 
         var speedOn = localStorage.getItem('speedOn') !== '0';
         var isTesting = false, speedInterval = null;
-        var TEST_URLS = ['https://httpbin.org/bytes/200000', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'];
+        var TEST_URLS = ['https://httpbin.org/bytes/200000', 'https://via.placeholder.com/150'];
         var urlIdx = 0;
+
         function runSpeedTest() {
-            if (isTesting) return;
+            if (isTesting || !speedOn) return;
             isTesting = true;
             speedBadge.textContent = '📡 ...';
             var url = TEST_URLS[urlIdx % TEST_URLS.length] + '?r=' + Date.now();
             var t0 = Date.now();
             fetch(url, { cache: 'no-store' }).then(function (r) { return r.blob(); }).then(function (b) {
                 var elapsed = (Date.now() - t0) / 1000;
-                var bps = ((b.size || 200000) * 8) / elapsed;
+                var bps = ((b.size || 200000) * 8) / Math.max(elapsed, 0.1);
                 showSpeed(bps);
                 isTesting = false;
             }).catch(function () { urlIdx++; isTesting = false; });
@@ -501,31 +484,36 @@
             setTimeout(function () { t.style.display = 'none'; }, 4000);
         }
 
+        function cleanPlayerState() {
+            if (hls) { 
+                hls.stopLoad();
+                hls.destroy(); 
+                hls = null; 
+            }
+            vid.removeAttribute('src');
+            vid.load();
+            iframePlayer.src = '';
+        }
+
         function loadHls(url, name) {
             if (window.location.protocol === 'https:' && url.startsWith('http://')) {
                 url = url.replace('http://', 'https://');
             }
+            cleanPlayerState();
             vid.style.display = 'block';
             iframeWrap.style.display = 'none';
-            iframePlayer.src = '';
             showLoader();
-            if (hls) { hls.destroy(); hls = null; }
-            vid.removeAttribute('src');
-            vid.load();
+
             if (Hls.isSupported()) {
                 hls = new Hls({
                     enableWorker: true,
                     startLevel: 0,
                     autoLevelEnabled: false,
-                    capLevelToPlayerSize: false,
                     maxBufferLength: 10,
                     maxMaxBufferLength: 30,
                     maxBufferSize: 20 * 1000 * 1000,
-                    manifestLoadingMaxRetry: 4,
-                    manifestLoadingRetryDelay: 500,
-                    levelLoadingMaxRetry: 4,
-                    fragLoadingMaxRetry: 4,
-                    fragLoadingRetryDelay: 500,
+                    manifestLoadingMaxRetry: 3,
+                    manifestLoadingRetryDelay: 1000,
                     liveSyncDurationCount: 2,
                     liveMaxLatencyDurationCount: 4,
                     lowLatencyMode: true
@@ -546,11 +534,12 @@
                         if (d.type === Hls.ErrorTypes.NETWORK_ERROR) {
                             showLoader();
                             hls.startLoad();
-                            retryT = setTimeout(function () { load(cur.r, cur.i); }, 5000);
                         } else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) {
                             hls.recoverMediaError();
                         } else {
-                            retryT = setTimeout(function () { load(cur.r, cur.i); }, 5000);
+                            cleanPlayerState();
+                            hideLoader();
+                            toast('تعذر تشغيل البث');
                         }
                     }
                 });
@@ -585,81 +574,10 @@
         }
 
         function openWithMPV(url) {
-            var rawUrl = url;
-            var cleanUrl = url.replace(/^https?:\/\//, '');
-            var ua = navigator.userAgent;
-
-            var isAndroid = /Android/i.test(ua);
-            var isIOS = /iPhone|iPad|iPod/i.test(ua);
-
-            if (isAndroid) {
-                var androidIntents = [
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end',
-                    'mpv://' + cleanUrl,
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=is.xyz.mpv;action=android.intent.action.VIEW;end',
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=info.t4w.vp;action=android.intent.action.VIEW;end',
-                    'vlc://' + cleanUrl,
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=org.videolan.vlc;action=android.intent.action.VIEW;end',
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=com.mxtech.videoplayer.ad;action=android.intent.action.VIEW;end'
-                ];
-
-                var idx = 0;
-                function tryAndroidIntent() {
-                    if (idx >= androidIntents.length) {
-                        toast('تعذر فتح المشغل، يرجى التأكد من تثبيت مشغل فيديو على جهازك');
-                        return;
-                    }
-                    var target = androidIntents[idx++];
-                    window.location.href = target;
-
-                    setTimeout(function() {
-                        if (!document.hidden) {
-                            tryAndroidIntent();
-                        }
-                    }, 600);
-                }
-                tryAndroidIntent();
-
-            } else if (isIOS) {
-                var encodedUrl = encodeURIComponent(rawUrl);
-                var primaryUrl = 'vlc-x-callback://x-callback-url/stream?url=' + encodedUrl;
-                
-                try {
-                    window.location.href = primaryUrl;
-                } catch (e) {
-                    toast('يرجى التأكد من تثبيت تطبيق VLC أو Outplayer من App Store');
-                }
-
-                setTimeout(function() {
-                    if (!document.hidden) {
-                        toast('لم يتم فتح المشغل، هل تطبيق VLC مثبت لديك؟');
-                    }
-                }, 2000);
-
-            } else {
-                var pcProtocols = [
-                    'potplayer://' + rawUrl,
-                    'vlc://' + rawUrl,
-                    'mpv://' + cleanUrl
-                ];
-
-                var pcIdx = 0;
-                function tryPCProtocol() {
-                    if (pcIdx >= pcProtocols.length) {
-                        toast('تعذر فتح المشغل، يرجى تثبيت PotPlayer أو VLC على جهازك');
-                        return;
-                    }
-                    var target = pcProtocols[pcIdx++];
-                    window.location.href = target;
-
-                    setTimeout(function() {
-                        if (!document.hidden) {
-                            tryPCProtocol();
-                        }
-                    }, 700);
-                }
-                tryPCProtocol();
-            }
+            // استخدام رابط Android Intent المباشر لتحسين التوافق وتفادي تعليق التطبيق
+            var intentUrl = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;type=video/*;scheme=http;package=org.videolan.vlc;end;';
+            window.location.href = intentUrl;
+            toast('جاري فتح الرابط في المشغل الخارجي (VLC/MPV)...');
         }
 
         function load(ri, ci) {
@@ -680,12 +598,11 @@
             }
 
             if (type === 'iframe') {
-                if (hls) { hls.destroy(); hls = null; }
+                cleanPlayerState();
                 vid.style.display = 'none';
                 iframeWrap.style.display = 'block';
                 pw.classList.add('playing');
                 showLoader();
-                iframePlayer.src = '';
                 setTimeout(function () { iframePlayer.src = ch.u; hideLoader(); }, 400);
                 qm.innerHTML = '';
                 return;
@@ -746,14 +663,14 @@
         }
         function setVolume(v) {
             vid.volume = parseFloat(v);
-            vid.muted = v == 0;
-            document.getElementById('mute-btn').textContent = v == 0 ? '🔇' : '🔊';
+            vid.muted = (v == 0);
+            document.getElementById('mute-btn').textContent = (v == 0) ? '🔇' : '🔊';
             document.getElementById('vs').value = v;
             localStorage.setItem('vol', v);
         }
         function skip(s) { vid.currentTime += s; }
 
-        var swType = null, swStartY = 0, swStartVal = 0, swTimer = null, isSwiping = false, tyStart = 0;
+        var swType = null, swStartVal = 0, swTimer = null, isSwiping = false, tyStart = 0;
         function showSwipe(type, val) {
             clearTimeout(swTimer);
             if (type === 'vol') {
@@ -763,8 +680,10 @@
                 siBar.style.background = '#0f0';
             } else {
                 siIcon.textContent = '☀️';
-                siLabel.textContent = 'الإضاءة ' + Math.round((1 - val / 0.85) * 100) + '%';
-                siBar.style.width = ((1 - val / 0.85) * 100) + '%';
+                // حساب النسبة المئوية للسطوع بشكل عكسي لحجم الشفافية
+                var brightPercent = Math.round((1 - val / 0.85) * 100);
+                siLabel.textContent = 'الإضاءة ' + brightPercent + '%';
+                siBar.style.width = brightPercent + '%';
                 siBar.style.background = '#fbbf24';
             }
             swInd.style.display = 'flex';
@@ -811,7 +730,6 @@
             isSwiping = false;
             var rect = pw.getBoundingClientRect();
             swType = (t.clientX - rect.left) > (rect.width / 2) ? 'vol' : 'brightness';
-            swStartY = t.clientY;
             swStartVal = swType === 'vol' ? vid.volume : brightness;
         }, { passive: true });
 
@@ -821,12 +739,14 @@
             var dy = tyStart - t.clientY;
             if (!isSwiping && Math.abs(dy) > 12) isSwiping = true;
             if (!isSwiping) return;
+            
             var delta = dy / pw.getBoundingClientRect().height;
             if (swType === 'vol') {
                 var v = Math.max(0, Math.min(1, swStartVal + delta));
                 setVolume(v);
                 showSwipe('vol', v);
             } else {
+                // إصلاح اتجاه الإضاءة: السحب للأعلى (delta موجب) يجب أن يقلل من الشفافية (يزيد السطوع)
                 var b = Math.max(0, Math.min(0.85, swStartVal - delta));
                 brightness = b;
                 brightL.style.opacity = b;
