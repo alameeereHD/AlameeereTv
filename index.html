@@ -214,7 +214,6 @@
             <div class="ch-row"><div class="row-label"><span class="ico">🌅</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-7"></div></div>
             <div class="ch-row"><div class="row-label"><span class="ico">📡</span><span class="lbl">ثمانية سبورت</span></div><div class="row-scroll" id="row-8"></div></div>
             <div class="ch-row"><div class="row-label"><span class="ico">🎨</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-9"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">🎬</span><span class="lbl">MBC</span></div><div class="row-scroll" id="row-10"></div></div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
@@ -250,11 +249,11 @@
 
         var varietyChannels = [
             { n: "MBC 1", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8", t: "hls" },
-            { n: "MBC 2", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-2/index.m3u8", t: "hls" },
+            { n: "MBC 2", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D", t: "hls" },
             { n: "MBC 3", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8", t: "hls" },
             { n: "MBC 4", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8", t: "hls" },
             { n: "MBC 5", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8", t: "hls" },
-            { n: "MBC Action", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-action/index.m3u8", t: "hls" },
+            { n: "MBC Action", u: "https://edge66.magictvbox.com/liveApple/MBC_Action/index.m3u8", t: "hls" },
             { n: "MBC Masr", u: "https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8", t: "hls" },
             { n: "MBC Masr+", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-usa/cd8d40acdab28aac0582faa3bd3983f1/index.m3u8", t: "hls" },
             { n: "MBC Masr 2", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-2/754931856515075b0aabf0e583495c68/index.m3u8", t: "hls" },
@@ -334,9 +333,14 @@
         ];
 
         var tamanyaSportChannels = [
+            // القنوات القديمة (تبقى بدون تغيير)
             { n: "ثمانية سبورت 1", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421785.ts", t: "ts" },
             { n: "ثمانية سبورت 2", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421786.ts", t: "ts" },
-            { n: "ثمانية سبورت 3", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/429403.ts", t: "ts" }
+            { n: "ثمانية سبورت 3", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/429403.ts", t: "ts" },
+            // القنوات الجديدة (تم تغيير http إلى https في الرابط الأصلي المرمّز)
+            { n: "ثمانية سبورت 1 - جودة 1", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fahm79.store%2Flive%2F0545580310%2F7337741654%2F746712.m3u8", t: "hls" },
+            { n: "ثمانية سبورت 1 - جودة 2", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fahm79.store%2Flive%2F0545580310%2F7337741654%2F746713.m3u8", t: "hls" },
+            { n: "ثمانية سبورت 1 - جودة 3", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fahm79.store%2Flive%2F0545580310%2F7337741654%2F746714.m3u8", t: "hls" }
         ];
 
         var alwanChannels = [
@@ -364,20 +368,6 @@
             { n: "الوان 22", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418134.ts", t: "ts" }
         ];
 
-        // ===== صف قنوات MBC (تم التحديث بروابط مباشرة تعمل بكفاءة) =====
-        var mbcNewChannels = [
-            { n: "MBC 1 HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8", t: "hls" },
-            { n: "MBC 2 HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-2/index.m3u8", t: "hls" },
-            { n: "MBC 3 HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8", t: "hls" },
-            { n: "MBC 4 HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8", t: "hls" },
-            { n: "MBC 5 HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8", t: "hls" },
-            { n: "MBC Action HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-action/index.m3u8", t: "hls" },
-            { n: "MBC Drama HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8", t: "hls" },
-            { n: "MBC Iraq HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8", t: "hls" },
-            { n: "MBC Masr HD", u: "https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8", t: "hls" },
-            { n: "MBC Persia HD", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-persia/818ee8e4b592dc497608f066d825bfb4/index.m3u8", t: "hls" }
-        ];
-
         var ROWS = [
             { label: 'bein', channels: beinChannels, special: false },
             { label: 'bein متعدد', channels: beinMultiChannels, special: true },
@@ -388,8 +378,7 @@
             { label: 'ترفيه', channels: entertainmentChannels, special: false },
             { label: 'الفجر', channels: fajerChannels, special: false },
             { label: 'ثمانية سبورت', channels: tamanyaSportChannels, special: false },
-            { label: 'الوان', channels: alwanChannels, special: false },
-            { label: 'MBC', channels: mbcNewChannels, special: false }
+            { label: 'الوان', channels: alwanChannels, special: false }
         ];
 
         // ===== باقي الكود (JavaScript) =====
@@ -584,81 +573,33 @@
         }
 
         function openWithMPV(url) {
-            var rawUrl = url;
             var cleanUrl = url.replace(/^https?:\/\//, '');
-            var ua = navigator.userAgent;
+            var protocols = ['mpv://', 'vlc://', 'intent://'];
+            var currentIndex = 0;
 
-            var isAndroid = /Android/i.test(ua);
-            var isIOS = /iPhone|iPad|iPod/i.test(ua);
-
-            if (isAndroid) {
-                var androidIntents = [
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end',
-                    'mpv://' + cleanUrl,
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=is.xyz.mpv;action=android.intent.action.VIEW;end',
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=info.t4w.vp;action=android.intent.action.VIEW;end',
-                    'vlc://' + cleanUrl,
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=org.videolan.vlc;action=android.intent.action.VIEW;end',
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=com.mxtech.videoplayer.ad;action=android.intent.action.VIEW;end'
-                ];
-
-                var idx = 0;
-                function tryAndroidIntent() {
-                    if (idx >= androidIntents.length) {
-                        toast('تعذر فتح المشغل، يرجى التأكد من تثبيت مشغل فيديو على جهازك');
-                        return;
-                    }
-                    var target = androidIntents[idx++];
-                    window.location.href = target;
-
-                    setTimeout(function() {
-                        if (!document.hidden) {
-                            tryAndroidIntent();
-                        }
-                    }, 600);
+            function tryProtocol() {
+                if (currentIndex >= protocols.length) {
+                    window.open(url, '_blank');
+                    toast('تعذر فتح مشغل خارجي، تم الفتح في المتصفح');
+                    return;
                 }
-                tryAndroidIntent();
-
-            } else if (isIOS) {
-                var encodedUrl = encodeURIComponent(rawUrl);
-                var primaryUrl = 'vlc-x-callback://x-callback-url/stream?url=' + encodedUrl;
-                
-                try {
-                    window.location.href = primaryUrl;
-                } catch (e) {
-                    toast('يرجى التأكد من تثبيت تطبيق VLC أو Outplayer من App Store');
+                var proto = protocols[currentIndex];
+                currentIndex++;
+                var fullUrl;
+                if (proto === 'intent://') {
+                    fullUrl = 'intent://' + cleanUrl + '#Intent;type=video/*;end';
+                } else {
+                    fullUrl = proto + cleanUrl;
                 }
-
+                window.location.href = fullUrl;
                 setTimeout(function() {
                     if (!document.hidden) {
-                        toast('لم يتم فتح المشغل، هل تطبيق VLC مثبت لديك؟');
+                        tryProtocol();
                     }
-                }, 2000);
-
-            } else {
-                var pcProtocols = [
-                    'potplayer://' + rawUrl,
-                    'vlc://' + rawUrl,
-                    'mpv://' + cleanUrl
-                ];
-
-                var pcIdx = 0;
-                function tryPCProtocol() {
-                    if (pcIdx >= pcProtocols.length) {
-                        toast('تعذر فتح المشغل، يرجى تثبيت PotPlayer أو VLC على جهازك');
-                        return;
-                    }
-                    var target = pcProtocols[pcIdx++];
-                    window.location.href = target;
-
-                    setTimeout(function() {
-                        if (!document.hidden) {
-                            tryPCProtocol();
-                        }
-                    }, 700);
-                }
-                tryPCProtocol();
+                }, 600);
             }
+
+            tryProtocol();
         }
 
         function load(ri, ci) {
