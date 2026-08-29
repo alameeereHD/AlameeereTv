@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مشغل البث المباشر الشامل</title>
+
+  <!-- Video.js CSS -->
+  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    /* جعل المشغلات تغطي الشاشة بالكامل */
+    .video-js, video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain;
+    }
+    /* إخفاء المشغل غير المستعمل */
+    .hidden {
+      display: none !important;
+    }
+  </style>
+
+  <!-- مكتبة mpegts لروابط TS -->
+  <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
+  <!-- مكتبة Video.js لروابط m3u8 و mp4 -->
+  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+</head>
+<body>
+
+  <!-- مشغل M3U8 و MP4 -->
+  <video id="hls-player" class="video-js vjs-default-skin vjs-big-play-centered hidden" controls autoplay playsinline preload="auto"></video>
+
+  <!-- مشغل TS المباشر -->
+  <video id="ts-player" controls autoplay playsinline class="hidden"></video>
+
+  <script>
+    // 1. استخراج رابط البث من الـ URL
+    const urlParams = new URLSearchParams(window.location.search);
+    let streamUrl = urlParams.get('src');
+
+    // رابط افتراضي للتجربة في حال عدم تمرير رابط
+    if (!streamUrl) {
+      streamUrl = "https://ahm79.store/live/0545580310/7337741654/746713.m3u8";
+    }
+
+    // 2. إصلاح البروتوكول لتفادي حظر المحتوى المختلط (HTTP -> HTTPS)
+    if (streamUrl.startsWith("http://")) {
+      streamUrl = streamUrl.replace("http://", "https://");
+    }
+
+    const hlsElement = document.getElementById('hls-player');
+    const tsElement = document.getElementById('ts-player');
+
+    // 3. فحص صيغة الرابط وتحديد المشغل المناسب
+    const isTsStream = streamUrl.includes('.ts');
+
+    if (isTsStream) {
+      // --- تشغيل روابط TS ---
+      tsElement.classList.remove('hidden');
+
+      // استخدام بروكسي CORS لضمان العمل من GitHub والمتصفح
+      const proxiedUrl = "https://corsproxy.io/?" + encodeURIComponent(streamUrl);
+
+      if (mpegts.getFeatureList().mseLivePlayback) {
+        const player = mpegts.createPlayer({
+          type: 'mse',
+          isLive: true,
+          url: proxiedUrl
+        });
+        player.attachMediaElement(tsElement);
+        player.load();
+        player.play().catch(e => console.log("خطأ في التشغيل التلقائي:", e));
+      } else {
+        tsElement.src = proxiedUrl;
+      }
+
+    } else {
+      // --- تشغيل روابط M3U8 و MP4 ---
+      hlsElement.classList.remove('hidden');
+
+      const player = videojs('hls-player');
+      player.src({
+        src: streamUrl,
+        type: streamUrl.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4'
+      });
+      player.play();
+    }
+  </script>
+</body>
+</html>
