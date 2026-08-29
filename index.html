@@ -178,7 +178,15 @@
         <div id="player-wrap">
             <video id="vid" class="fc" playsinline webkit-playsinline></video>
             <div id="brand-overlay"><span>AlameeereTv</span></div>
-            <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"></iframe></div>
+            <div id="iframe-wrap">
+                <iframe id="iframe-player" 
+                        width="100%" 
+                        height="450" 
+                        frameborder="0" 
+                        allowfullscreen 
+                        allow="autoplay; encrypted-media">
+                </iframe>
+            </div>
             <div id="brightness-layer"></div>
             <div id="loader"><div class="wave-text">AlameeereTv</div></div>
             <div id="ch-title"></div>
@@ -327,6 +335,7 @@
         ];
 
         var fajerChannels = [
+            { n: "الفجر الخاصة", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/325804.ts", t: "player_iframe" },
             { n: "الفجر 1", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts", t: "ts" },
             { n: "الفجر 2", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463533.ts", t: "ts" },
             { n: "الفجر 3", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463534.ts", t: "ts" },
@@ -339,7 +348,7 @@
             { n: "ثمانية سبورت 1", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421785.ts", t: "ts" },
             { n: "ثمانية سبورت 2", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421786.ts", t: "ts" },
             { n: "ثمانية سبورت 3", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/429403.ts", t: "ts" },
-            { n: "الاولى", u: "https://ahm79.store/live/0545580310/7337741654/746713.m3u8", t: "hls" },
+            { n: "الاولى", u: "https://ahm79.store/live/0545580310/7337741654/746713.m3u8", t: "hls" }
         ];
 
         var alwanChannels = [
@@ -502,7 +511,6 @@
             setTimeout(function () { t.style.display = 'none'; }, 4000);
         }
 
-        // تحديث المشغل فقط بدون الخروج من الصفحة
         function reloadCurrentStream() {
             if (cur.r !== -1 && cur.i !== -1) {
                 load(cur.r, cur.i);
@@ -580,7 +588,7 @@
                 row.channels.forEach(function (c, ci) {
                     var b = document.createElement('button');
                     var cls = 'ch';
-                    if (c.t === 'iframe') cls += ' iframe-ch';
+                    if (c.t === 'iframe' || c.t === 'player_iframe') cls += ' iframe-ch';
                     if (c.t === 'ts') cls += ' ts-ch';
                     if (row.special) cls += ' multi-ch';
                     b.className = cls;
@@ -684,6 +692,21 @@
 
             if (type === 'ts') {
                 openWithMPV(ch.u);
+                return;
+            }
+
+            if (type === 'player_iframe') {
+                if (hls) { hls.destroy(); hls = null; }
+                vid.style.display = 'none';
+                iframeWrap.style.display = 'block';
+                pw.classList.add('playing');
+                showLoader();
+                iframePlayer.src = '';
+                setTimeout(function () { 
+                    iframePlayer.src = 'player.html?src=' + encodeURIComponent(ch.u); 
+                    hideLoader(); 
+                }, 400);
+                qm.innerHTML = '';
                 return;
             }
 
