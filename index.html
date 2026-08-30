@@ -33,37 +33,16 @@
             pointer-events: none;
             transition: opacity 0.5s ease;
         }
-        .wave-brand { display: flex; gap: 0px; }
-        .wave-brand span {
-            display: inline-block;
-            font-size: 32px;
-            font-weight: 900;
-            font-style: italic;
-            background: linear-gradient(180deg, #fff 0%, #0f0 60%, #0a0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: waveLetter 2s ease-in-out infinite;
-            filter: drop-shadow(0 0 6px rgba(0,255,0,0.4));
+        #brand-overlay span {
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
         }
-        .wave-brand span:nth-child(1)  { animation-delay: 0.00s; }
-        .wave-brand span:nth-child(2)  { animation-delay: 0.08s; }
-        .wave-brand span:nth-child(3)  { animation-delay: 0.16s; }
-        .wave-brand span:nth-child(4)  { animation-delay: 0.24s; }
-        .wave-brand span:nth-child(5)  { animation-delay: 0.32s; }
-        .wave-brand span:nth-child(6)  { animation-delay: 0.40s; }
-        .wave-brand span:nth-child(7)  { animation-delay: 0.48s; }
-        .wave-brand span:nth-child(8)  { animation-delay: 0.56s; }
-        .wave-brand span:nth-child(9)  { animation-delay: 0.64s; }
-        .wave-brand span:nth-child(10) { animation-delay: 0.72s; }
-        .wave-brand span:nth-child(11) { animation-delay: 0.80s; }
-        @keyframes waveLetter {
-            0%, 100% { transform: translateY(0px); }
-            25%       { transform: translateY(-10px); }
-            50%       { transform: translateY(0px); }
-            75%       { transform: translateY(6px); }
+        #player-wrap.playing #brand-overlay {
+            opacity: 0;
+            z-index: -1;
         }
-        #player-wrap.playing #brand-overlay { opacity: 0; z-index: -1; }
 
         #loader {
             position: absolute;
@@ -76,7 +55,19 @@
             background: rgba(0,0,0,.75);
             z-index: 10;
         }
-        #loader .wave-brand span { font-size: 22px; }
+        #loader .wave-text {
+            color: #fff;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            animation: wave 1.5s ease-in-out infinite;
+        }
+        @keyframes wave {
+            0%, 100% { transform: translateY(0); text-shadow: 0 0 10px rgba(255,255,255,.4); }
+            25% { transform: translateY(-6px); text-shadow: 0 0 20px rgba(255,255,255,.8); }
+            50% { transform: translateY(0); text-shadow: 0 0 10px rgba(255,255,255,.4); }
+            75% { transform: translateY(6px); text-shadow: 0 0 20px rgba(255,255,255,.8); }
+        }
 
         #iframe-wrap { position: absolute; inset: 0; display: none; z-index: 5; }
         #iframe-wrap iframe { width: 100%; height: 100%; border: none; }
@@ -186,27 +177,27 @@
         <div id="err-toast"></div>
         <div id="player-wrap">
             <video id="vid" class="fc" playsinline webkit-playsinline></video>
-            <div id="brand-overlay"><div class="wave-brand"><span>A</span><span>l</span><span>a</span><span>m</span><span>e</span><span>e</span><span>e</span><span>r</span><span>e</span><span>T</span><span>v</span></div></div>
+            <div id="brand-overlay"><span>AlameeereTv</span></div>
             <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"></iframe></div>
             <div id="brightness-layer"></div>
-            <div id="loader"><div class="wave-brand"><span>A</span><span>l</span><span>a</span><span>m</span><span>e</span><span>e</span><span>e</span><span>r</span><span>e</span><span>T</span><span>v</span></div></div>
+            <div id="loader"><div class="wave-text">AlameeereTv</div></div>
             <div id="ch-title"></div>
-            <div id="speed-badge" onclick="runSpeedTest()">📡 السرعة</div>
-            <div id="swipe-ind"><div id="si-icon">🔊</div><div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div><div id="si-label">الصوت</div></div>
-            <div id="dbl-hint"><span id="dbl-txt">⛶ شاشة كاملة</span></div>
+            <div id="speed-badge" onclick="runSpeedTest()">&#x1F4E1; السرعة</div>
+            <div id="swipe-ind"><div id="si-icon">&#x1F50A;</div><div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div><div id="si-label">الصوت</div></div>
+            <div id="dbl-hint"><span id="dbl-txt">&#x26F6; شاشة كاملة</span></div>
             <div id="controls-overlay">
-                <button class="cb" onclick="togglePlay()">⏯️</button>
+                <button class="cb" onclick="togglePlay()">&#x23EF;&#xFE0F;</button>
                 <div id="vw">
-                    <button class="cb" id="mute-btn" onclick="toggleMute()">🔊</button>
+                    <button class="cb" id="mute-btn" onclick="toggleMute()">&#x1F50A;</button>
                     <input type="range" id="vs" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)">
                 </div>
-                <button class="cb" onclick="skip(-10)">⏪</button>
-                <button class="cb" onclick="skip(10)">⏩</button>
+                <button class="cb" onclick="skip(-10)">&#x23EA;</button>
+                <button class="cb" onclick="skip(10)">&#x23E9;</button>
                 <button class="cb" id="fit-btn" onclick="cycleAspect()">↕ عادي</button>
-                <button class="cb" id="spd-btn" onclick="toggleSpeed()">📡</button>
-                <button class="cb" onclick="doFullscreen()">⛶</button>
+                <button class="cb" id="spd-btn" onclick="toggleSpeed()">&#x1F4E1;</button>
+                <button class="cb" onclick="doFullscreen()">&#x26F6;</button>
                 <div id="fg"></div>
-                <button class="cb" onclick="reloadCurrentStream()" title="إعادة تحميل البث">🔄</button>
+                <button class="cb" onclick="reloadCurrentStream()" title="إعادة تحميل البث">&#x1F504;</button>
                 <div id="qw">
                     <button class="cb" id="q-btn" onclick="toggleQ()">جودة</button>
                     <div id="qm"></div>
@@ -214,17 +205,17 @@
             </div>
         </div>
         <div id="ch-rows">
-            <div class="ch-row"><div class="row-label"><span class="ico">📡</span><span class="lbl">bein</span></div><div class="row-scroll" id="row-0"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">📡</span><span class="lbl">bein متعدد</span></div><div class="row-scroll" id="row-1"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-2"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">🎬</span><span class="lbl">منوعات</span></div><div class="row-scroll" id="row-3"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-4"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">🏆</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-5"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">🎭</span><span class="lbl">ترفيه</span></div><div class="row-scroll" id="row-6"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">🌅</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-7"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">📡</span><span class="lbl">ثمانية سبورت</span></div><div class="row-scroll" id="row-8"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">🎨</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-9"></div></div>
-            <div class="ch-row"><div class="row-label"><span class="ico">🎬</span><span class="lbl">MBC</span></div><div class="row-scroll" id="row-10"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4E1;</span><span class="lbl">bein</span></div><div class="row-scroll" id="row-0"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4E1;</span><span class="lbl">bein متعدد</span></div><div class="row-scroll" id="row-1"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4FA;</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-2"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AC;</span><span class="lbl">منوعات</span></div><div class="row-scroll" id="row-3"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x26BD;</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-4"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3C6;</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-5"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AD;</span><span class="lbl">ترفيه</span></div><div class="row-scroll" id="row-6"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x1F305;</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-7"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4E1;</span><span class="lbl">ثمانية سبورت</span></div><div class="row-scroll" id="row-8"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3A8;</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-9"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AC;</span><span class="lbl">MBC</span></div><div class="row-scroll" id="row-10"></div></div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
@@ -264,6 +255,7 @@
             { n: "MBC Masr", u: "https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8", t: "hls" },
             { n: "MBC Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8", t: "hls" },
             { n: "MBC Iraq", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8", t: "hls" },
+            { n: "MBC Persia", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-persia/818ee8e4b592dc497608f066d825bfb4/index.m3u8", t: "hls" },
             { n: "beIN Drama", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fstream.woodfencepods.com%2Fpdf%2FIC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ%2Findex.m3u8%3Ftoken%3D%3D", t: "hls" },
             { n: "OSN Action", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FOSNACTIONHD%2Findex.m3u8%3Ftoken%3D%3D", t: "hls" }
         ];
@@ -304,21 +296,21 @@
             { n: "Boomerang", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35016.ts", t: "ts" },
             { n: "فتافيت", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/64588.ts", t: "ts" },
             { n: "Food Network", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/84845.ts", t: "ts" },
-            { n: "FOX Movies", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/196050.ts", t: "ts" },
+            { n: "FOX Movies Action", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/196050.ts", t: "ts" },
             { n: "Gourmet", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/64589.ts", t: "ts" },
             { n: "HGTV", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/91888.ts", t: "ts" },
             { n: "JEEM", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts", t: "ts" },
             { n: "Baraem", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts", t: "ts" },
             { n: "Box Office 1", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785558.ts", t: "ts" },
             { n: "Box Office 2", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785557.ts", t: "ts" },
-            { n: "افلام اود 1", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785556.ts", t: "ts" },
-            { n: "افلام اود 2", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785555.ts", t: "ts" },
-            { n: "اود 3 افلام", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785554.ts", t: "ts" },
-            { n: "اود 4 افلام", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785553.ts", t: "ts" },
-            { n: "اود 5 افلام", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785552.ts", t: "ts" },
-            { n: "اود 6 افلام", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785551.ts", t: "ts" },
-            { n: "افلام اود 7", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785550.ts", t: "ts" },
-            { n: "اود 8 افلام", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785549.ts", t: "ts" }
+            { n: "أفلام بين اود 1", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785556.ts", t: "ts" },
+            { n: "أفلام بين اود 2", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785555.ts", t: "ts" },
+            { n: "بين اود 3", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785554.ts", t: "ts" },
+            { n: "بين اود 4", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785553.ts", t: "ts" },
+            { n: "بين اود 5", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785552.ts", t: "ts" },
+            { n: "بين اود 6", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785551.ts", t: "ts" },
+            { n: "أفلام بين اود 7", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785550.ts", t: "ts" },
+            { n: "بين اود 8", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785549.ts", t: "ts" }
         ];
         var fajerChannels = [
             { n: "الفجر 1", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts", t: "ts" },
@@ -418,8 +410,8 @@
         var isTesting = false, speedInterval = null;
         var TEST_URLS = ['https://httpbin.org/bytes/200000', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'];
         var urlIdx = 0;
-        function runSpeedTest() { if (isTesting) return; isTesting = true; speedBadge.textContent = '📡 ...'; var url = TEST_URLS[urlIdx % TEST_URLS.length] + '?r=' + Date.now(); var t0 = Date.now(); fetch(url, { cache: 'no-store' }).then(function (r) { return r.blob(); }).then(function (b) { var elapsed = (Date.now() - t0) / 1000; var bps = ((b.size || 200000) * 8) / elapsed; showSpeed(bps); isTesting = false; }).catch(function () { urlIdx++; isTesting = false; }); }
-        function showSpeed(bps) { var lbl = bps >= 1000000 ? '📡 ' + (bps / 1000000).toFixed(1) + ' Mbps' : '📡 ' + Math.round(bps / 1000) + ' Kbps'; speedBadge.textContent = lbl; speedBadge.style.color = bps >= 10000000 ? '#0f0' : bps >= 2000000 ? '#ff0' : bps >= 500000 ? '#f80' : '#f44'; }
+        function runSpeedTest() { if (isTesting) return; isTesting = true; speedBadge.textContent = '&#x1F4E1; ...'; var url = TEST_URLS[urlIdx % TEST_URLS.length] + '?r=' + Date.now(); var t0 = Date.now(); fetch(url, { cache: 'no-store' }).then(function (r) { return r.blob(); }).then(function (b) { var elapsed = (Date.now() - t0) / 1000; var bps = ((b.size || 200000) * 8) / elapsed; showSpeed(bps); isTesting = false; }).catch(function () { urlIdx++; isTesting = false; }); }
+        function showSpeed(bps) { var lbl = bps >= 1000000 ? '&#x1F4E1; ' + (bps / 1000000).toFixed(1) + ' Mbps' : '&#x1F4E1; ' + Math.round(bps / 1000) + ' Kbps'; speedBadge.textContent = lbl; speedBadge.style.color = bps >= 10000000 ? '#0f0' : bps >= 2000000 ? '#ff0' : bps >= 500000 ? '#f80' : '#f44'; }
         function applySpeedVis() { speedBadge.classList.toggle('hide', !speedOn); spdBtn.classList.toggle('on', speedOn); if (speedOn) { if (!speedInterval) { runSpeedTest(); speedInterval = setInterval(runSpeedTest, 15000); } } else { if (speedInterval) { clearInterval(speedInterval); speedInterval = null; } } }
         function toggleSpeed() { speedOn = !speedOn; localStorage.setItem('speedOn', speedOn ? '1' : '0'); applySpeedVis(); }
         applySpeedVis();
@@ -439,24 +431,31 @@
                     'mpv://' + cleanUrl,
                     'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=is.xyz.mpv;action=android.intent.action.VIEW;end',
                     'vlc://' + cleanUrl,
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=org.videolan.vlc;action=android.intent.action.VIEW;end',
-                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=com.mxtech.videoplayer.ad;action=android.intent.action.VIEW;end'
+                    'intent://' + cleanUrl + '#Intent;scheme=http;type=video/*;package=org.videolan.vlc;action=android.intent.action.VIEW;end'
                 ];
                 var idx = 0;
-                function tryAndroidIntent() { if (idx >= androidIntents.length) { toast('تعذر فتح المشغل، يرجى التأكد من تثبيت مشغل فيديو'); return; } var target = androidIntents[idx++]; window.location.href = target; setTimeout(function () { if (!document.hidden) { tryAndroidIntent(); } }, 600); }
+                function tryAndroidIntent() {
+                    if (idx >= androidIntents.length) { toast('تعذر فتح المشغل'); return; }
+                    window.location.href = androidIntents[idx++];
+                    setTimeout(function() { if (!document.hidden) tryAndroidIntent(); }, 600);
+                }
                 tryAndroidIntent();
             } else if (isIOS) {
-                var encodedUrl = encodeURIComponent(rawUrl);
-                window.location.href = 'vlc-x-callback://x-callback-url/stream?url=' + encodedUrl;
-                setTimeout(function () { if (!document.hidden) { toast('يرجى التأكد من تثبيت تطبيق VLC من App Store'); } }, 2000);
+                window.location.href = 'vlc-x-callback://x-callback-url/stream?url=' + encodeURIComponent(rawUrl);
+                setTimeout(function() { if (!document.hidden) toast('يرجى تثبيت VLC من App Store'); }, 2000);
             } else {
                 var pcProtocols = ['potplayer://' + rawUrl, 'vlc://' + rawUrl, 'mpv://' + cleanUrl];
                 var pcIdx = 0;
-                function tryPCProtocol() { if (pcIdx >= pcProtocols.length) { toast('تعذر فتح المشغل، يرجى تثبيت PotPlayer أو VLC'); return; } var target = pcProtocols[pcIdx++]; window.location.href = target; setTimeout(function () { if (!document.hidden) { tryPCProtocol(); } }, 700); }
+                function tryPCProtocol() {
+                    if (pcIdx >= pcProtocols.length) { toast('يرجى تثبيت PotPlayer أو VLC'); return; }
+                    window.location.href = pcProtocols[pcIdx++];
+                    setTimeout(function() { if (!document.hidden) tryPCProtocol(); }, 700);
+                }
                 tryPCProtocol();
             }
         }
         function loadHls(url, name) {
+            if (window.location.protocol === 'https:' && url.startsWith('http://')) { url = url.replace('http://', 'https://'); }
             vid.style.display = 'block'; iframeWrap.style.display = 'none'; iframePlayer.src = '';
             showLoader();
             if (hls) { hls.destroy(); hls = null; }
@@ -490,11 +489,11 @@
         function closeQ() { qm.classList.remove('open'); }
         function toggleQ() { if (!hls && !qm.innerHTML) { return; } qm.classList.toggle('open'); if (qm.classList.contains('open')) updateQActive(); }
         function togglePlay() { vid.paused ? vid.play() : vid.pause(); }
-        function toggleMute() { vid.muted = !vid.muted; document.getElementById('mute-btn').textContent = vid.muted ? '🔇' : '🔊'; document.getElementById('vs').value = vid.muted ? 0 : vid.volume; }
-        function setVolume(v) { vid.volume = parseFloat(v); vid.muted = v == 0; document.getElementById('mute-btn').textContent = v == 0 ? '🔇' : '🔊'; document.getElementById('vs').value = v; localStorage.setItem('vol', v); }
+        function toggleMute() { vid.muted = !vid.muted; document.getElementById('mute-btn').textContent = vid.muted ? '&#x1F507;' : '&#x1F50A;'; document.getElementById('vs').value = vid.muted ? 0 : vid.volume; }
+        function setVolume(v) { vid.volume = parseFloat(v); vid.muted = v == 0; document.getElementById('mute-btn').textContent = v == 0 ? '&#x1F507;' : '&#x1F50A;'; document.getElementById('vs').value = v; localStorage.setItem('vol', v); }
         function skip(s) { vid.currentTime += s; }
         var swType = null, swStartY = 0, swStartVal = 0, swTimer = null, isSwiping = false, tyStart = 0;
-        function showSwipe(type, val) { clearTimeout(swTimer); if (type === 'vol') { siIcon.textContent = '🔊'; siLabel.textContent = 'الصوت ' + Math.round(val * 100) + '%'; siBar.style.width = (val * 100) + '%'; siBar.style.background = '#0f0'; } else { siIcon.textContent = '☀️'; siLabel.textContent = 'الإضاءة ' + Math.round((1 - val / 0.85) * 100) + '%'; siBar.style.width = ((1 - val / 0.85) * 100) + '%'; siBar.style.background = '#fbbf24'; } swInd.style.display = 'flex'; swTimer = setTimeout(function () { swInd.style.display = 'none'; }, 1200); }
+        function showSwipe(type, val) { clearTimeout(swTimer); if (type === 'vol') { siIcon.textContent = '&#x1F50A;'; siLabel.textContent = 'الصوت ' + Math.round(val * 100) + '%'; siBar.style.width = (val * 100) + '%'; siBar.style.background = '#0f0'; } else { siIcon.textContent = '☀️'; siLabel.textContent = 'الإضاءة ' + Math.round((1 - val / 0.85) * 100) + '%'; siBar.style.width = ((1 - val / 0.85) * 100) + '%'; siBar.style.background = '#fbbf24'; } swInd.style.display = 'flex'; swTimer = setTimeout(function () { swInd.style.display = 'none'; }, 1200); }
         var lastTap = 0, dblTimer = null, dblHintTimer = null;
         function showDblHint(txt) { dblTxt.textContent = txt; dblHint.classList.add('show'); clearTimeout(dblHintTimer); dblHintTimer = setTimeout(function () { dblHint.classList.remove('show'); }, 1500); }
         var hideCtrlT = null;
