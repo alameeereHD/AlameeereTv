@@ -89,36 +89,23 @@
 </div>
 </div>
 <div id="ch-rows">
-<!-- 1: اخبار -->
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4FA;</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-0"></div></div>
-<!-- 2: MBC -->
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4FA;</span><span class="lbl">MBC</span></div><div class="row-scroll" id="row-1"></div></div>
-<!-- 3: منوعات -->
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AC;</span><span class="lbl">منوعات</span></div><div class="row-scroll" id="row-2"></div></div>
-<!-- 4: رياضة -->
 <div class="ch-row"><div class="row-label"><span class="ico">&#x26BD;</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-3"></div></div>
-<!-- 5: وقت اللعب -->
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3C6;</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-4"></div></div>
-<!-- 6: ترفيه -->
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AD;</span><span class="lbl">ترفيه</span></div><div class="row-scroll" id="row-5"></div></div>
-<!-- 7: الفجر -->
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F305;</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-6"></div></div>
-<!-- 8: ثمانية القديم -->
 <div class="ch-row"><div class="row-label"><span class="ico">8</span><span class="lbl">ثمانية</span></div><div class="row-scroll" id="row-7"></div></div>
-<!-- 9: الوان القديم -->
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3A8;</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-8"></div></div>
-<!-- 10: beIN -->
-<div class="ch-row"><div class="row-label"><span class="ico">&#x26BD;</span><span class="lbl" style="font-size:0">beIN</span></div><div class="row-scroll" id="row-bein"></div></div>
-<!-- 11: الوان الجديد -->
-<div class="ch-row"><div class="row-label"><span class="ico">&#x1F3A8;</span><span class="lbl" style="font-size:0">الوان</span></div><div class="row-scroll" id="row-alwan"></div></div>
-<!-- 12: ثمانية الجديد -->
-<div class="ch-row"><div class="row-label"><span class="ico">8</span><span class="lbl" style="font-size:0">ثمانية</span></div><div class="row-scroll" id="row-thm"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico" style="font-size:10px">beIN</span><span class="lbl" style="font-size:0">.</span></div><div class="row-scroll" id="row-bein"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico" style="font-size:10px">الوان</span><span class="lbl" style="font-size:0">.</span></div><div class="row-scroll" id="row-alwan"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico" style="font-size:9px">ثمانية</span><span class="lbl" style="font-size:0">.</span></div><div class="row-scroll" id="row-thm"></div></div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
 var ROWS=[
-// 0: اخبار
 {special:false,channels:[
 {n:'الجزيرة',u:'https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8',t:'hls'},
 {n:'العربية',u:'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8',t:'hls'},
@@ -127,7 +114,6 @@ var ROWS=[
 {n:'القرآن',u:'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8',t:'hls'},
 {n:'السنة',u:'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8',t:'hls'}
 ]},
-// 1: MBC
 {special:false,channels:[
 {n:'MBC 1 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-1%2F15cf99af5de54063fdabfefe66adc075%2Findex.m3u8',t:'hls'},
 {n:'MBC 2 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D',t:'hls'},
@@ -140,7 +126,6 @@ var ROWS=[
 {n:'MBC Masr HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.lg.mncdn.com%2Flive%2Fbitmovin-mbc-masr%2F956eac069c78a35d47245db6cdbb1575%2Findex.m3u8',t:'hls'},
 {n:'MBC Persia HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-persia%2F818ee8e4b592dc497608f066d825bfb4%2Findex.m3u8',t:'hls'}
 ]},
-// 2: منوعات
 {special:false,channels:[
 {n:'MBC 1',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8',t:'hls'},
 {n:'MBC 2',u:'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D',t:'hls'},
@@ -158,7 +143,6 @@ var ROWS=[
 {n:'beIN Drama',u:'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fstream.woodfencepods.com%2Fpdf%2FIC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ%2Findex.m3u8%3Ftoken%3D%3D',t:'hls'},
 {n:'OSN Action',u:'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FOSNACTIONHD%2Findex.m3u8%3Ftoken%3D%3D',t:'hls'}
 ]},
-// 3: رياضة
 {special:false,channels:[
 {n:'الكأس 1',u:'https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8',t:'hls'},
 {n:'الكأس 2',u:'https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8',t:'hls'},
@@ -169,7 +153,6 @@ var ROWS=[
 {n:'العراقية',u:'https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8',t:'hls'},
 {n:'Zain TV',u:'https://zaintv1.zaintvpro.workers.dev/live/z1.m3u8',t:'hls'}
 ]},
-// 4: وقت اللعب
 {special:false,channels:[
 {n:'beIN S1',u:'https://28.1yalla-shoot.space/albaplayer/live1/',t:'iframe'},
 {n:'beIN 1',u:'https://pl.koralive1.cc/albaplayer/1bein1/?serv=0',t:'iframe'},
@@ -180,7 +163,6 @@ var ROWS=[
 {n:'Sigma TV',u:'https://sl3.sigmatv.com/hls/live.m3u8',t:'hls'},
 {n:'Super TV 1',u:'https://super-livetv.pages.dev/SUPER_TV_1.m3u8',t:'hls'}
 ]},
-// 5: ترفيه
 {special:false,channels:[
 {n:'BeIN Movies 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/40773.ts',t:'ts'},
 {n:'BeIN Movies 2',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35030.ts',t:'ts'},
@@ -199,7 +181,6 @@ var ROWS=[
 {n:'JEEM',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts',t:'ts'},
 {n:'Baraem',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts',t:'ts'}
 ]},
-// 6: الفجر
 {special:false,channels:[
 {n:'الفجر 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts',t:'ts'},
 {n:'الفجر 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463533.ts',t:'ts'},
@@ -207,14 +188,12 @@ var ROWS=[
 {n:'الفجر 4',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463535.ts',t:'ts'},
 {n:'الفجر 5',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463536.ts',t:'ts'}
 ]},
-// 7: ثمانية القديم
 {special:false,channels:[
 {n:'8 الأولى',u:'https://ahm79.store/live/0545580310/7337741654/746713.m3u8?token==',t:'hls'},
 {n:'ثمانية 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421785.ts',t:'ts'},
 {n:'ثمانية 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421786.ts',t:'ts'},
 {n:'ثمانية 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/429403.ts',t:'ts'}
 ]},
-// 8: الوان القديم
 {special:false,channels:[
 {n:'الوان 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418113.ts',t:'ts'},
 {n:'الوان 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418114.ts',t:'ts'},
@@ -242,35 +221,36 @@ var BEIN_CH=[
 {name:'8',logo:BL+'8HD.png',sd:BASE+'2533.ts',hd:BASE+'9.ts',uhd:BASE+'10361.ts'},
 {name:'9',logo:BL+'9HD.png',sd:BASE+'2532.ts',hd:BASE+'10.ts',uhd:BASE+'10362.ts'}
 ];
-var AL='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuhH7QXR24YA4PeJNfQRsxALFC3Sbaw_fhpg&s';
+var SPORT_LOGO='https://static.wixstatic.com/media/0f6f17_0b9748ca0f2a41698c2d620d753ac140~mv2.jpg';
+var OTHER_LOGO='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuhH7QXR24YA4PeJNfQRsxALFC3Sbaw_fhpg&s';
 var ALWAN_CH=[
-{name:'Sport 1',logo:AL,sd:BASE+'1641624.ts',hd:BASE+'1641618.ts',uhd:BASE+'1641605.ts'},
-{name:'Sport 2',logo:AL,sd:BASE+'1641625.ts',hd:BASE+'1641619.ts',uhd:BASE+'1641606.ts'},
-{name:'Sport 3',logo:AL,sd:BASE+'1641626.ts',hd:BASE+'1641620.ts',uhd:BASE+'1641607.ts'},
-{name:'Sport 4',logo:AL,sd:BASE+'1641627.ts',hd:BASE+'1641621.ts',uhd:BASE+'1641608.ts'},
-{name:'Sport 5',logo:AL,sd:BASE+'1641628.ts',hd:BASE+'1641622.ts',uhd:BASE+'1641609.ts'},
-{name:'Sport 6',logo:AL,sd:BASE+'1641629.ts',hd:BASE+'1641623.ts',uhd:BASE+'1641610.ts'},
-{name:'Sport 7',logo:AL,uhd:BASE+'1641611.ts'},
-{name:'Sport 8',logo:AL,uhd:BASE+'1641612.ts'},
-{name:'Sport 9',logo:AL,uhd:BASE+'1641613.ts'},
-{name:'Sport 10',logo:AL,uhd:BASE+'1641614.ts'},
-{name:'F1',logo:AL,uhd:BASE+'1641616.ts'},
-{name:'UFC',logo:AL,uhd:BASE+'1641615.ts'},
-{name:'WWE',logo:AL,uhd:BASE+'1641617.ts'},
-{name:'Aflam 1',logo:AL,uhd:BASE+'1641630.ts'},
-{name:'Aflam 2',logo:AL,uhd:BASE+'1641631.ts'},
-{name:'Aflam 3',logo:AL,uhd:BASE+'1641632.ts'},
-{name:'Aflam 4',logo:AL,uhd:BASE+'1641633.ts'},
-{name:'Mosalsalat',logo:AL,uhd:BASE+'1641637.ts'},
-{name:'Mosalsalat+',logo:AL,uhd:BASE+'1641641.ts'},
-{name:'Aghani',logo:AL,uhd:BASE+'1641638.ts'},
-{name:'Atfal',logo:AL,uhd:BASE+'1641636.ts'},
-{name:'Anime',logo:AL,uhd:BASE+'1641642.ts'},
-{name:'Bollywood',logo:AL,uhd:BASE+'1641639.ts'},
-{name:'Korea',logo:AL,uhd:BASE+'1641640.ts'},
-{name:'Turkey',logo:AL,uhd:BASE+'1641634.ts'},
-{name:'Wathaeqye',logo:AL,uhd:BASE+'1641635.ts'},
-{name:'Quran',logo:AL,uhd:BASE+'1641643.ts'}
+{name:'Sport 1',logo:SPORT_LOGO,sd:BASE+'1641624.ts',hd:BASE+'1641618.ts',uhd:BASE+'1641605.ts'},
+{name:'Sport 2',logo:SPORT_LOGO,sd:BASE+'1641625.ts',hd:BASE+'1641619.ts',uhd:BASE+'1641606.ts'},
+{name:'Sport 3',logo:SPORT_LOGO,sd:BASE+'1641626.ts',hd:BASE+'1641620.ts',uhd:BASE+'1641607.ts'},
+{name:'Sport 4',logo:SPORT_LOGO,sd:BASE+'1641627.ts',hd:BASE+'1641621.ts',uhd:BASE+'1641608.ts'},
+{name:'Sport 5',logo:SPORT_LOGO,sd:BASE+'1641628.ts',hd:BASE+'1641622.ts',uhd:BASE+'1641609.ts'},
+{name:'Sport 6',logo:SPORT_LOGO,sd:BASE+'1641629.ts',hd:BASE+'1641623.ts',uhd:BASE+'1641610.ts'},
+{name:'Sport 7',logo:SPORT_LOGO,uhd:BASE+'1641611.ts'},
+{name:'Sport 8',logo:SPORT_LOGO,uhd:BASE+'1641612.ts'},
+{name:'Sport 9',logo:SPORT_LOGO,uhd:BASE+'1641613.ts'},
+{name:'Sport 10',logo:SPORT_LOGO,uhd:BASE+'1641614.ts'},
+{name:'F1',logo:SPORT_LOGO,uhd:BASE+'1641616.ts'},
+{name:'UFC',logo:SPORT_LOGO,uhd:BASE+'1641615.ts'},
+{name:'WWE',logo:SPORT_LOGO,uhd:BASE+'1641617.ts'},
+{name:'Aflam 1',logo:OTHER_LOGO,uhd:BASE+'1641630.ts'},
+{name:'Aflam 2',logo:OTHER_LOGO,uhd:BASE+'1641631.ts'},
+{name:'Aflam 3',logo:OTHER_LOGO,uhd:BASE+'1641632.ts'},
+{name:'Aflam 4',logo:OTHER_LOGO,uhd:BASE+'1641633.ts'},
+{name:'Mosalsalat',logo:OTHER_LOGO,uhd:BASE+'1641637.ts'},
+{name:'Mosalsalat+',logo:OTHER_LOGO,uhd:BASE+'1641641.ts'},
+{name:'Aghani',logo:OTHER_LOGO,uhd:BASE+'1641638.ts'},
+{name:'Atfal',logo:OTHER_LOGO,uhd:BASE+'1641636.ts'},
+{name:'Anime',logo:OTHER_LOGO,uhd:BASE+'1641642.ts'},
+{name:'Bollywood',logo:OTHER_LOGO,uhd:BASE+'1641639.ts'},
+{name:'Korea',logo:OTHER_LOGO,uhd:BASE+'1641640.ts'},
+{name:'Turkey',logo:OTHER_LOGO,uhd:BASE+'1641634.ts'},
+{name:'Wathaeqye',logo:OTHER_LOGO,uhd:BASE+'1641635.ts'},
+{name:'Quran',logo:OTHER_LOGO,uhd:BASE+'1641643.ts'}
 ];
 var TL='https://destinationksa.com/wp-content/uploads/2025/06/Layan-Life-1.png';
 var THM_CH=[
