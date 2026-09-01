@@ -50,6 +50,15 @@
         .ch.iframe-ch { border-color: #f80; } .ch.iframe-ch.on { background: #f80; color: #000; }
         .ch.ts-ch { border-color: #f0f; } .ch.ts-ch.on { background: #f0f; color: #000; }
         .ch.multi-ch { border-color: #a855f7; } .ch.multi-ch:hover { border-color: #c084fc; background: #1a1025; } .ch.multi-ch.on { background: #a855f7; color: #000; }
+        /* beIN multi-quality card */
+        .bein-card { flex-shrink: 0; background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 8px; cursor: default; transition: .2s; display: flex; flex-direction: column; align-items: center; overflow: hidden; width: 72px; }
+        .bein-card:hover { border-color: #c8a000; }
+        .bein-card img { width: 100%; height: 40px; object-fit: contain; background: #000; padding: 4px; }
+        .bein-card .bein-q { display: flex; width: 100%; }
+        .bein-card .bein-q button { flex: 1; background: #111; border: none; border-top: 1px solid #222; color: #999; font-size: 8px; font-weight: 700; padding: 3px 0; cursor: pointer; transition: .15s; }
+        .bein-card .bein-q button:not(:last-child) { border-left: 1px solid #222; }
+        .bein-card .bein-q button:hover { background: #c8a000; color: #000; }
+        .bein-card .bein-q button.on { background: #c8a000; color: #000; }
         #err-toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #a00; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 9999; }
     </style>
 </head>
@@ -89,6 +98,7 @@
 <div class="ch-row"><div class="row-label"><span class="ico">8</span><span class="lbl">ثمانية</span></div><div class="row-scroll" id="row-6"></div></div>
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3A8;</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-7"></div></div>
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4FA;</span><span class="lbl">MBC</span></div><div class="row-scroll" id="row-8"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x26BD;</span><span class="lbl">beIN</span></div><div class="row-scroll" id="row-bein"></div></div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
@@ -195,6 +205,51 @@ var ROWS=[
 {n:'MBC Persia HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-persia%2F818ee8e4b592dc497608f066d825bfb4%2Findex.m3u8',t:'hls'}
 ]}
 ];
+
+// beIN channels data: SD / HD / 4K
+var BEIN_CHANNELS = [
+  {name:'News', logo:'http://57.128.182.77:8080/0tv_logo/110.png',
+   sd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/274145.ts',
+   hd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/28939.ts',
+   uhd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/44.ts'},
+  {name:'1', logo:'http://57.128.182.77:8080/BEIN/bein-sport/BEINSPORT1HD.png',
+   sd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/2541.ts',
+   hd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/1.ts',
+   uhd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/3854.ts'},
+  {name:'2', logo:'http://57.128.182.77:8080/BEIN/bein-sport/BEINSPORT2HD.png',
+   sd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/2540.ts',
+   hd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/2.ts',
+   uhd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/3853.ts'},
+  {name:'3', logo:'http://57.128.182.77:8080/BEIN/bein-sport/BEINSPORT3HD.png',
+   sd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/2538.ts',
+   hd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/4.ts',
+   uhd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/3851.ts'},
+  {name:'4', logo:'http://57.128.182.77:8080/BEIN/bein-sport/BEINSPORT4HD.png',
+   sd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/10795.ts',
+   hd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/5.ts',
+   uhd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/3850.ts'},
+  {name:'5', logo:'http://57.128.182.77:8080/BEIN/bein-sport/BEINSPORT5HD.png',
+   sd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/2536.ts',
+   hd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/6.ts',
+   uhd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/3849.ts'},
+  {name:'6', logo:'http://57.128.182.77:8080/BEIN/bein-sport/BEINSPORT6HD.png',
+   sd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/2535.ts',
+   hd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/7.ts',
+   uhd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/3848.ts'},
+  {name:'7', logo:'http://57.128.182.77:8080/BEIN/bein-sport/BEINSPORT7HD.png',
+   sd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/2534.ts',
+   hd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/8.ts',
+   uhd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/3847.ts'},
+  {name:'8', logo:'http://57.128.182.77:8080/BEIN/bein-sport/BEINSPORT8HD.png',
+   sd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/2533.ts',
+   hd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/9.ts',
+   uhd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/10361.ts'},
+  {name:'9', logo:'http://57.128.182.77:8080/BEIN/bein-sport/BEINSPORT9HD.png',
+   sd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/2532.ts',
+   hd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/10.ts',
+   uhd:'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/10362.ts'}
+];
+
 var hls=null,cur={r:-1,i:-1},retryT=null;
 var vid=document.getElementById('vid'),iframeWrap=document.getElementById('iframe-wrap'),iframePlayer=document.getElementById('iframe-player');
 var qm=document.getElementById('qm'),qBtn=document.getElementById('q-btn'),loader=document.getElementById('loader');
@@ -222,10 +277,65 @@ applySpeedVis();
 function showLoader(){loader.style.display='flex';}function hideLoader(){loader.style.display='none';}
 function toast(msg){var t=document.getElementById('err-toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},4000);}
 function reloadCurrentStream(){if(cur.r!==-1)load(cur.r,cur.i);}
-function openWithMPV(url){var cu=url.replace(/^https?:\/\//,''),ua=navigator.userAgent,isA=/Android/i.test(ua),isI=/iPhone|iPad|iPod/i.test(ua);if(isA){var intents=['intent://'+cu+'#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end','mpv://'+cu,'vlc://'+cu];var ix=0;function tri(){if(ix>=intents.length){toast('تعذر فتح المشغل');return;}window.location.href=intents[ix++];setTimeout(function(){if(!document.hidden)tri();},600);}tri();}else if(isI){window.location.href='vlc-x-callback://x-callback-url/stream?url='+encodeURIComponent(url);setTimeout(function(){if(!document.hidden)toast('يرجى تثبيت VLC');},2000);}else{var pp=['potplayer://'+url,'vlc://'+url];var pi=0;function trp(){if(pi>=pp.length){toast('يرجى تثبيت PotPlayer أو VLC');return;}window.location.href=pp[pi++];setTimeout(function(){if(!document.hidden)trp();},700);}trp();}}
-function loadHls(url){vid.style.display='block';iframeWrap.style.display='none';iframePlayer.src='';showLoader();if(hls){hls.destroy();hls=null;}vid.removeAttribute('src');vid.load();if(Hls.isSupported()){hls=new Hls({enableWorker:true,startLevel:0,autoLevelEnabled:false,maxBufferLength:10,maxMaxBufferLength:30,manifestLoadingMaxRetry:4,fragLoadingMaxRetry:4,liveSyncDurationCount:2,lowLatencyMode:true});hls.loadSource(url);hls.attachMedia(vid);hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hls.autoLevelEnabled=false;hideLoader();pw.classList.add('playing');vid.play().catch(function(){});buildQ();});hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){showLoader();hls.startLoad();retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){load(cur.r,cur.i);},5000);}}});}else if(vid.canPlayType('application/vnd.apple.mpegurl')){vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();pw.classList.add('playing');},{once:true});vid.play().catch(function(){});}else{hideLoader();toast('المتصفح غير متوافق');}}
-function buildChannels(){ROWS.forEach(function(row,ri){var box=document.getElementById('row-'+ri);if(!box)return;box.innerHTML='';row.channels.forEach(function(c,ci){var b=document.createElement('button');var cls='ch';if(c.t==='iframe')cls+=' iframe-ch';if(c.t==='ts')cls+=' ts-ch';if(row.special)cls+=' multi-ch';b.className=cls;b.textContent=c.n;b.id='ch-'+ri+'-'+ci;b.onclick=function(){load(ri,ci);};box.appendChild(b);});});}
-function load(ri,ci){if(ri<0||ri>=ROWS.length||ci<0||ci>=ROWS[ri].channels.length)return;cur={r:ri,i:ci};if(retryT){clearTimeout(retryT);retryT=null;}document.querySelectorAll('.ch').forEach(function(b){b.classList.remove('on');});var btn=document.getElementById('ch-'+ri+'-'+ci);if(btn)btn.classList.add('on');var ch=ROWS[ri].channels[ci];chTitle.textContent=ch.n;chTitle.style.display='block';var type=ch.t||'hls';if(type==='ts'){openWithMPV(ch.u);return;}if(type==='iframe'){if(hls){hls.destroy();hls=null;}vid.style.display='none';iframeWrap.style.display='block';pw.classList.add('playing');showLoader();iframePlayer.src='';setTimeout(function(){iframePlayer.src=ch.u;hideLoader();},400);qm.innerHTML='';return;}loadHls(ch.u);}
+function openWithMPV(url){
+  var cu=url.replace(/^https?:\/\//,''),ua=navigator.userAgent,isA=/Android/i.test(ua),isI=/iPhone|iPad|iPod/i.test(ua);
+  if(isA){var intents=['intent://'+cu+'#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end','mpv://'+cu,'vlc://'+cu];var ix=0;function tri(){if(ix>=intents.length){toast('تعذر فتح المشغل');return;}window.location.href=intents[ix++];setTimeout(function(){if(!document.hidden)tri();},600);}tri();}
+  else if(isI){window.location.href='vlc-x-callback://x-callback-url/stream?url='+encodeURIComponent(url);setTimeout(function(){if(!document.hidden)toast('يرجى تثبيت VLC');},2000);}
+  else{var pp=['potplayer://'+url,'vlc://'+url];var pi=0;function trp(){if(pi>=pp.length){toast('يرجى تثبيت PotPlayer أو VLC');return;}window.location.href=pp[pi++];setTimeout(function(){if(!document.hidden)trp();},700);}trp();}
+}
+function loadHls(url){vid.style.display='block';iframeWrap.style.display='none';iframePlayer.src='';showLoader();if(hls){hls.destroy();hls=null;}vid.removeAttribute('src');vid.load();if(Hls.isSupported()){hls=new Hls({enableWorker:true,startLevel:0,autoLevelEnabled:false,maxBufferLength:10,maxMaxBufferLength:30,manifestLoadingMaxRetry:4,fragLoadingMaxRetry:4,liveSyncDurationCount:2,lowLatencyMode:true});hls.loadSource(url);hls.attachMedia(vid);hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hls.autoLevelEnabled=false;hideLoader();pw.classList.add('playing');vid.play().catch(function(){});buildQ();});hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){showLoader();hls.startLoad();retryT=setTimeout(function(){reloadCurrentStream();},5000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){reloadCurrentStream();},5000);}}});}else if(vid.canPlayType('application/vnd.apple.mpegurl')){vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();pw.classList.add('playing');},{once:true});vid.play().catch(function(){});}else{hideLoader();toast('المتصفح غير متوافق');}}
+function buildChannels(){
+  ROWS.forEach(function(row,ri){
+    var box=document.getElementById('row-'+ri);if(!box)return;
+    box.innerHTML='';
+    row.channels.forEach(function(c,ci){
+      var b=document.createElement('button');
+      var cls='ch';
+      if(c.t==='iframe')cls+=' iframe-ch';
+      if(c.t==='ts')cls+=' ts-ch';
+      if(row.special)cls+=' multi-ch';
+      b.className=cls;b.textContent=c.n;b.id='ch-'+ri+'-'+ci;
+      b.onclick=function(){load(ri,ci);};
+      box.appendChild(b);
+    });
+  });
+  // Build beIN row
+  var beinBox=document.getElementById('row-bein');
+  if(beinBox){
+    beinBox.innerHTML='';
+    BEIN_CHANNELS.forEach(function(ch,ci){
+      var card=document.createElement('div');
+      card.className='bein-card';
+      card.id='bein-card-'+ci;
+      var img=document.createElement('img');
+      img.src=ch.logo;
+      img.alt=ch.name;
+      img.onerror=function(){this.style.display='none';};
+      card.appendChild(img);
+      var qRow=document.createElement('div');
+      qRow.className='bein-q';
+      [{lbl:'SD',key:'sd'},{lbl:'HD',key:'hd'},{lbl:'4K',key:'uhd'}].forEach(function(q){
+        if(!ch[q.key])return;
+        var btn=document.createElement('button');
+        btn.textContent=q.lbl;
+        btn.id='bein-'+ci+'-'+q.key;
+        btn.onclick=function(){
+          // clear all bein active
+          document.querySelectorAll('.bein-q button').forEach(function(b){b.classList.remove('on');});
+          btn.classList.add('on');
+          chTitle.textContent='beIN '+ch.name+' '+q.lbl;
+          chTitle.style.display='block';
+          cur={r:-2,i:ci};
+          openWithMPV(ch[q.key]);
+        };
+        qRow.appendChild(btn);
+      });
+      card.appendChild(qRow);
+      beinBox.appendChild(card);
+    });
+  }
+}
+function load(ri,ci){if(ri<0||ri>=ROWS.length||ci<0||ci>=ROWS[ri].channels.length)return;cur={r:ri,i:ci};if(retryT){clearTimeout(retryT);retryT=null;}document.querySelectorAll('.ch').forEach(function(b){b.classList.remove('on');});document.querySelectorAll('.bein-q button').forEach(function(b){b.classList.remove('on');});var btn=document.getElementById('ch-'+ri+'-'+ci);if(btn)btn.classList.add('on');var ch=ROWS[ri].channels[ci];chTitle.textContent=ch.n;chTitle.style.display='block';var type=ch.t||'hls';if(type==='ts'){openWithMPV(ch.u);return;}if(type==='iframe'){if(hls){hls.destroy();hls=null;}vid.style.display='none';iframeWrap.style.display='block';pw.classList.add('playing');showLoader();iframePlayer.src='';setTimeout(function(){iframePlayer.src=ch.u;hideLoader();},400);qm.innerHTML='';return;}loadHls(ch.u);}
 function buildQ(){qm.innerHTML='';if(!hls)return;var lvls=hls.levels;if(!lvls||!lvls.length)return;var a=document.createElement('button');a.textContent='تلقائي';a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};qm.appendChild(a);lvls.forEach(function(lv,i){var b=document.createElement('button');var lbl=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';b.textContent=lbl;b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};qm.appendChild(b);});updateQActive();}
 function updateQActive(){if(!hls)return;qm.querySelectorAll('button').forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
 function closeQ(){qm.classList.remove('open');}
