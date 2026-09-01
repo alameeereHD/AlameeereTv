@@ -254,7 +254,7 @@ var ALWAN_CH=[
 ];
 var TL='https://destinationksa.com/wp-content/uploads/2025/06/Layan-Life-1.png';
 var THM_CH=[
-{name:'1',logo:TL,hd:BASE+'1549876.ts',uhd:BASE+'1630479.ts'},
+{name:'1',logo:TL,sd:'https://v4.sryyyeexxzzzs.app/live/v/event1/1280x720/index.m3u8',hd:'https://v4.sryyyeexxzzzs.app/live/v/event1/720p50/index.m3u8',uhd:'https://v4.sryyyeexxzzzs.app/live/event1/playlist.m3u8'},
 {name:'2',logo:TL,hd:BASE+'1549877.ts',uhd:BASE+'1549875.ts'},
 {name:'3',logo:TL,hd:BASE+'1848332.ts'},
 {name:'منصة 1',logo:TL,uhd:BASE+'1597497.ts'},
@@ -304,6 +304,39 @@ function buildMultiRow(data,boxId,styleClass){
     card.appendChild(nm);
     var qRow=document.createElement('div');
     qRow.className='q-row';
+    [{lbl:'1',key:'sd'},{lbl:'2',key:'hd'},{lbl:'3',key:'uhd'}].forEach(function(q){
+      if(!ch[q.key])return;
+      var btn=document.createElement('button');
+      btn.textContent=q.lbl;
+      btn.onclick=function(){
+        document.querySelectorAll('.q-row button').forEach(function(b){b.classList.remove('on');});
+        btn.classList.add('on');
+        chTitle.textContent=ch.name+' '+q.lbl;
+        chTitle.style.display='block';
+        cur={r:-2,i:ci};
+        loadHlsDirect(ch[q.key]);
+      };
+      qRow.appendChild(btn);
+    });
+    card.appendChild(qRow);
+    box.appendChild(card);
+  });
+}
+function buildMultiRowExt(data,boxId,styleClass){
+  var box=document.getElementById(boxId);if(!box)return;
+  box.innerHTML='';
+  data.forEach(function(ch,ci){
+    var card=document.createElement('div');
+    card.className='multi-card '+styleClass;
+    var img=document.createElement('img');
+    img.src=ch.logo;img.alt=ch.name;
+    img.onerror=function(){this.style.display='none';};
+    card.appendChild(img);
+    var nm=document.createElement('div');
+    nm.className='ch-name';nm.textContent=ch.name;
+    card.appendChild(nm);
+    var qRow=document.createElement('div');
+    qRow.className='q-row';
     [{lbl:'SD',key:'sd'},{lbl:'HD',key:'hd'},{lbl:'4K',key:'uhd'}].forEach(function(q){
       if(!ch[q.key])return;
       var btn=document.createElement('button');
@@ -322,7 +355,8 @@ function buildMultiRow(data,boxId,styleClass){
     box.appendChild(card);
   });
 }
-function loadHls(url){vid.style.display='block';iframeWrap.style.display='none';iframePlayer.src='';showLoader();if(hls){hls.destroy();hls=null;}vid.removeAttribute('src');vid.load();if(Hls.isSupported()){hls=new Hls({enableWorker:true,startLevel:0,autoLevelEnabled:false,maxBufferLength:10,maxMaxBufferLength:30,manifestLoadingMaxRetry:4,fragLoadingMaxRetry:4,liveSyncDurationCount:2,lowLatencyMode:true});hls.loadSource(url);hls.attachMedia(vid);hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hls.autoLevelEnabled=false;hideLoader();pw.classList.add('playing');vid.play().catch(function(){});buildQ();});hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){showLoader();hls.startLoad();retryT=setTimeout(function(){reloadCurrentStream();},5000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){reloadCurrentStream();},5000);}}});}else if(vid.canPlayType('application/vnd.apple.mpegurl')){vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();pw.classList.add('playing');},{once:true});vid.play().catch(function(){});}else{hideLoader();toast('المتصفح غير متوافق');}}
+function loadHlsDirect(url){vid.style.display='block';iframeWrap.style.display='none';iframePlayer.src='';showLoader();if(hls){hls.destroy();hls=null;}vid.removeAttribute('src');vid.load();if(Hls.isSupported()){hls=new Hls({enableWorker:true,startLevel:0,autoLevelEnabled:false,maxBufferLength:10,maxMaxBufferLength:30,manifestLoadingMaxRetry:4,fragLoadingMaxRetry:4,liveSyncDurationCount:2,lowLatencyMode:true});hls.loadSource(url);hls.attachMedia(vid);hls.on(Hls.Events.MANIFEST_PARSED,function(){hls.currentLevel=0;hls.autoLevelEnabled=false;hideLoader();pw.classList.add('playing');vid.play().catch(function(){});buildQ();});hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){showLoader();hls.startLoad();retryT=setTimeout(function(){reloadCurrentStream();},5000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){reloadCurrentStream();},5000);}}});}else if(vid.canPlayType('application/vnd.apple.mpegurl')){vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();pw.classList.add('playing');},{once:true});vid.play().catch(function(){});}else{hideLoader();toast('المتصفح غير متوافق');}}
+function loadHls(url){loadHlsDirect(url);}
 function buildChannels(){
   ROWS.forEach(function(row,ri){
     var box=document.getElementById('row-'+ri);if(!box)return;
@@ -338,8 +372,8 @@ function buildChannels(){
       box.appendChild(b);
     });
   });
-  buildMultiRow(BEIN_CH,'row-bein','bein-style');
-  buildMultiRow(ALWAN_CH,'row-alwan','alwan-style');
+  buildMultiRowExt(BEIN_CH,'row-bein','bein-style');
+  buildMultiRowExt(ALWAN_CH,'row-alwan','alwan-style');
   buildMultiRow(THM_CH,'row-thm','thm-style');
 }
 function load(ri,ci){if(ri<0||ri>=ROWS.length||ci<0||ci>=ROWS[ri].channels.length)return;cur={r:ri,i:ci};if(retryT){clearTimeout(retryT);retryT=null;}document.querySelectorAll('.ch').forEach(function(b){b.classList.remove('on');});document.querySelectorAll('.q-row button').forEach(function(b){b.classList.remove('on');});var btn=document.getElementById('ch-'+ri+'-'+ci);if(btn)btn.classList.add('on');var ch=ROWS[ri].channels[ci];chTitle.textContent=ch.n;chTitle.style.display='block';var type=ch.t||'hls';if(type==='ts'){openWithMPV(ch.u);return;}if(type==='iframe'){if(hls){hls.destroy();hls=null;}vid.style.display='none';iframeWrap.style.display='block';pw.classList.add('playing');showLoader();iframePlayer.src='';setTimeout(function(){iframePlayer.src=ch.u;hideLoader();},400);qm.innerHTML='';return;}loadHls(ch.u);}
