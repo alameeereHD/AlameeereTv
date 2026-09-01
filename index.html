@@ -125,7 +125,7 @@ var ROWS=[
   ]},
   {special:false,channels:[
     {n:'MBC 1',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8',t:'hls'},
-    {n:'MBC 2',u:'http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token==',t:'hls'},
+    {n:'MBC 2',u:PROXY+encodeURIComponent('http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token=='),t:'hls'},
     {n:'MBC 3',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8',t:'hls'},
     {n:'MBC 4',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8',t:'hls'},
     {n:'MBC 5',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8',t:'hls'},
@@ -133,8 +133,8 @@ var ROWS=[
     {n:'MBC Masr',u:'https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8',t:'hls'},
     {n:'MBC Drama',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8',t:'hls'},
     {n:'MBC Iraq',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8',t:'hls'},
-    {n:'beIN Drama',u:'http://stream.woodfencepods.com/pdf/IC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ/index.m3u8?token==',t:'hls'},
-    {n:'OSN Action',u:'http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token==',t:'hls'}
+    {n:'beIN Drama',u:PROXY+encodeURIComponent('http://stream.woodfencepods.com/pdf/IC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ/index.m3u8?token=='),t:'hls'},
+    {n:'OSN Action',u:PROXY+encodeURIComponent('http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token=='),t:'hls'}
   ]},
   {special:false,channels:[
     {n:'الكأس 1',u:'https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8',t:'hls'},
@@ -200,11 +200,11 @@ var ROWS=[
     {n:'الوان 10',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418122.ts',t:'ts'}
   ]},
   {special:false,channels:[
-    {n:'MBC 1 HD',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8',t:'hls'},
-    {n:'MBC 2 HD',u:'http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token==',t:'hls'},
-    {n:'MBC Drama HD',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8',t:'hls'},
-    {n:'MBC Iraq HD',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8',t:'hls'},
-    {n:'MBC Masr HD',u:'https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8',t:'hls'}
+    {n:'MBC 1 HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8'),t:'hls'},
+    {n:'MBC 2 HD',u:PROXY+encodeURIComponent('http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token=='),t:'hls'},
+    {n:'MBC Drama HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8'),t:'hls'},
+    {n:'MBC Iraq HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8'),t:'hls'},
+    {n:'MBC Masr HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8'),t:'hls'}
   ]}
 ];
 var hls=null,cur={r:-1,i:-1},retryT=null;
