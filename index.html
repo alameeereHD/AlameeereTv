@@ -1,211 +1,211 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>AlameeereTv</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
-        #player-wrap { flex: 0 0 40%; min-height: 200px; position: relative; user-select: none; overflow: hidden; background: #000; }
-        video { width: 100%; height: 100%; display: block; background: #000; }
-        video.fc { object-fit: contain; } video.fv { object-fit: fill; } video.ff { object-fit: contain; transform: scaleY(0.72); transform-origin: center center; }
-        #brand-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; z-index: 50; pointer-events: none; transition: opacity 0.5s ease; }
-        #brand-overlay span { color: #fff; font-size: 28px; font-weight: 700; letter-spacing: 2px; animation: waveBrand 2s ease-in-out infinite; }
-        @keyframes waveBrand { 0%,100%{transform:translateY(0);text-shadow:0 0 10px rgba(0,255,0,.4);} 25%{transform:translateY(-8px);text-shadow:0 0 24px rgba(0,255,0,.9);} 75%{transform:translateY(6px);text-shadow:0 0 18px rgba(0,255,0,.6);} }
-        #player-wrap.playing #brand-overlay { opacity: 0; z-index: -1; }
-        #loader { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(0,0,0,.75); z-index: 10; }
-        #loader .wave-text { color: #fff; font-size: 22px; font-weight: 700; letter-spacing: 2px; animation: waveBrand 1.5s ease-in-out infinite; }
-        #iframe-wrap { position: absolute; inset: 0; display: none; z-index: 5; }
-        #iframe-wrap iframe { width: 100%; height: 100%; border: none; }
-        #brightness-layer { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 4; }
-        #ch-title { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,.6); backdrop-filter: blur(6px); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; z-index: 6; display: none; }
-        #speed-badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.65); backdrop-filter: blur(6px); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #0f0; z-index: 6; transition: opacity .3s; cursor: pointer; user-select: none; }
-        #speed-badge.hide { opacity: 0; pointer-events: none; }
-        #dbl-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 15; opacity: 0; transition: opacity .3s; }
-        #dbl-hint span { background: rgba(0,0,0,.75); color: #fff; font-size: 15px; padding: 12px 26px; border-radius: 22px; border: 1px solid rgba(255,255,255,.2); }
-        #dbl-hint.show { opacity: 1; }
-        #swipe-ind { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,.78); border: 1px solid rgba(255,255,255,.15); border-radius: 16px; padding: 14px 22px; display: none; flex-direction: column; align-items: center; gap: 8px; z-index: 20; pointer-events: none; min-width: 130px; }
-        #si-icon { font-size: 26px; } #si-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; } #si-bar { height: 100%; background: #0f0; border-radius: 3px; } #si-label { font-size: 12px; color: rgba(255,255,255,.75); }
-        #controls-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent,rgba(0,0,0,.92)); padding: 30px 8px 10px; display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 100; overflow: visible; }
-        #player-wrap.show-ctrl #controls-overlay { opacity: 1; pointer-events: auto; }
-        .cb { background: rgba(255,255,255,.12); border: none; color: #fff; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-size: 11px; backdrop-filter: blur(6px); transition: .2s; white-space: nowrap; flex-shrink: 0; }
-        .cb:hover { background: rgba(255,255,255,.28); } .cb.on { background: rgba(0,200,0,.2); color: #0f0; border: 1px solid rgba(0,255,0,.3); }
-        #vw { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-        #vs { -webkit-appearance: none; appearance: none; width: 48px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.3); outline: none; cursor: pointer; }
-        #vs::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #0f0; cursor: pointer; }
-        #fg { flex: 1; min-width: 2px; }
-        #qw { position: relative; flex-shrink: 0; margin-left: 6px; }
-        #qm { position: absolute; bottom: calc(100% + 8px); left: 0; background: rgba(10,10,10,.97); border: 1px solid #333; border-radius: 8px; display: none; flex-direction: column; min-width: 70px; max-height: 50vh; overflow-y: auto; z-index: 9999; box-shadow: 0 -4px 20px rgba(0,0,0,.8); }
-        #qm.open { display: flex; } #qm button { background: none; border: none; color: #fff; padding: 5px 10px; cursor: pointer; text-align: center; font-size: 11px; } #qm button:hover { background: rgba(255,255,255,.08); } #qm button.active { color: #0f0; font-weight: 700; } #q-btn.manual { background: rgba(0,200,0,.2); color: #0f0; border: 1px solid rgba(0,255,0,.35); }
-        #ch-rows { flex: 1 1 0; min-height: 0; background: #030303; border-top: 1px solid #111; display: flex; flex-direction: column; overflow-y: auto; padding: 2px 0; }
-        .ch-row { flex-shrink: 0; display: flex; align-items: center; border-bottom: 1px solid #0a0a0a; padding: 2px 0; }
-        .row-label { flex-shrink: 0; width: 50px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: #050505; border-left: 1px solid #111; }
-        .row-label .ico { font-size: 14px; } .row-label .lbl { font-size: 8px; color: #666; font-weight: 700; }
-        .row-scroll { flex: 1; display: flex; gap: 4px; padding: 4px; overflow-x: auto; align-items: center; }
-        .row-scroll::-webkit-scrollbar { height: 3px; } .row-scroll::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
-        .ch { min-width: 65px; height: 40px; background: #0a0a0a; border: 1px solid #1a1a1a; color: #bbb; font-size: 10px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: .2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2px; }
-        .ch:hover { background: #151515; border-color: #0f0; color: #fff; } .ch.on { background: #0f0; color: #000; border-color: #0f0; }
-        .ch.iframe-ch { border-color: #f80; } .ch.iframe-ch.on { background: #f80; color: #000; }
-        .ch.ts-ch { border-color: #f0f; } .ch.ts-ch.on { background: #f0f; color: #000; }
-        .ch.multi-ch { border-color: #a855f7; } .ch.multi-ch:hover { border-color: #c084fc; background: #1a1025; } .ch.multi-ch.on { background: #a855f7; color: #000; }
-        #err-toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #a00; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 9999; }
-    </style>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AlameeereTv</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,-apple-system,sans-serif}
+#app{display:flex;flex-direction:column;width:100%;height:100%}
+#player-wrap{flex:0 0 40%;min-height:200px;position:relative;user-select:none;overflow:hidden;background:#000}
+video{width:100%;height:100%;display:block;background:#000}
+video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain;transform:scaleY(0.72);transform-origin:center center}
+#brand-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000;z-index:50;pointer-events:none;transition:opacity .5s ease}
+#brand-overlay span{color:#fff;font-size:28px;font-weight:700;letter-spacing:2px;animation:waveBrand 2s ease-in-out infinite}
+@keyframes waveBrand{0%,100%{transform:translateY(0);text-shadow:0 0 10px rgba(0,255,0,.4)}25%{transform:translateY(-8px);text-shadow:0 0 24px rgba(0,255,0,.9)}75%{transform:translateY(6px);text-shadow:0 0 18px rgba(0,255,0,.6)}}
+#player-wrap.playing #brand-overlay{opacity:0;z-index:-1}
+#loader{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(0,0,0,.75);z-index:10}
+#loader .wave-text{color:#fff;font-size:22px;font-weight:700;letter-spacing:2px;animation:waveBrand 1.5s ease-in-out infinite}
+#iframe-wrap{position:absolute;inset:0;display:none;z-index:5}
+#iframe-wrap iframe{width:100%;height:100%;border:none}
+#brightness-layer{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4}
+#ch-title{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;z-index:6;display:none}
+#speed-badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#0f0;z-index:6;transition:opacity .3s;cursor:pointer;user-select:none}
+#speed-badge.hide{opacity:0;pointer-events:none}
+#dbl-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:15;opacity:0;transition:opacity .3s}
+#dbl-hint span{background:rgba(0,0,0,.75);color:#fff;font-size:15px;padding:12px 26px;border-radius:22px;border:1px solid rgba(255,255,255,.2)}
+#dbl-hint.show{opacity:1}
+#swipe-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:14px 22px;display:none;flex-direction:column;align-items:center;gap:8px;z-index:20;pointer-events:none;min-width:130px}
+#si-icon{font-size:26px}#si-bar-bg{width:100%;height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden}#si-bar{height:100%;background:#0f0;border-radius:3px}#si-label{font-size:12px;color:rgba(255,255,255,.75)}
+#controls-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.92));padding:30px 8px 10px;display:flex;align-items:center;gap:4px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100;overflow:visible}
+#player-wrap.show-ctrl #controls-overlay{opacity:1;pointer-events:auto}
+.cb{background:rgba(255,255,255,.12);border:none;color:#fff;padding:5px 8px;border-radius:5px;cursor:pointer;font-size:11px;backdrop-filter:blur(6px);transition:.2s;white-space:nowrap;flex-shrink:0}
+.cb:hover{background:rgba(255,255,255,.28)}.cb.on{background:rgba(0,200,0,.2);color:#0f0;border:1px solid rgba(0,255,0,.3)}
+#vw{display:flex;align-items:center;gap:4px;flex-shrink:0}
+#vs{-webkit-appearance:none;appearance:none;width:48px;height:4px;border-radius:2px;background:rgba(255,255,255,.3);outline:none;cursor:pointer}
+#vs::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#0f0;cursor:pointer}
+#fg{flex:1;min-width:2px}
+#qw{position:relative;flex-shrink:0;margin-left:6px}
+#qm{position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(10,10,10,.97);border:1px solid #333;border-radius:8px;display:none;flex-direction:column;min-width:70px;max-height:50vh;overflow-y:auto;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.8)}
+#qm.open{display:flex}#qm button{background:none;border:none;color:#fff;padding:5px 10px;cursor:pointer;text-align:center;font-size:11px}#qm button:hover{background:rgba(255,255,255,.08)}#qm button.active{color:#0f0;font-weight:700}#q-btn.manual{background:rgba(0,200,0,.2);color:#0f0;border:1px solid rgba(0,255,0,.35)}
+#ch-rows{flex:1 1 0;min-height:0;background:#030303;border-top:1px solid #111;display:flex;flex-direction:column;overflow-y:auto;padding:2px 0}
+.ch-row{flex-shrink:0;display:flex;align-items:center;border-bottom:1px solid #0a0a0a;padding:2px 0}
+.row-label{flex-shrink:0;width:50px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#050505;border-left:1px solid #111}
+.row-label .ico{font-size:14px}.row-label .lbl{font-size:8px;color:#666;font-weight:700}
+.row-scroll{flex:1;display:flex;gap:4px;padding:4px;overflow-x:auto;align-items:center}
+.row-scroll::-webkit-scrollbar{height:3px}.row-scroll::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+.ch{min-width:65px;height:40px;background:#0a0a0a;border:1px solid #1a1a1a;color:#bbb;font-size:10px;font-weight:700;border-radius:6px;cursor:pointer;transition:.2s;flex-shrink:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:2px}
+.ch:hover{background:#151515;border-color:#0f0;color:#fff}.ch.on{background:#0f0;color:#000;border-color:#0f0}
+.ch.iframe-ch{border-color:#f80}.ch.iframe-ch.on{background:#f80;color:#000}
+.ch.ts-ch{border-color:#f0f}.ch.ts-ch.on{background:#f0f;color:#000}
+.ch.multi-ch{border-color:#a855f7}.ch.multi-ch:hover{border-color:#c084fc;background:#1a1025}.ch.multi-ch.on{background:#a855f7;color:#000}
+#err-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:9999}
+</style>
 </head>
 <body>
 <div id="app">
-    <div id="err-toast"></div>
-    <div id="player-wrap">
-        <video id="vid" class="fc" playsinline webkit-playsinline></video>
-        <div id="brand-overlay"><span>AlameeereTv</span></div>
-        <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"></iframe></div>
-        <div id="brightness-layer"></div>
-        <div id="loader"><div class="wave-text">AlameeereTv</div></div>
-        <div id="ch-title"></div>
-        <div id="speed-badge" onclick="runSpeedTest()">&#x1F4E1; السرعة</div>
-        <div id="swipe-ind"><div id="si-icon">&#x1F50A;</div><div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div><div id="si-label">الصوت</div></div>
-        <div id="dbl-hint"><span id="dbl-txt">&#x26F6; شاشة كاملة</span></div>
-        <div id="controls-overlay">
-            <button class="cb" onclick="togglePlay()">&#x23EF;&#xFE0F;</button>
-            <div id="vw"><button class="cb" id="mute-btn" onclick="toggleMute()">&#x1F50A;</button><input type="range" id="vs" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)"></div>
-            <button class="cb" onclick="skip(-10)">&#x23EA;</button>
-            <button class="cb" onclick="skip(10)">&#x23E9;</button>
-            <button class="cb" id="fit-btn" onclick="cycleAspect()">↕ عادي</button>
-            <button class="cb" id="spd-btn" onclick="toggleSpeed()">&#x1F4E1;</button>
-            <button class="cb" onclick="doFullscreen()">&#x26F6;</button>
-            <div id="fg"></div>
-            <button class="cb" onclick="reloadCurrentStream()">&#x1F504;</button>
-            <div id="qw"><button class="cb" id="q-btn" onclick="toggleQ()">جودة</button><div id="qm"></div></div>
-        </div>
-    </div>
-    <div id="ch-rows">
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4E1;</span><span class="lbl">bein</span></div><div class="row-scroll" id="row-0"></div></div>
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4E1;</span><span class="lbl">bein+</span></div><div class="row-scroll" id="row-1"></div></div>
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4FA;</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-2"></div></div>
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AC;</span><span class="lbl">منوعات</span></div><div class="row-scroll" id="row-3"></div></div>
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x26BD;</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-4"></div></div>
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3C6;</span><span class="lbl">لعب</span></div><div class="row-scroll" id="row-5"></div></div>
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AD;</span><span class="lbl">ترفيه</span></div><div class="row-scroll" id="row-6"></div></div>
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x1F305;</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-7"></div></div>
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x38;</span><span class="lbl">ثمانية</span></div><div class="row-scroll" id="row-8"></div></div>
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3A8;</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-9"></div></div>
-        <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4FA;</span><span class="lbl">MBC</span></div><div class="row-scroll" id="row-10"></div></div>
-    </div>
+<div id="err-toast"></div>
+<div id="player-wrap">
+<video id="vid" class="fc" playsinline webkit-playsinline></video>
+<div id="brand-overlay"><span>AlameeereTv</span></div>
+<div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"></iframe></div>
+<div id="brightness-layer"></div>
+<div id="loader"><div class="wave-text">AlameeereTv</div></div>
+<div id="ch-title"></div>
+<div id="speed-badge" onclick="runSpeedTest()">&#x1F4E1; السرعة</div>
+<div id="swipe-ind"><div id="si-icon">&#x1F50A;</div><div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div><div id="si-label">الصوت</div></div>
+<div id="dbl-hint"><span id="dbl-txt">&#x26F6; شاشة كاملة</span></div>
+<div id="controls-overlay">
+<button class="cb" onclick="togglePlay()">&#x23EF;&#xFE0F;</button>
+<div id="vw"><button class="cb" id="mute-btn" onclick="toggleMute()">&#x1F50A;</button><input type="range" id="vs" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)"></div>
+<button class="cb" onclick="skip(-10)">&#x23EA;</button>
+<button class="cb" onclick="skip(10)">&#x23E9;</button>
+<button class="cb" id="fit-btn" onclick="cycleAspect()">&#x2195; عادي</button>
+<button class="cb" id="spd-btn" onclick="toggleSpeed()">&#x1F4E1;</button>
+<button class="cb" onclick="doFullscreen()">&#x26F6;</button>
+<div id="fg"></div>
+<button class="cb" onclick="reloadCurrentStream()">&#x1F504;</button>
+<div id="qw"><button class="cb" id="q-btn" onclick="toggleQ()">جودة</button><div id="qm"></div></div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
+</div>
+<div id="ch-rows">
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F4E1;</span><span class="lbl">bein</span></div><div class="row-scroll" id="row-0"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F4E1;</span><span class="lbl">bein+</span></div><div class="row-scroll" id="row-1"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F4FA;</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-2"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AC;</span><span class="lbl">منوعات</span></div><div class="row-scroll" id="row-3"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x26BD;</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-4"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F3C6;</span><span class="lbl">لعب</span></div><div class="row-scroll" id="row-5"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AD;</span><span class="lbl">ترفيه</span></div><div class="row-scroll" id="row-6"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F305;</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-7"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">8</span><span class="lbl">ثمانية</span></div><div class="row-scroll" id="row-8"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F3A8;</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-9"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F4FA;</span><span class="lbl">MBC</span></div><div class="row-scroll" id="row-10"></div></div>
+</div>
+</div>
 <script>
 var PROXY='https://proxy-server-3sqn.onrender.com/proxy?url=';
 var ROWS=[
-  {special:false,channels:[
-    {n:'bein 1 HD',u:'https://ye-m3u8.tofi-xtv.com/stream/4/index.m3u8',t:'hls'},
-    {n:'bein 2 HD',u:'https://ye-m3u8.tofi-xtv.com/stream/5/index.m3u8',t:'hls'},
-    {n:'bein 3',u:'https://ye-m3u8.tofi-xtv.com/stream/6/index.m3u8',t:'hls'},
-    {n:'bein 4',u:'https://ye-m3u8.tofi-xtv.com/stream/7/index.m3u8',t:'hls'},
-    {n:'bein 5',u:'https://ye-m3u8.tofi-xtv.com/stream/8/index.m3u8',t:'hls'},
-    {n:'bein 6',u:'https://ye-m3u8.tofi-xtv.com/stream/9/index.m3u8',t:'hls'},
-    {n:'bein 7',u:'https://ye-m3u8.tofi-xtv.com/stream/10/index.m3u8',t:'hls'},
-    {n:'bein 8',u:'https://ye-m3u8.tofi-xtv.com/stream/11/index.m3u8',t:'hls'}
-  ]},
-  {special:true,channels:[
-    {n:'bein1',u:'https://ye-m3u8.tofi-xtv.com/stream/4-24-44/index.m3u8',t:'hls'},
-    {n:'bein2',u:'https://ye-m3u8.tofi-xtv.com/stream/5-24-44/index.m3u8',t:'hls'},
-    {n:'bein3',u:'https://ye-m3u8.tofi-xtv.com/stream/6-24-44/index.m3u8',t:'hls'},
-    {n:'bein4',u:'https://ye-m3u8.tofi-xtv.com/stream/7-24-44/index.m3u8',t:'hls'},
-    {n:'bein5',u:'https://ye-m3u8.tofi-xtv.com/stream/8-24-44/index.m3u8',t:'hls'}
-  ]},
-  {special:false,channels:[
-    {n:'الجزيرة',u:'https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8',t:'hls'},
-    {n:'العربية',u:'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8',t:'hls'},
-    {n:'الحدث',u:'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8',t:'hls'},
-    {n:'سكاي نيوز',u:'https://stream.skynewsarabia.com/hls/sna.m3u8',t:'hls'},
-    {n:'القرآن',u:'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8',t:'hls'},
-    {n:'السنة',u:'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8',t:'hls'}
-  ]},
-  {special:false,channels:[
-    {n:'MBC 1',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8',t:'hls'},
-    {n:'MBC 2',u:PROXY+encodeURIComponent('http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token=='),t:'hls'},
-    {n:'MBC 3',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8',t:'hls'},
-    {n:'MBC 4',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8',t:'hls'},
-    {n:'MBC 5',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8',t:'hls'},
-    {n:'MBC Action',u:'https://edge66.magictvbox.com/liveApple/MBC_Action/index.m3u8',t:'hls'},
-    {n:'MBC Masr',u:'https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8',t:'hls'},
-    {n:'MBC Drama',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8',t:'hls'},
-    {n:'MBC Iraq',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8',t:'hls'},
-    {n:'beIN Drama',u:PROXY+encodeURIComponent('http://stream.woodfencepods.com/pdf/IC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ/index.m3u8?token=='),t:'hls'},
-    {n:'OSN Action',u:PROXY+encodeURIComponent('http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token=='),t:'hls'}
-  ]},
-  {special:false,channels:[
-    {n:'الكأس 1',u:'https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8',t:'hls'},
-    {n:'الكأس 2',u:'https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8',t:'hls'},
-    {n:'الكأس 3',u:'https://liveeu-gcp.alkassdigital.net/alkass3-p/main.m3u8',t:'hls'},
-    {n:'الكأس 4',u:'https://liveeu-gcp.alkassdigital.net/alkass4-p/main.m3u8',t:'hls'},
-    {n:'البحرين 1',u:'https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8',t:'hls'},
-    {n:'البحرين 2',u:'https://5c7b683162943.streamlock.net/live/ngrp:bahrainsportstwo_all/playlist.m3u8',t:'hls'},
-    {n:'العراقية',u:'https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8',t:'hls'},
-    {n:'Zain TV',u:'https://zaintv1.zaintvpro.workers.dev/live/z1.m3u8',t:'hls'}
-  ]},
-  {special:false,channels:[
-    {n:'beIN S1',u:'https://28.1yalla-shoot.space/albaplayer/live1/',t:'iframe'},
-    {n:'beIN 1',u:'https://pl.koralive1.cc/albaplayer/1bein1/?serv=0',t:'iframe'},
-    {n:'beIN 2',u:'https://23.1yallashoot.site/albaplayer/live2/',t:'iframe'},
-    {n:'match1',u:'https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4741713&key=9f39972b67d6ce22189507d008acwc26',t:'iframe'},
-    {n:'Stream 1',u:'https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8',t:'hls'},
-    {n:'Smarop',u:'https://we.smarop.store/spoos1.m3u8',t:'hls'},
-    {n:'Sigma',u:'https://sl3.sigmatv.com/hls/live.m3u8',t:'hls'},
-    {n:'Super 1',u:'https://super-livetv.pages.dev/SUPER_TV_1.m3u8',t:'hls'}
-  ]},
-  {special:false,channels:[
-    {n:'BeIN Movies 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/40773.ts',t:'ts'},
-    {n:'BeIN Movies 2',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35030.ts',t:'ts'},
-    {n:'BeIN Movies 3',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35029.ts',t:'ts'},
-    {n:'BeIN Movies 4',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35028.ts',t:'ts'},
-    {n:'BeIN Drama',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35026.ts',t:'ts'},
-    {n:'BeIN Series 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35024.ts',t:'ts'},
-    {n:'BeIN Series 2',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/176897.ts',t:'ts'},
-    {n:'Nat Geo',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/595705.ts',t:'ts'},
-    {n:'Nat Geo Wild',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/595706.ts',t:'ts'},
-    {n:'Discovery',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/56834.ts',t:'ts'},
-    {n:'BBC Earth',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/196053.ts',t:'ts'},
-    {n:'Boomerang',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35016.ts',t:'ts'},
-    {n:'فتافيت',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/64588.ts',t:'ts'},
-    {n:'FOX Movies',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/196050.ts',t:'ts'},
-    {n:'JEEM',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts',t:'ts'},
-    {n:'Baraem',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts',t:'ts'}
-  ]},
-  {special:false,channels:[
-    {n:'الفجر 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts',t:'ts'},
-    {n:'الفجر 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463533.ts',t:'ts'},
-    {n:'الفجر 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463534.ts',t:'ts'},
-    {n:'الفجر 4',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463535.ts',t:'ts'},
-    {n:'الفجر 5',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463536.ts',t:'ts'}
-  ]},
-  {special:false,channels:[
-    {n:'8 الأولى',u:'https://ahm79.store/live/0545580310/7337741654/746713.m3u8?token==',t:'hls'},
-    {n:'ثمانية 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421785.ts',t:'ts'},
-    {n:'ثمانية 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421786.ts',t:'ts'},
-    {n:'ثمانية 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/429403.ts',t:'ts'}
-  ]},
-  {special:false,channels:[
-    {n:'الوان 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418113.ts',t:'ts'},
-    {n:'الوان 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418114.ts',t:'ts'},
-    {n:'الوان 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418115.ts',t:'ts'},
-    {n:'الوان 4',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418116.ts',t:'ts'},
-    {n:'الوان 5',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418117.ts',t:'ts'},
-    {n:'الوان 6',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418118.ts',t:'ts'},
-    {n:'الوان 7',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418119.ts',t:'ts'},
-    {n:'الوان 8',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418120.ts',t:'ts'},
-    {n:'الوان 9',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418121.ts',t:'ts'},
-    {n:'الوان 10',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418122.ts',t:'ts'}
-  ]},
-  {special:false,channels:[
-    {n:'MBC 1 HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8'),t:'hls'},
-    {n:'MBC 2 HD',u:PROXY+encodeURIComponent('http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token=='),t:'hls'},
-    {n:'MBC Drama HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8'),t:'hls'},
-    {n:'MBC Iraq HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8'),t:'hls'},
-    {n:'MBC Masr HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8'),t:'hls'}
-  ]}
+{special:false,channels:[
+{n:'bein 1 HD',u:'https://ye-m3u8.tofi-xtv.com/stream/4/index.m3u8',t:'hls'},
+{n:'bein 2 HD',u:'https://ye-m3u8.tofi-xtv.com/stream/5/index.m3u8',t:'hls'},
+{n:'bein 3',u:'https://ye-m3u8.tofi-xtv.com/stream/6/index.m3u8',t:'hls'},
+{n:'bein 4',u:'https://ye-m3u8.tofi-xtv.com/stream/7/index.m3u8',t:'hls'},
+{n:'bein 5',u:'https://ye-m3u8.tofi-xtv.com/stream/8/index.m3u8',t:'hls'},
+{n:'bein 6',u:'https://ye-m3u8.tofi-xtv.com/stream/9/index.m3u8',t:'hls'},
+{n:'bein 7',u:'https://ye-m3u8.tofi-xtv.com/stream/10/index.m3u8',t:'hls'},
+{n:'bein 8',u:'https://ye-m3u8.tofi-xtv.com/stream/11/index.m3u8',t:'hls'}
+]},
+{special:true,channels:[
+{n:'bein1',u:'https://ye-m3u8.tofi-xtv.com/stream/4-24-44/index.m3u8',t:'hls'},
+{n:'bein2',u:'https://ye-m3u8.tofi-xtv.com/stream/5-24-44/index.m3u8',t:'hls'},
+{n:'bein3',u:'https://ye-m3u8.tofi-xtv.com/stream/6-24-44/index.m3u8',t:'hls'},
+{n:'bein4',u:'https://ye-m3u8.tofi-xtv.com/stream/7-24-44/index.m3u8',t:'hls'},
+{n:'bein5',u:'https://ye-m3u8.tofi-xtv.com/stream/8-24-44/index.m3u8',t:'hls'}
+]},
+{special:false,channels:[
+{n:'الجزيرة',u:'https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8',t:'hls'},
+{n:'العربية',u:'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8',t:'hls'},
+{n:'الحدث',u:'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8',t:'hls'},
+{n:'سكاي نيوز',u:'https://stream.skynewsarabia.com/hls/sna.m3u8',t:'hls'},
+{n:'القرآن',u:'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8',t:'hls'},
+{n:'السنة',u:'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8',t:'hls'}
+]},
+{special:false,channels:[
+{n:'MBC 1',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8',t:'hls'},
+{n:'MBC 2',u:PROXY+encodeURIComponent('http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token=='),t:'hls'},
+{n:'MBC 3',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8',t:'hls'},
+{n:'MBC 4',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8',t:'hls'},
+{n:'MBC 5',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8',t:'hls'},
+{n:'MBC Action',u:'https://edge66.magictvbox.com/liveApple/MBC_Action/index.m3u8',t:'hls'},
+{n:'MBC Masr',u:'https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8',t:'hls'},
+{n:'MBC Drama',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8',t:'hls'},
+{n:'MBC Iraq',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8',t:'hls'},
+{n:'beIN Drama',u:PROXY+encodeURIComponent('http://stream.woodfencepods.com/pdf/IC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ/index.m3u8?token=='),t:'hls'},
+{n:'OSN Action',u:PROXY+encodeURIComponent('http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token=='),t:'hls'}
+]},
+{special:false,channels:[
+{n:'الكأس 1',u:'https://liveeu-gcp.alkassdigital.net/alkass1-p/main.m3u8',t:'hls'},
+{n:'الكأس 2',u:'https://liveeu-gcp.alkassdigital.net/alkass2-p/main.m3u8',t:'hls'},
+{n:'الكأس 3',u:'https://liveeu-gcp.alkassdigital.net/alkass3-p/main.m3u8',t:'hls'},
+{n:'الكأس 4',u:'https://liveeu-gcp.alkassdigital.net/alkass4-p/main.m3u8',t:'hls'},
+{n:'البحرين 1',u:'https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8',t:'hls'},
+{n:'البحرين 2',u:'https://5c7b683162943.streamlock.net/live/ngrp:bahrainsportstwo_all/playlist.m3u8',t:'hls'},
+{n:'العراقية',u:'https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8',t:'hls'},
+{n:'Zain TV',u:'https://zaintv1.zaintvpro.workers.dev/live/z1.m3u8',t:'hls'}
+]},
+{special:false,channels:[
+{n:'beIN S1',u:'https://28.1yalla-shoot.space/albaplayer/live1/',t:'iframe'},
+{n:'beIN 1',u:'https://pl.koralive1.cc/albaplayer/1bein1/?serv=0',t:'iframe'},
+{n:'beIN 2',u:'https://23.1yallashoot.site/albaplayer/live2/',t:'iframe'},
+{n:'match1',u:'https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4741713&key=9f39972b67d6ce22189507d008acwc26',t:'iframe'},
+{n:'Stream 1',u:'https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8',t:'hls'},
+{n:'Smarop',u:'https://we.smarop.store/spoos1.m3u8',t:'hls'},
+{n:'Sigma',u:'https://sl3.sigmatv.com/hls/live.m3u8',t:'hls'},
+{n:'Super 1',u:'https://super-livetv.pages.dev/SUPER_TV_1.m3u8',t:'hls'}
+]},
+{special:false,channels:[
+{n:'BeIN Movies 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/40773.ts',t:'ts'},
+{n:'BeIN Movies 2',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35030.ts',t:'ts'},
+{n:'BeIN Movies 3',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35029.ts',t:'ts'},
+{n:'BeIN Movies 4',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35028.ts',t:'ts'},
+{n:'BeIN Drama',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35026.ts',t:'ts'},
+{n:'BeIN Series 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35024.ts',t:'ts'},
+{n:'BeIN Series 2',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/176897.ts',t:'ts'},
+{n:'Nat Geo',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/595705.ts',t:'ts'},
+{n:'Nat Geo Wild',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/595706.ts',t:'ts'},
+{n:'Discovery',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/56834.ts',t:'ts'},
+{n:'BBC Earth',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/196053.ts',t:'ts'},
+{n:'Boomerang',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35016.ts',t:'ts'},
+{n:'فتافيت',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/64588.ts',t:'ts'},
+{n:'FOX Movies',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/196050.ts',t:'ts'},
+{n:'JEEM',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts',t:'ts'},
+{n:'Baraem',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts',t:'ts'}
+]},
+{special:false,channels:[
+{n:'الفجر 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts',t:'ts'},
+{n:'الفجر 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463533.ts',t:'ts'},
+{n:'الفجر 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463534.ts',t:'ts'},
+{n:'الفجر 4',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463535.ts',t:'ts'},
+{n:'الفجر 5',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463536.ts',t:'ts'}
+]},
+{special:false,channels:[
+{n:'8 الأولى',u:'https://ahm79.store/live/0545580310/7337741654/746713.m3u8?token==',t:'hls'},
+{n:'ثمانية 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421785.ts',t:'ts'},
+{n:'ثمانية 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421786.ts',t:'ts'},
+{n:'ثمانية 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/429403.ts',t:'ts'}
+]},
+{special:false,channels:[
+{n:'الوان 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418113.ts',t:'ts'},
+{n:'الوان 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418114.ts',t:'ts'},
+{n:'الوان 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418115.ts',t:'ts'},
+{n:'الوان 4',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418116.ts',t:'ts'},
+{n:'الوان 5',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418117.ts',t:'ts'},
+{n:'الوان 6',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418118.ts',t:'ts'},
+{n:'الوان 7',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418119.ts',t:'ts'},
+{n:'الوان 8',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418120.ts',t:'ts'},
+{n:'الوان 9',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418121.ts',t:'ts'},
+{n:'الوان 10',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418122.ts',t:'ts'}
+]},
+{special:false,channels:[
+{n:'MBC 1 HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8'),t:'hls'},
+{n:'MBC 2 HD',u:PROXY+encodeURIComponent('http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token=='),t:'hls'},
+{n:'MBC Drama HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8'),t:'hls'},
+{n:'MBC Iraq HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8'),t:'hls'},
+{n:'MBC Masr HD',u:PROXY+encodeURIComponent('https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8'),t:'hls'}
+]}
 ];
 var hls=null,cur={r:-1,i:-1},retryT=null;
 var vid=document.getElementById('vid'),iframeWrap=document.getElementById('iframe-wrap'),iframePlayer=document.getElementById('iframe-player');
@@ -215,9 +215,9 @@ var swInd=document.getElementById('swipe-ind'),siIcon=document.getElementById('s
 var brightL=document.getElementById('brightness-layer'),pw=document.getElementById('player-wrap'),chRows=document.getElementById('ch-rows');
 var fitBtn=document.getElementById('fit-btn'),speedBadge=document.getElementById('speed-badge'),spdBtn=document.getElementById('spd-btn');
 var brightness=parseFloat(localStorage.getItem('brightness')||'0');brightL.style.opacity=brightness;
-var ASPECTS=[{cls:'fc',lbl:'↕ عادي'},{cls:'fv',lbl:'⛶ ملء'},{cls:'ff',lbl:'↔ مفيد'}];
+var ASPECTS=[{cls:'fc',lbl:'&#x2195; عادي'},{cls:'fv',lbl:'&#x26f6; ملء'},{cls:'ff',lbl:'&#x2194; مفيد'}];
 var aspectIdx=parseInt(localStorage.getItem('aspectIdx')||'0');
-function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[i].lbl;fitBtn.classList.toggle('on',i!==0);localStorage.setItem('aspectIdx',i);}
+function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.innerHTML=ASPECTS[i].lbl;fitBtn.classList.toggle('on',i!==0);localStorage.setItem('aspectIdx',i);}
 function cycleAspect(){aspectIdx=(aspectIdx+1)%ASPECTS.length;applyAspect(aspectIdx);}
 applyAspect(aspectIdx);
 function doFullscreen(){if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);return;}var el=document.documentElement;var p=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():Promise.resolve();Promise.resolve(p).then(function(){if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});setFullUI(true);}).catch(function(){setFullUI(true);});}
