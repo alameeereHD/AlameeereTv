@@ -48,6 +48,7 @@
         .ch { min-width: 65px; height: 40px; background: #0a0a0a; border: 1px solid #1a1a1a; color: #bbb; font-size: 10px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: .2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2px; }
         .ch:hover { background: #151515; border-color: #0f0; color: #fff; } .ch.on { background: #0f0; color: #000; border-color: #0f0; }
         .ch.iframe-ch { border-color: #f80; } .ch.iframe-ch.on { background: #f80; color: #000; }
+        .ch.ts-ch { border-color: #f0f; } .ch.ts-ch.on { background: #f0f; color: #000; }
         .multi-card { flex-shrink: 0; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; display: flex; flex-direction: column; align-items: center; overflow: hidden; width: 72px; }
         .multi-card .logo-wrap { width: 100%; height: 40px; position: relative; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; }
         .multi-card .logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
@@ -115,7 +116,7 @@ var ROWS=[
 {channels:[{n:'beIN S1',u:'https://28.1yalla-shoot.space/albaplayer/live1/',t:'iframe'},{n:'beIN 1',u:'https://pl.koralive1.cc/albaplayer/1bein1/?serv=0',t:'iframe'},{n:'beIN 2',u:'https://23.1yallashoot.site/albaplayer/live2/',t:'iframe'},{n:'match1',u:'https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4741713&key=9f39972b67d6ce22189507d008acwc26',t:'iframe'},{n:'Stream 1',u:'https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8',t:'hls'},{n:'Smarop SP',u:'https://we.smarop.store/spoos1.m3u8',t:'hls'},{n:'Sigma TV',u:'https://sl3.sigmatv.com/hls/live.m3u8',t:'hls'},{n:'Super TV 1',u:'https://super-livetv.pages.dev/SUPER_TV_1.m3u8',t:'hls'}]},
 {channels:[{n:'BeIN Movies 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/40773.ts',t:'ts'},{n:'BeIN Movies 2',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35030.ts',t:'ts'},{n:'BeIN Movies 3',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35029.ts',t:'ts'},{n:'BeIN Drama',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35026.ts',t:'ts'},{n:'BeIN Series 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35024.ts',t:'ts'},{n:'JEEM',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts',t:'ts'},{n:'Baraem',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts',t:'ts'},{n:'فتافيت',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/64588.ts',t:'ts'}]}
 ];
-var BASE='https://alameeere-proxy.alameeeretv.workers.dev';
+var BASE='https://alameeere-proxy.alameeeretv.workers.dev/';
 var FJR_LOGO='https://static.wixstatic.com/media/0f6f17_0e4b731a435945948c4408069cbc1b5f~mv2.jpg';
 var FJR_CH=[
 {name:'الفجر',num:'1',logo:FJR_LOGO,sd:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts'},
@@ -126,56 +127,56 @@ var FJR_CH=[
 ];
 var BEIN_LOGO='https://static.wixstatic.com/media/0f6f17_b14c529157884897b2f02fe167b51bd7~mv2.jpg';
 var BEIN_CH=[
-{name:'News',num:'N',logo:BEIN_LOGO,hls:true,sd:BASE+'/274145.m3u8',hd:BASE+'/28939.m3u8',uhd:BASE+'/44.m3u8'},
-{name:'1',num:'1',logo:BEIN_LOGO,hls:true,sd:BASE+'/2541.m3u8',hd:BASE+'/1.m3u8',uhd:BASE+'/3854.m3u8'},
-{name:'2',num:'2',logo:BEIN_LOGO,hls:true,sd:BASE+'/2540.m3u8',hd:BASE+'/2.m3u8',uhd:BASE+'/3853.m3u8'},
-{name:'3',num:'3',logo:BEIN_LOGO,hls:true,sd:BASE+'/2538.m3u8',hd:BASE+'/4.m3u8',uhd:BASE+'/3851.m3u8'},
-{name:'4',num:'4',logo:BEIN_LOGO,hls:true,sd:BASE+'/10795.m3u8',hd:BASE+'/5.m3u8',uhd:BASE+'/3850.m3u8'},
-{name:'5',num:'5',logo:BEIN_LOGO,hls:true,sd:BASE+'/2536.m3u8',hd:BASE+'/6.m3u8',uhd:BASE+'/3849.m3u8'},
-{name:'6',num:'6',logo:BEIN_LOGO,hls:true,sd:BASE+'/2535.m3u8',hd:BASE+'/7.m3u8',uhd:BASE+'/3848.m3u8'},
-{name:'7',num:'7',logo:BEIN_LOGO,hls:true,sd:BASE+'/2534.m3u8',hd:BASE+'/8.m3u8',uhd:BASE+'/3847.m3u8'},
-{name:'8',num:'8',logo:BEIN_LOGO,hls:true,sd:BASE+'/2533.m3u8',hd:BASE+'/9.m3u8',uhd:BASE+'/10361.m3u8'},
-{name:'9',num:'9',logo:BEIN_LOGO,hls:true,sd:BASE+'/2532.m3u8',hd:BASE+'/10.m3u8',uhd:BASE+'/10362.m3u8'}
+{name:'News',num:'N',logo:BEIN_LOGO,hls:true,sd:BASE+'274145.m3u8',hd:BASE+'28939.m3u8',uhd:BASE+'44.m3u8'},
+{name:'1',num:'1',logo:BEIN_LOGO,hls:true,sd:BASE+'2541.m3u8',hd:BASE+'1.m3u8',uhd:BASE+'3854.m3u8'},
+{name:'2',num:'2',logo:BEIN_LOGO,hls:true,sd:BASE+'2540.m3u8',hd:BASE+'2.m3u8',uhd:BASE+'3853.m3u8'},
+{name:'3',num:'3',logo:BEIN_LOGO,hls:true,sd:BASE+'2538.m3u8',hd:BASE+'4.m3u8',uhd:BASE+'3851.m3u8'},
+{name:'4',num:'4',logo:BEIN_LOGO,hls:true,sd:BASE+'10795.m3u8',hd:BASE+'5.m3u8',uhd:BASE+'3850.m3u8'},
+{name:'5',num:'5',logo:BEIN_LOGO,hls:true,sd:BASE+'2536.m3u8',hd:BASE+'6.m3u8',uhd:BASE+'3849.m3u8'},
+{name:'6',num:'6',logo:BEIN_LOGO,hls:true,sd:BASE+'2535.m3u8',hd:BASE+'7.m3u8',uhd:BASE+'3848.m3u8'},
+{name:'7',num:'7',logo:BEIN_LOGO,hls:true,sd:BASE+'2534.m3u8',hd:BASE+'8.m3u8',uhd:BASE+'3847.m3u8'},
+{name:'8',num:'8',logo:BEIN_LOGO,hls:true,sd:BASE+'2533.m3u8',hd:BASE+'9.m3u8',uhd:BASE+'10361.m3u8'},
+{name:'9',num:'9',logo:BEIN_LOGO,hls:true,sd:BASE+'2532.m3u8',hd:BASE+'10.m3u8',uhd:BASE+'10362.m3u8'}
 ];
 var AL_SPORT='https://static.wixstatic.com/media/0f6f17_0b9748ca0f2a41698c2d620d753ac140~mv2.jpg';
 var AL_OTHER='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuhH7QXR24YA4PeJNfQRsxALFC3Sbaw_fhpg&s';
 var ALWAN_CH=[
-{name:'Sport 1',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'/1641624.m3u8',hd:BASE+'/1641618.m3u8',uhd:BASE+'/1641605.m3u8'},
-{name:'Sport 2',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'/1641625.m3u8',hd:BASE+'/1641619.m3u8',uhd:BASE+'/1641606.m3u8'},
-{name:'Sport 3',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'/1641626.m3u8',hd:BASE+'/1641620.m3u8',uhd:BASE+'/1641607.m3u8'},
-{name:'Sport 4',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'/1641627.m3u8',hd:BASE+'/1641621.m3u8',uhd:BASE+'/1641608.m3u8'},
-{name:'Sport 5',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'/1641628.m3u8',hd:BASE+'/1641622.m3u8',uhd:BASE+'/1641609.m3u8'},
-{name:'Sport 6',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'/1641629.m3u8',hd:BASE+'/1641623.m3u8',uhd:BASE+'/1641610.m3u8'},
-{name:'Sport 7',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'/1641611.m3u8'},
-{name:'Sport 8',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'/1641612.m3u8'},
-{name:'Sport 9',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'/1641613.m3u8'},
-{name:'Sport 10',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'/1641614.m3u8'},
-{name:'F1',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'/1641616.m3u8'},
-{name:'UFC',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'/1641615.m3u8'},
-{name:'WWE',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'/1641617.m3u8'},
-{name:'Aflam 1',logo:AL_OTHER,hls:true,uhd:BASE+'/1641630.m3u8'},
-{name:'Aflam 2',logo:AL_OTHER,hls:true,uhd:BASE+'/1641631.m3u8'},
-{name:'Aflam 3',logo:AL_OTHER,hls:true,uhd:BASE+'/1641632.m3u8'},
-{name:'Aflam 4',logo:AL_OTHER,hls:true,uhd:BASE+'/1641633.m3u8'},
-{name:'Mosalsalat',logo:AL_OTHER,hls:true,uhd:BASE+'/1641637.m3u8'},
-{name:'Aghani',logo:AL_OTHER,hls:true,uhd:BASE+'/1641638.m3u8'},
-{name:'Atfal',logo:AL_OTHER,hls:true,uhd:BASE+'/1641636.m3u8'},
-{name:'Anime',logo:AL_OTHER,hls:true,uhd:BASE+'/1641642.m3u8'},
-{name:'Turkey',logo:AL_OTHER,hls:true,uhd:BASE+'/1641634.m3u8'},
-{name:'Wathaeqye',logo:AL_OTHER,hls:true,uhd:BASE+'/1641635.m3u8'},
-{name:'Quran',logo:AL_OTHER,hls:true,uhd:BASE+'/1641643.m3u8'}
+{name:'Sport 1',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'1641624.m3u8',hd:BASE+'1641618.m3u8',uhd:BASE+'1641605.m3u8'},
+{name:'Sport 2',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'1641625.m3u8',hd:BASE+'1641619.m3u8',uhd:BASE+'1641606.m3u8'},
+{name:'Sport 3',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'1641626.m3u8',hd:BASE+'1641620.m3u8',uhd:BASE+'1641607.m3u8'},
+{name:'Sport 4',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'1641627.m3u8',hd:BASE+'1641621.m3u8',uhd:BASE+'1641608.m3u8'},
+{name:'Sport 5',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'1641628.m3u8',hd:BASE+'1641622.m3u8',uhd:BASE+'1641609.m3u8'},
+{name:'Sport 6',logo:AL_SPORT,sport:true,hls:true,sd:BASE+'1641629.m3u8',hd:BASE+'1641623.m3u8',uhd:BASE+'1641610.m3u8'},
+{name:'Sport 7',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'1641611.m3u8'},
+{name:'Sport 8',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'1641612.m3u8'},
+{name:'Sport 9',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'1641613.m3u8'},
+{name:'Sport 10',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'1641614.m3u8'},
+{name:'F1',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'1641616.m3u8'},
+{name:'UFC',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'1641615.m3u8'},
+{name:'WWE',logo:AL_SPORT,sport:true,hls:true,uhd:BASE+'1641617.m3u8'},
+{name:'Aflam 1',logo:AL_OTHER,hls:true,uhd:BASE+'1641630.m3u8'},
+{name:'Aflam 2',logo:AL_OTHER,hls:true,uhd:BASE+'1641631.m3u8'},
+{name:'Aflam 3',logo:AL_OTHER,hls:true,uhd:BASE+'1641632.m3u8'},
+{name:'Aflam 4',logo:AL_OTHER,hls:true,uhd:BASE+'1641633.m3u8'},
+{name:'Mosalsalat',logo:AL_OTHER,hls:true,uhd:BASE+'1641637.m3u8'},
+{name:'Aghani',logo:AL_OTHER,hls:true,uhd:BASE+'1641638.m3u8'},
+{name:'Atfal',logo:AL_OTHER,hls:true,uhd:BASE+'1641636.m3u8'},
+{name:'Anime',logo:AL_OTHER,hls:true,uhd:BASE+'1641642.m3u8'},
+{name:'Turkey',logo:AL_OTHER,hls:true,uhd:BASE+'1641634.m3u8'},
+{name:'Wathaeqye',logo:AL_OTHER,hls:true,uhd:BASE+'1641635.m3u8'},
+{name:'Quran',logo:AL_OTHER,hls:true,uhd:BASE+'1641643.m3u8'}
 ];
 var THM_LOGO='https://static.wixstatic.com/media/0f6f17_0681a2e33f8d42d7ad61caf189caf0ac~mv2.jpg';
 var THM_CH=[
 {name:'الأولى',logo:THM_LOGO,direct:'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fahm79.store%2Flive%2F0545580310%2F7337741654%2F746714.m3u8'},
 {name:'الثانية',logo:THM_LOGO,direct:'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fahm79.store%2Flive%2F0545580310%2F7337741654%2F746717.m3u8'},
 {name:'الثالثة',logo:THM_LOGO,direct:'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fahm79.store%2Flive%2F0545580310%2F7337741654%2F746720.m3u8'},
-{name:'1',logo:THM_LOGO,hls:true,hd:BASE+'/1549876.m3u8',uhd:BASE+'/1630479.m3u8'},
-{name:'2',logo:THM_LOGO,hls:true,hd:BASE+'/1549877.m3u8',uhd:BASE+'/1549875.m3u8'},
-{name:'3',logo:THM_LOGO,hls:true,hd:BASE+'/1848332.m3u8'},
-{name:'منصة 1',logo:THM_LOGO,hls:true,uhd:BASE+'/1597497.m3u8'},
-{name:'منصة 2',logo:THM_LOGO,hls:true,uhd:BASE+'/1597570.m3u8'},
-{name:'منصة 3',logo:THM_LOGO,hls:true,uhd:BASE+'/1597571.m3u8'}
+{name:'1',logo:THM_LOGO,hls:true,hd:BASE+'1549876.m3u8',uhd:BASE+'1630479.m3u8'},
+{name:'2',logo:THM_LOGO,hls:true,hd:BASE+'1549877.m3u8',uhd:BASE+'1549875.m3u8'},
+{name:'3',logo:THM_LOGO,hls:true,hd:BASE+'1848332.m3u8'},
+{name:'منصة 1',logo:THM_LOGO,hls:true,uhd:BASE+'1597497.m3u8'},
+{name:'منصة 2',logo:THM_LOGO,hls:true,uhd:BASE+'1597570.m3u8'},
+{name:'منصة 3',logo:THM_LOGO,hls:true,uhd:BASE+'1597571.m3u8'}
 ];
 var EVENT_STREAMS=[
 {lbl:'1',url:'https://v4.sryyyeexxzzzs.app/live/v/event1/1280x720/index.m3u8'},
