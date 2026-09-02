@@ -115,7 +115,6 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
-var PROXY='https://alameeere-proxy.alameeeretv.workers.dev/';
 var ROWS=[
 {channels:[{n:'الجزيرة',u:'https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8',t:'hls'},{n:'العربية',u:'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8',t:'hls'},{n:'الحدث',u:'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8',t:'hls'},{n:'سكاي نيوز',u:'https://stream.skynewsarabia.com/hls/sna.m3u8',t:'hls'},{n:'القرآن',u:'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8',t:'hls'},{n:'السنة',u:'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8',t:'hls'}]},
 {channels:[{n:'MBC 1 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-1%2F15cf99af5de54063fdabfefe66adc075%2Findex.m3u8',t:'hls'},{n:'MBC 2 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D',t:'hls'},{n:'MBC 3 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-3-usa%2F5d58265a862a476dc7f97694addb5ded%2Findex.m3u8',t:'hls'},{n:'MBC 4 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-4%2F24f134f1cd63db9346439e96b86ca6ed%2Findex.m3u8',t:'hls'},{n:'MBC 5 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-5%2Fee6b000cee0629411b666ab26cb13e9b%2Findex.m3u8',t:'hls'},{n:'MBC Action HD',u:'https://flu.systemnet.tv/MBCAction/mono.m3u8',t:'hls'},{n:'MBC Drama HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-drama%2F2c28a458e2f3253e678b07ac7d13fe71%2Findex.m3u8',t:'hls'},{n:'MBC Iraq HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-iraq%2Fe38c44b1b43474e1c39cb5b90203691e%2Findex.m3u8',t:'hls'},{n:'MBC Masr HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.lg.mncdn.com%2Flive%2Fbitmovin-mbc-masr%2F956eac069c78a35d47245db6cdbb1575%2Findex.m3u8',t:'hls'}]},
@@ -124,54 +123,55 @@ var ROWS=[
 {channels:[{n:'beIN S1',u:'https://28.1yalla-shoot.space/albaplayer/live1/',t:'iframe'},{n:'beIN 1',u:'https://pl.koralive1.cc/albaplayer/1bein1/?serv=0',t:'iframe'},{n:'beIN 2',u:'https://23.1yallashoot.site/albaplayer/live2/',t:'iframe'},{n:'Stream 1',u:'https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8',t:'hls'},{n:'Smarop SP',u:'https://we.smarop.store/spoos1.m3u8',t:'hls'},{n:'Sigma TV',u:'https://sl3.sigmatv.com/hls/live.m3u8',t:'hls'}]},
 {channels:[{n:'BeIN Movies 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/40773.ts',t:'ts'},{n:'BeIN Movies 2',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35030.ts',t:'ts'},{n:'BeIN Drama',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35026.ts',t:'ts'},{n:'BeIN Series 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35024.ts',t:'ts'},{n:'فتافيت',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/64588.ts',t:'ts'},{n:'FOX Movies',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/196050.ts',t:'ts'},{n:'JEEM',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts',t:'ts'},{n:'Baraem',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts',t:'ts'}]},
 {channels:[{n:'الفجر 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts',t:'ts'},{n:'الفجر 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463533.ts',t:'ts'},{n:'الفجر 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463534.ts',t:'ts'},{n:'الفجر 4',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463535.ts',t:'ts'},{n:'الفجر 5',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463536.ts',t:'ts'}]},
-{channels:[{n:'8 الأولى',u:PROXY+'746713.m3u8',t:'hls'},{n:'ثمانية 1',u:PROXY+'421785.m3u8',t:'hls'},{n:'ثمانية 2',u:PROXY+'421786.m3u8',t:'hls'}]},
+{channels:[{n:'8 الأولى',u:'https://alameeere-proxy.alameeeretv.workers.dev/746713.m3u8',t:'hls'},{n:'ثمانية 1',u:'https://alameeere-proxy.alameeeretv.workers.dev/421785.m3u8',t:'hls'},{n:'ثمانية 2',u:'https://alameeere-proxy.alameeeretv.workers.dev/421786.m3u8',t:'hls'}]},
 {channels:[{n:'الوان 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418113.ts',t:'ts'},{n:'الوان 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418114.ts',t:'ts'},{n:'الوان 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418115.ts',t:'ts'},{n:'الوان 4',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418116.ts',t:'ts'},{n:'الوان 5',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418117.ts',t:'ts'}]}
 ];
+var BASE='http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/';
 var BL='https://static.wixstatic.com/media/0f6f17_b14c529157884897b2f02fe167b51bd7~mv2.jpg';
 var BEIN_CH=[
-{name:'News',num:'N',logo:BL,sd:PROXY+'274145.m3u8',hd:PROXY+'28939.m3u8',uhd:PROXY+'44.m3u8'},
-{name:'1',num:'1',logo:BL,sd:PROXY+'2541.m3u8',hd:PROXY+'1.m3u8',uhd:PROXY+'3854.m3u8'},
-{name:'2',num:'2',logo:BL,sd:PROXY+'2540.m3u8',hd:PROXY+'2.m3u8',uhd:PROXY+'3853.m3u8'},
-{name:'3',num:'3',logo:BL,sd:PROXY+'2538.m3u8',hd:PROXY+'4.m3u8',uhd:PROXY+'3851.m3u8'},
-{name:'4',num:'4',logo:BL,sd:PROXY+'10795.m3u8',hd:PROXY+'5.m3u8',uhd:PROXY+'3850.m3u8'},
-{name:'5',num:'5',logo:BL,sd:PROXY+'2536.m3u8',hd:PROXY+'6.m3u8',uhd:PROXY+'3849.m3u8'},
-{name:'6',num:'6',logo:BL,sd:PROXY+'2535.m3u8',hd:PROXY+'7.m3u8',uhd:PROXY+'3848.m3u8'},
-{name:'7',num:'7',logo:BL,sd:PROXY+'2534.m3u8',hd:PROXY+'8.m3u8',uhd:PROXY+'3847.m3u8'},
-{name:'8',num:'8',logo:BL,sd:PROXY+'2533.m3u8',hd:PROXY+'9.m3u8',uhd:PROXY+'10361.m3u8'},
-{name:'9',num:'9',logo:BL,sd:PROXY+'2532.m3u8',hd:PROXY+'10.m3u8',uhd:PROXY+'10362.m3u8'}
+{name:'News',num:'N',logo:BL,sd:BASE+'274145.ts',hd:BASE+'28939.ts',uhd:BASE+'44.ts'},
+{name:'1',num:'1',logo:BL,sd:BASE+'2541.ts',hd:BASE+'1.ts',uhd:BASE+'3854.ts'},
+{name:'2',num:'2',logo:BL,sd:BASE+'2540.ts',hd:BASE+'2.ts',uhd:BASE+'3853.ts'},
+{name:'3',num:'3',logo:BL,sd:BASE+'2538.ts',hd:BASE+'4.ts',uhd:BASE+'3851.ts'},
+{name:'4',num:'4',logo:BL,sd:BASE+'10795.ts',hd:BASE+'5.ts',uhd:BASE+'3850.ts'},
+{name:'5',num:'5',logo:BL,sd:BASE+'2536.ts',hd:BASE+'6.ts',uhd:BASE+'3849.ts'},
+{name:'6',num:'6',logo:BL,sd:BASE+'2535.ts',hd:BASE+'7.ts',uhd:BASE+'3848.ts'},
+{name:'7',num:'7',logo:BL,sd:BASE+'2534.ts',hd:BASE+'8.ts',uhd:BASE+'3847.ts'},
+{name:'8',num:'8',logo:BL,sd:BASE+'2533.ts',hd:BASE+'9.ts',uhd:BASE+'10361.ts'},
+{name:'9',num:'9',logo:BL,sd:BASE+'2532.ts',hd:BASE+'10.ts',uhd:BASE+'10362.ts'}
 ];
 var AL='https://static.wixstatic.com/media/0f6f17_0b9748ca0f2a41698c2d620d753ac140~mv2.jpg';
 var AO='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuhH7QXR24YA4PeJNfQRsxALFC3Sbaw_fhpg&s';
 var ALWAN_CH=[
-{name:'Sport 1',num:'1',logo:AL,sport:true,sd:PROXY+'1641624.m3u8',hd:PROXY+'1641618.m3u8',uhd:PROXY+'1641605.m3u8'},
-{name:'Sport 2',num:'2',logo:AL,sport:true,sd:PROXY+'1641625.m3u8',hd:PROXY+'1641619.m3u8',uhd:PROXY+'1641606.m3u8'},
-{name:'Sport 3',num:'3',logo:AL,sport:true,sd:PROXY+'1641626.m3u8',hd:PROXY+'1641620.m3u8',uhd:PROXY+'1641607.m3u8'},
-{name:'Sport 4',num:'4',logo:AL,sport:true,sd:PROXY+'1641627.m3u8',hd:PROXY+'1641621.m3u8',uhd:PROXY+'1641608.m3u8'},
-{name:'Sport 5',num:'5',logo:AL,sport:true,sd:PROXY+'1641628.m3u8',hd:PROXY+'1641622.m3u8',uhd:PROXY+'1641609.m3u8'},
-{name:'Sport 6',num:'6',logo:AL,sport:true,sd:PROXY+'1641629.m3u8',hd:PROXY+'1641623.m3u8',uhd:PROXY+'1641610.m3u8'},
-{name:'Sport 7',num:'7',logo:AL,sport:true,uhd:PROXY+'1641611.m3u8'},
-{name:'Sport 8',num:'8',logo:AL,sport:true,uhd:PROXY+'1641612.m3u8'},
-{name:'Sport 9',num:'9',logo:AL,sport:true,uhd:PROXY+'1641613.m3u8'},
-{name:'Sport 10',num:'10',logo:AL,sport:true,uhd:PROXY+'1641614.m3u8'},
-{name:'F1',num:'F1',logo:AL,sport:true,uhd:PROXY+'1641616.m3u8'},
-{name:'UFC',num:'UFC',logo:AL,sport:true,uhd:PROXY+'1641615.m3u8'},
-{name:'WWE',num:'WWE',logo:AL,sport:true,uhd:PROXY+'1641617.m3u8'},
-{name:'Aflam 1',logo:AO,uhd:PROXY+'1641630.m3u8'},
-{name:'Aflam 2',logo:AO,uhd:PROXY+'1641631.m3u8'},
-{name:'Mosalsalat',logo:AO,uhd:PROXY+'1641637.m3u8'},
-{name:'Aghani',logo:AO,uhd:PROXY+'1641638.m3u8'},
-{name:'Atfal',logo:AO,uhd:PROXY+'1641636.m3u8'},
-{name:'Anime',logo:AO,uhd:PROXY+'1641642.m3u8'},
-{name:'Quran',logo:AO,uhd:PROXY+'1641643.m3u8'}
+{name:'Sport 1',num:'1',logo:AL,sport:true,sd:BASE+'1641624.ts',hd:BASE+'1641618.ts',uhd:BASE+'1641605.ts'},
+{name:'Sport 2',num:'2',logo:AL,sport:true,sd:BASE+'1641625.ts',hd:BASE+'1641619.ts',uhd:BASE+'1641606.ts'},
+{name:'Sport 3',num:'3',logo:AL,sport:true,sd:BASE+'1641626.ts',hd:BASE+'1641620.ts',uhd:BASE+'1641607.ts'},
+{name:'Sport 4',num:'4',logo:AL,sport:true,sd:BASE+'1641627.ts',hd:BASE+'1641621.ts',uhd:BASE+'1641608.ts'},
+{name:'Sport 5',num:'5',logo:AL,sport:true,sd:BASE+'1641628.ts',hd:BASE+'1641622.ts',uhd:BASE+'1641609.ts'},
+{name:'Sport 6',num:'6',logo:AL,sport:true,sd:BASE+'1641629.ts',hd:BASE+'1641623.ts',uhd:BASE+'1641610.ts'},
+{name:'Sport 7',num:'7',logo:AL,sport:true,uhd:BASE+'1641611.ts'},
+{name:'Sport 8',num:'8',logo:AL,sport:true,uhd:BASE+'1641612.ts'},
+{name:'Sport 9',num:'9',logo:AL,sport:true,uhd:BASE+'1641613.ts'},
+{name:'Sport 10',num:'10',logo:AL,sport:true,uhd:BASE+'1641614.ts'},
+{name:'F1',num:'F1',logo:AL,sport:true,uhd:BASE+'1641616.ts'},
+{name:'UFC',num:'UFC',logo:AL,sport:true,uhd:BASE+'1641615.ts'},
+{name:'WWE',num:'WWE',logo:AL,sport:true,uhd:BASE+'1641617.ts'},
+{name:'Aflam 1',logo:AO,uhd:BASE+'1641630.ts'},
+{name:'Aflam 2',logo:AO,uhd:BASE+'1641631.ts'},
+{name:'Mosalsalat',logo:AO,uhd:BASE+'1641637.ts'},
+{name:'Aghani',logo:AO,uhd:BASE+'1641638.ts'},
+{name:'Atfal',logo:AO,uhd:BASE+'1641636.ts'},
+{name:'Anime',logo:AO,uhd:BASE+'1641642.ts'},
+{name:'Quran',logo:AO,uhd:BASE+'1641643.ts'}
 ];
 var TL='https://static.wixstatic.com/media/0f6f17_0681a2e33f8d42d7ad61caf189caf0ac~mv2.jpg';
 var THM_CH=[
-{name:'1',num:'1',logo:TL,hd:PROXY+'1549876.m3u8',uhd:PROXY+'1630479.m3u8'},
-{name:'2',num:'2',logo:TL,hd:PROXY+'1549877.m3u8',uhd:PROXY+'1549875.m3u8'},
-{name:'3',num:'3',logo:TL,hd:PROXY+'1848332.m3u8'},
-{name:'منصة 1',num:'M1',logo:TL,uhd:PROXY+'1597497.m3u8'},
-{name:'منصة 2',num:'M2',logo:TL,uhd:PROXY+'1597570.m3u8'},
-{name:'منصة 3',num:'M3',logo:TL,uhd:PROXY+'1597571.m3u8'}
+{name:'1',num:'1',logo:TL,hd:BASE+'1549876.ts',uhd:BASE+'1630479.ts'},
+{name:'2',num:'2',logo:TL,hd:BASE+'1549877.ts',uhd:BASE+'1549875.ts'},
+{name:'3',num:'3',logo:TL,hd:BASE+'1848332.ts'},
+{name:'منصة 1',num:'M1',logo:TL,uhd:BASE+'1597497.ts'},
+{name:'منصة 2',num:'M2',logo:TL,uhd:BASE+'1597570.ts'},
+{name:'منصة 3',num:'M3',logo:TL,uhd:BASE+'1597571.ts'}
 ];
 var EVT=[
 {lbl:'1',url:'https://v4.sryyyeexxzzzs.app/live/v/event1/1280x720/index.m3u8'},
@@ -207,7 +207,7 @@ function openExt(url){var ua=navigator.userAgent,isA=/Android/i.test(ua),isI=/iP
 function startHls(url){vid.style.display='block';ifw.style.display='none';ifp.src='';showLoader();if(hls){hls.destroy();hls=null;}vid.removeAttribute('src');vid.load();if(Hls.isSupported()){hls=new Hls({enableWorker:true,startLevel:-1,autoLevelEnabled:true,maxBufferLength:10,maxMaxBufferLength:30,manifestLoadingMaxRetry:4,fragLoadingMaxRetry:4,liveSyncDurationCount:2,lowLatencyMode:true});hls.loadSource(url);hls.attachMedia(vid);hls.on(Hls.Events.MANIFEST_PARSED,function(){hideLoader();pw.classList.add('playing');vid.play().catch(function(){});buildQ();});hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){showLoader();hls.startLoad();retryT=setTimeout(function(){reloadCurrentStream();},5000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){reloadCurrentStream();},5000);}}});}else if(vid.canPlayType('application/vnd.apple.mpegurl')){vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();pw.classList.add('playing');},{once:true});vid.play().catch(function(){});}else{hideLoader();toast('المتصفح غير متوافق');}}
 function loadEvent(s){curEvtUrl=s.url;document.querySelectorAll('.q-row button,.ch').forEach(function(b){b.classList.remove('on');});s.btn.classList.add('on');chTitle.textContent='event1 '+s.lbl;chTitle.style.display='block';cur={r:-3,i:0};startHls(s.url);}
 function buildEventRow(){var box=document.getElementById('row-4');if(!box)return;var card=document.createElement('div');card.className='event-card';var ico=document.createElement('div');ico.className='ev-icon';ico.textContent='⚽';card.appendChild(ico);var nm=document.createElement('div');nm.className='ev-name';nm.textContent='event1';card.appendChild(nm);var qRow=document.createElement('div');qRow.className='q-row';EVT.forEach(function(s){var btn=document.createElement('button');btn.textContent=s.lbl;s.btn=btn;btn.onclick=function(){loadEvent(s);};qRow.appendChild(btn);});card.appendChild(qRow);box.appendChild(card);}
-function buildMultiRow(data,boxId,sc){var box=document.getElementById(boxId);if(!box)return;box.innerHTML='';data.forEach(function(ch,ci){var card=document.createElement('div');card.className='multi-card '+sc;var wrap=document.createElement('div');wrap.className='lw';var img=document.createElement('img');img.src=ch.logo;img.alt=ch.name;if(ch.sport)img.className='cv';img.onerror=function(){this.style.display='none';};wrap.appendChild(img);if(ch.num){var n=document.createElement('span');n.className='cn';n.textContent=ch.num;wrap.appendChild(n);}card.appendChild(wrap);var nm=document.createElement('div');nm.className='ch-name';nm.textContent=ch.name;card.appendChild(nm);var qRow=document.createElement('div');qRow.className='q-row';[{lbl:'SD',key:'sd'},{lbl:'HD',key:'hd'},{lbl:'4K',key:'uhd'}].forEach(function(q){if(!ch[q.key])return;var btn=document.createElement('button');btn.textContent=q.lbl;btn.onclick=function(){document.querySelectorAll('.q-row button').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');chTitle.textContent=ch.name+' '+q.lbl;chTitle.style.display='block';cur={r:-2,i:ci};startHls(ch[q.key]);};qRow.appendChild(btn);});card.appendChild(qRow);box.appendChild(card);});}
+function buildMultiRow(data,boxId,sc){var box=document.getElementById(boxId);if(!box)return;box.innerHTML='';data.forEach(function(ch,ci){var card=document.createElement('div');card.className='multi-card '+sc;var wrap=document.createElement('div');wrap.className='lw';var img=document.createElement('img');img.src=ch.logo;img.alt=ch.name;if(ch.sport)img.className='cv';img.onerror=function(){this.style.display='none';};wrap.appendChild(img);if(ch.num){var n=document.createElement('span');n.className='cn';n.textContent=ch.num;wrap.appendChild(n);}card.appendChild(wrap);var nm=document.createElement('div');nm.className='ch-name';nm.textContent=ch.name;card.appendChild(nm);var qRow=document.createElement('div');qRow.className='q-row';[{lbl:'SD',key:'sd'},{lbl:'HD',key:'hd'},{lbl:'4K',key:'uhd'}].forEach(function(q){if(!ch[q.key])return;var btn=document.createElement('button');btn.textContent=q.lbl;btn.onclick=function(){document.querySelectorAll('.q-row button').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');chTitle.textContent=ch.name+' '+q.lbl;chTitle.style.display='block';cur={r:-2,i:ci};openExt(ch[q.key]);};qRow.appendChild(btn);});card.appendChild(qRow);box.appendChild(card);});}  
 function buildChannels(){ROWS.forEach(function(row,ri){var box=document.getElementById('row-'+ri);if(!box)return;box.innerHTML='';row.channels.forEach(function(c,ci){var b=document.createElement('button');var cls='ch';if(c.t==='iframe')cls+=' iframe-ch';if(c.t==='ts')cls+=' ts-ch';b.className=cls;b.textContent=c.n;b.id='ch-'+ri+'-'+ci;b.onclick=function(){load(ri,ci);};box.appendChild(b);});});buildEventRow();buildMultiRow(BEIN_CH,'row-bein','bein-style');buildMultiRow(ALWAN_CH,'row-alwan','alwan-style');buildMultiRow(THM_CH,'row-thm','thm-style');}
 function load(ri,ci){if(ri<0||ri>=ROWS.length||ci<0||ci>=ROWS[ri].channels.length)return;curEvtUrl=null;cur={r:ri,i:ci};if(retryT){clearTimeout(retryT);retryT=null;}document.querySelectorAll('.ch').forEach(function(b){b.classList.remove('on');});document.querySelectorAll('.q-row button').forEach(function(b){b.classList.remove('on');});var btn=document.getElementById('ch-'+ri+'-'+ci);if(btn)btn.classList.add('on');var ch=ROWS[ri].channels[ci];chTitle.textContent=ch.n;chTitle.style.display='block';var t=ch.t||'hls';if(t==='ts'){openExt(ch.u);return;}if(t==='iframe'){if(hls){hls.destroy();hls=null;}vid.style.display='none';ifw.style.display='block';pw.classList.add('playing');showLoader();ifp.src='';setTimeout(function(){ifp.src=ch.u;hideLoader();},400);qm.innerHTML='';return;}startHls(ch.u);}
 function buildQ(){qm.innerHTML='';if(!hls)return;var lvls=hls.levels;if(!lvls||!lvls.length)return;var a=document.createElement('button');a.textContent='تلقائي';a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};qm.appendChild(a);lvls.forEach(function(lv,i){var b=document.createElement('button');b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};qm.appendChild(b);});updateQActive();}
