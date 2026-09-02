@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة AlameeereTv للبث المباشر</title>
-    <!-- استدعاء مكتبة المشغل المتطور لتشغيل الـ m3u8 على جميع المتصفحات -->
     <script src="https://jsdelivr.net"></script>
     <style>
         body { 
@@ -67,40 +66,36 @@
 <script>
     const video = document.getElementById('video');
     
-    // الروابط المشفّرة بالحروف عبر البروكسي الخاص بك
     const secretUrls = [
         "https://workers.dev",
         "https://workers.dev",
         "https://workers.dev"
     ];
 
-    let hls = new Hls();
+    let hls;
 
     function changeChannel(index, element) {
         const streamUrl = secretUrls[index];
         
         if (Hls.isSupported()) {
-            hls.destroy(); // إنهاء البث السابق لمنع التداخل
+            if (hls) { hls.destroy(); }
             hls = new Hls();
             hls.loadSource(streamUrl);
             hls.attachMedia(video);
-            hls.on(HLS.Events.MANIFEST_PARSED, function() {
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
                 video.play();
             });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            // دعم متصفحات ابل وسفاري تلقائياً
             video.src = streamUrl;
             video.addEventListener('loadedmetadata', function() {
                 video.play();
             });
         }
 
-        // تحديث شكل الأزرار
         document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
         element.classList.add('active');
     }
 
-    // تشغيل القناة الأولى عند الفتح
     window.onload = function() {
         changeChannel(0, document.querySelector('.btn'));
     };
