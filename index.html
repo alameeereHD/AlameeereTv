@@ -59,7 +59,16 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 .multi-card .q-row button{flex:1;background:#111;border:none;border-top:1px solid #222;color:#999;font-size:8px;font-weight:700;padding:3px 0;cursor:pointer;transition:.15s}
 .multi-card .q-row button:not(:last-child){border-left:1px solid #222}
 .bein-style{border-color:#555}.bein-style:hover{border-color:#c8a000}.bein-style .q-row button:hover,.bein-style .q-row button.on{background:#c8a000;color:#000}
+.alwan-style{border-color:#555}.alwan-style:hover{border-color:#e05}.alwan-style .q-row button:hover,.alwan-style .q-row button.on{background:#e05;color:#fff}
 .thm-style{border-color:#555}.thm-style:hover{border-color:#0af}.thm-style .q-row button:hover,.thm-style .q-row button.on{background:#0af;color:#000}
+.event-card{flex-shrink:0;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;display:flex;flex-direction:column;align-items:center;overflow:hidden;width:72px}
+.event-card:hover{border-color:#0f0}
+.event-card .ev-icon{font-size:20px;padding:5px 0 0}
+.event-card .ev-name{font-size:8px;color:#aaa;padding:1px 2px;text-align:center;width:100%}
+.event-card .q-row{display:flex;width:100%}
+.event-card .q-row button{flex:1;background:#111;border:none;border-top:1px solid #222;color:#ccc;font-size:9px;font-weight:700;padding:4px 0;cursor:pointer;transition:.15s}
+.event-card .q-row button:not(:last-child){border-left:1px solid #222}
+.event-card .q-row button:hover,.event-card .q-row button.on{background:#0f0;color:#000}
 #err-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:9999}
 </style>
 </head>
@@ -93,11 +102,15 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4FA;</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-0"></div></div>
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F4FA;</span><span class="lbl">MBC</span></div><div class="row-scroll" id="row-1"></div></div>
 <div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AC;</span><span class="lbl">منوعات</span></div><div class="row-scroll" id="row-2"></div></div>
-<div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AD;</span><span class="lbl">ترفيه</span></div><div class="row-scroll" id="row-3"></div></div>
-<div class="ch-row"><div class="row-label"><span class="ico">&#x1F305;</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-4"></div></div>
-<div class="ch-row"><div class="row-label"><span class="ico">&#x1F3A8;</span><span class="lbl">ألوان</span></div><div class="row-scroll" id="row-5"></div></div>
-<div class="ch-row"><div class="row-label"><span class="ico" style="font-size:9px">beIN</span><span class="lbl" style="font-size:0">.</span></div><div class="row-scroll" id="row-6"></div></div>
-<div class="ch-row"><div class="row-label"><span class="ico" style="font-size:9px">ثمانية</span><span class="lbl" style="font-size:0">.</span></div><div class="row-scroll" id="row-7"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x26BD;</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-3"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F3C6;</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-4"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F3AD;</span><span class="lbl">ترفيه</span></div><div class="row-scroll" id="row-5"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F305;</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-6"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">8</span><span class="lbl">ثمانية</span></div><div class="row-scroll" id="row-7"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico">&#x1F3A8;</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-8"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico" style="font-size:9px">beIN</span><span class="lbl" style="font-size:0">.</span></div><div class="row-scroll" id="row-bein"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico" style="font-size:9px">الوان</span><span class="lbl" style="font-size:0">.</span></div><div class="row-scroll" id="row-alwan"></div></div>
+<div class="ch-row"><div class="row-label"><span class="ico" style="font-size:9px">ثمانية</span><span class="lbl" style="font-size:0">.</span></div><div class="row-scroll" id="row-thm"></div></div>
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
@@ -105,10 +118,11 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 var ROWS=[
 {channels:[{n:'الجزيرة',u:'https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8',t:'hls'},{n:'العربية',u:'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8',t:'hls'},{n:'الحدث',u:'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8',t:'hls'},{n:'سكاي نيوز',u:'https://stream.skynewsarabia.com/hls/sna.m3u8',t:'hls'},{n:'القرآن',u:'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8',t:'hls'},{n:'السنة',u:'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8',t:'hls'}]},
 {channels:[{n:'MBC 1 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-1%2F15cf99af5de54063fdabfefe66adc075%2Findex.m3u8',t:'hls'},{n:'MBC 2 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D',t:'hls'},{n:'MBC 3 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-3-usa%2F5d58265a862a476dc7f97694addb5ded%2Findex.m3u8',t:'hls'},{n:'MBC 4 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-4%2F24f134f1cd63db9346439e96b86ca6ed%2Findex.m3u8',t:'hls'},{n:'MBC 5 HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-5%2Fee6b000cee0629411b666ab26cb13e9b%2Findex.m3u8',t:'hls'},{n:'MBC Action HD',u:'https://flu.systemnet.tv/MBCAction/mono.m3u8',t:'hls'},{n:'MBC Drama HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-drama%2F2c28a458e2f3253e678b07ac7d13fe71%2Findex.m3u8',t:'hls'},{n:'MBC Iraq HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-iraq%2Fe38c44b1b43474e1c39cb5b90203691e%2Findex.m3u8',t:'hls'},{n:'MBC Masr HD',u:'https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.lg.mncdn.com%2Flive%2Fbitmovin-mbc-masr%2F956eac069c78a35d47245db6cdbb1575%2Findex.m3u8',t:'hls'}]},
-{channels:[{n:'MBC 1',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8',t:'hls'},{n:'MBC 2',u:'https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D',t:'hls'},{n:'MBC 3',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8',t:'hls'},{n:'MBC 4',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8',t:'hls'},{n:'MBC Drama',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8',t:'hls'},{n:'MBC Iraq',u:'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8',t:'hls'}]},
+
+{channels:[{n:'beIN S1',u:'https://28.1yalla-shoot.space/albaplayer/live1/',t:'iframe'},{n:'beIN 1',u:'https://pl.koralive1.cc/albaplayer/1bein1/?serv=0',t:'iframe'},{n:'beIN 2',u:'https://23.1yallashoot.site/albaplayer/live2/',t:'iframe'},{n:'Stream 1',u:'https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8',t:'hls'},{n:'Smarop SP',u:'https://we.smarop.store/spoos1.m3u8',t:'hls'},{n:'Sigma TV',u:'https://sl3.sigmatv.com/hls/live.m3u8',t:'hls'}]},
 {channels:[{n:'BeIN Movies 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/40773.ts',t:'ts'},{n:'BeIN Movies 2',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35030.ts',t:'ts'},{n:'BeIN Drama',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35026.ts',t:'ts'},{n:'BeIN Series 1',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35024.ts',t:'ts'},{n:'فتافيت',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/64588.ts',t:'ts'},{n:'FOX Movies',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/196050.ts',t:'ts'},{n:'JEEM',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts',t:'ts'},{n:'Baraem',u:'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts',t:'ts'}]},
 {channels:[{n:'الفجر 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts',t:'ts'},{n:'الفجر 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463533.ts',t:'ts'},{n:'الفجر 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463534.ts',t:'ts'},{n:'الفجر 4',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463535.ts',t:'ts'},{n:'الفجر 5',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463536.ts',t:'ts'}]},
-{channels:[{n:'ألوان 1',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463537.ts',t:'ts'},{n:'ألوان 2',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463538.ts',t:'ts'},{n:'ألوان 3',u:'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463539.ts',t:'ts'}]}
+
 ];
 var BASE='http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/';
 var BL='https://static.wixstatic.com/media/0f6f17_b14c529157884897b2f02fe167b51bd7~mv2.jpg';
@@ -124,6 +138,30 @@ var BEIN_CH=[
 {name:'8',num:'8',logo:BL,sd:BASE+'2533.ts',hd:BASE+'9.ts',uhd:BASE+'10361.ts'},
 {name:'9',num:'9',logo:BL,sd:BASE+'2532.ts',hd:BASE+'10.ts',uhd:BASE+'10362.ts'}
 ];
+var AL='https://static.wixstatic.com/media/0f6f17_0b9748ca0f2a41698c2d620d753ac140~mv2.jpg';
+var AO='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuhH7QXR24YA4PeJNfQRsxALFC3Sbaw_fhpg&s';
+var ALWAN_CH=[
+{name:'Sport 1',num:'1',logo:AL,sport:true,sd:BASE+'1641624.ts',hd:BASE+'1641618.ts',uhd:BASE+'1641605.ts'},
+{name:'Sport 2',num:'2',logo:AL,sport:true,sd:BASE+'1641625.ts',hd:BASE+'1641619.ts',uhd:BASE+'1641606.ts'},
+{name:'Sport 3',num:'3',logo:AL,sport:true,sd:BASE+'1641626.ts',hd:BASE+'1641620.ts',uhd:BASE+'1641607.ts'},
+{name:'Sport 4',num:'4',logo:AL,sport:true,sd:BASE+'1641627.ts',hd:BASE+'1641621.ts',uhd:BASE+'1641608.ts'},
+{name:'Sport 5',num:'5',logo:AL,sport:true,sd:BASE+'1641628.ts',hd:BASE+'1641622.ts',uhd:BASE+'1641609.ts'},
+{name:'Sport 6',num:'6',logo:AL,sport:true,sd:BASE+'1641629.ts',hd:BASE+'1641623.ts',uhd:BASE+'1641610.ts'},
+{name:'Sport 7',num:'7',logo:AL,sport:true,uhd:BASE+'1641611.ts'},
+{name:'Sport 8',num:'8',logo:AL,sport:true,uhd:BASE+'1641612.ts'},
+{name:'Sport 9',num:'9',logo:AL,sport:true,uhd:BASE+'1641613.ts'},
+{name:'Sport 10',num:'10',logo:AL,sport:true,uhd:BASE+'1641614.ts'},
+{name:'F1',num:'F1',logo:AL,sport:true,uhd:BASE+'1641616.ts'},
+{name:'UFC',num:'UFC',logo:AL,sport:true,uhd:BASE+'1641615.ts'},
+{name:'WWE',num:'WWE',logo:AL,sport:true,uhd:BASE+'1641617.ts'},
+{name:'Aflam 1',logo:AO,uhd:BASE+'1641630.ts'},
+{name:'Aflam 2',logo:AO,uhd:BASE+'1641631.ts'},
+{name:'Mosalsalat',logo:AO,uhd:BASE+'1641637.ts'},
+{name:'Aghani',logo:AO,uhd:BASE+'1641638.ts'},
+{name:'Atfal',logo:AO,uhd:BASE+'1641636.ts'},
+{name:'Anime',logo:AO,uhd:BASE+'1641642.ts'},
+{name:'Quran',logo:AO,uhd:BASE+'1641643.ts'}
+];
 var TL='https://static.wixstatic.com/media/0f6f17_0681a2e33f8d42d7ad61caf189caf0ac~mv2.jpg';
 var THM_CH=[
 {name:'1',num:'1',logo:TL,hd:BASE+'1549876.ts',uhd:BASE+'1630479.ts'},
@@ -133,7 +171,11 @@ var THM_CH=[
 {name:'منصة 2',num:'M2',logo:TL,uhd:BASE+'1597570.ts'},
 {name:'منصة 3',num:'M3',logo:TL,uhd:BASE+'1597571.ts'}
 ];
-
+var EVT=[
+{lbl:'1',url:'https://v4.sryyyeexxzzzs.app/live/v/event1/1280x720/index.m3u8'},
+{lbl:'2',url:'https://v4.sryyyeexxzzzs.app/live/v/event1/720p50/index.m3u8'},
+{lbl:'3',url:'https://v4.sryyyeexxzzzs.app/live/event1/playlist.m3u8'}
+];
 var hls=null,cur={r:-1,i:-1},retryT=null,curEvtUrl=null;
 var vid=document.getElementById('vid'),ifw=document.getElementById('iframe-wrap'),ifp=document.getElementById('iframe-player');
 var qm=document.getElementById('qm'),qBtn=document.getElementById('q-btn'),loader=document.getElementById('loader');
@@ -161,8 +203,10 @@ function toast(msg){var t=document.getElementById('err-toast');t.textContent=msg
 function reloadCurrentStream(){if(curEvtUrl)startHls(curEvtUrl);else if(cur.r>=0)load(cur.r,cur.i);}
 function openExt(url){var ua=navigator.userAgent,isA=/Android/i.test(ua),isI=/iPhone|iPad|iPod/i.test(ua),cu=url.replace(/^https?:\/\//,'');if(isA){var ii=['intent://'+cu+'#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end','mpv://'+url,'vlc://'+url],ix=0;!function tri(){if(ix>=ii.length){toast('تعذر فتح المشغل');return;}window.location.href=ii[ix++];setTimeout(function(){if(!document.hidden)tri();},600);}();}else if(isI){window.location.href='vlc-x-callback://x-callback-url/stream?url='+encodeURIComponent(url);setTimeout(function(){if(!document.hidden)toast('يرجى تثبيت VLC');},2000);}else{var pp=['potplayer://'+url,'vlc://'+url],pi=0;!function trp(){if(pi>=pp.length){toast('يرجى تثبيت PotPlayer');return;}window.location.href=pp[pi++];setTimeout(function(){if(!document.hidden)trp();},700);}();}}
 function startHls(url){vid.style.display='block';ifw.style.display='none';ifp.src='';showLoader();if(hls){hls.destroy();hls=null;}vid.removeAttribute('src');vid.load();if(Hls.isSupported()){hls=new Hls({enableWorker:true,startLevel:-1,autoLevelEnabled:true,maxBufferLength:10,maxMaxBufferLength:30,manifestLoadingMaxRetry:4,fragLoadingMaxRetry:4,liveSyncDurationCount:2,lowLatencyMode:true});hls.loadSource(url);hls.attachMedia(vid);hls.on(Hls.Events.MANIFEST_PARSED,function(){hideLoader();pw.classList.add('playing');vid.play().catch(function(){});buildQ();});hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){showLoader();hls.startLoad();retryT=setTimeout(function(){reloadCurrentStream();},5000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){reloadCurrentStream();},5000);}}});}else if(vid.canPlayType('application/vnd.apple.mpegurl')){vid.src=url;vid.addEventListener('loadeddata',function(){hideLoader();pw.classList.add('playing');},{once:true});vid.play().catch(function(){});}else{hideLoader();toast('المتصفح غير متوافق');}}
+function loadEvent(s){curEvtUrl=s.url;document.querySelectorAll('.q-row button,.ch').forEach(function(b){b.classList.remove('on');});s.btn.classList.add('on');chTitle.textContent='event1 '+s.lbl;chTitle.style.display='block';cur={r:-3,i:0};startHls(s.url);}
+function buildEventRow(){var box=document.getElementById('row-4');if(!box)return;var card=document.createElement('div');card.className='event-card';var ico=document.createElement('div');ico.className='ev-icon';ico.textContent='⚽';card.appendChild(ico);var nm=document.createElement('div');nm.className='ev-name';nm.textContent='event1';card.appendChild(nm);var qRow=document.createElement('div');qRow.className='q-row';EVT.forEach(function(s){var btn=document.createElement('button');btn.textContent=s.lbl;s.btn=btn;btn.onclick=function(){loadEvent(s);};qRow.appendChild(btn);});card.appendChild(qRow);box.appendChild(card);}
 function buildMultiRow(data,boxId,sc){var box=document.getElementById(boxId);if(!box)return;box.innerHTML='';data.forEach(function(ch,ci){var card=document.createElement('div');card.className='multi-card '+sc;var wrap=document.createElement('div');wrap.className='lw';var img=document.createElement('img');img.src=ch.logo;img.alt=ch.name;if(ch.sport)img.className='cv';img.onerror=function(){this.style.display='none';};wrap.appendChild(img);if(ch.num){var n=document.createElement('span');n.className='cn';n.textContent=ch.num;wrap.appendChild(n);}card.appendChild(wrap);var nm=document.createElement('div');nm.className='ch-name';nm.textContent=ch.name;card.appendChild(nm);var qRow=document.createElement('div');qRow.className='q-row';[{lbl:'SD',key:'sd'},{lbl:'HD',key:'hd'},{lbl:'4K',key:'uhd'}].forEach(function(q){if(!ch[q.key])return;var btn=document.createElement('button');btn.textContent=q.lbl;btn.onclick=function(){document.querySelectorAll('.q-row button').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');chTitle.textContent=ch.name+' '+q.lbl;chTitle.style.display='block';cur={r:-2,i:ci};openExt(ch[q.key]);};qRow.appendChild(btn);});card.appendChild(qRow);box.appendChild(card);});}
-function buildChannels(){ROWS.forEach(function(row,ri){var box=document.getElementById('row-'+ri);if(!box)return;box.innerHTML='';row.channels.forEach(function(c,ci){var b=document.createElement('button');var cls='ch';if(c.t==='iframe')cls+=' iframe-ch';if(c.t==='ts')cls+=' ts-ch';b.className=cls;b.textContent=c.n;b.id='ch-'+ri+'-'+ci;b.onclick=function(){load(ri,ci);};box.appendChild(b);});});buildMultiRow(BEIN_CH,'row-6','bein-style');buildMultiRow(THM_CH,'row-7','thm-style');}
+function buildChannels(){ROWS.forEach(function(row,ri){var box=document.getElementById('row-'+ri);if(!box)return;box.innerHTML='';row.channels.forEach(function(c,ci){var b=document.createElement('button');var cls='ch';if(c.t==='iframe')cls+=' iframe-ch';if(c.t==='ts')cls+=' ts-ch';b.className=cls;b.textContent=c.n;b.id='ch-'+ri+'-'+ci;b.onclick=function(){load(ri,ci);};box.appendChild(b);});});buildEventRow();buildMultiRow(BEIN_CH,'row-bein','bein-style');buildMultiRow(ALWAN_CH,'row-alwan','alwan-style');buildMultiRow(THM_CH,'row-thm','thm-style');}
 function load(ri,ci){if(ri<0||ri>=ROWS.length||ci<0||ci>=ROWS[ri].channels.length)return;curEvtUrl=null;cur={r:ri,i:ci};if(retryT){clearTimeout(retryT);retryT=null;}document.querySelectorAll('.ch').forEach(function(b){b.classList.remove('on');});document.querySelectorAll('.q-row button').forEach(function(b){b.classList.remove('on');});var btn=document.getElementById('ch-'+ri+'-'+ci);if(btn)btn.classList.add('on');var ch=ROWS[ri].channels[ci];chTitle.textContent=ch.n;chTitle.style.display='block';var t=ch.t||'hls';if(t==='ts'){openExt(ch.u);return;}if(t==='iframe'){if(hls){hls.destroy();hls=null;}vid.style.display='none';ifw.style.display='block';pw.classList.add('playing');showLoader();ifp.src='';setTimeout(function(){ifp.src=ch.u;hideLoader();},400);qm.innerHTML='';return;}startHls(ch.u);}
 function buildQ(){qm.innerHTML='';if(!hls)return;var lvls=hls.levels;if(!lvls||!lvls.length)return;var a=document.createElement('button');a.textContent='تلقائي';a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};qm.appendChild(a);lvls.forEach(function(lv,i){var b=document.createElement('button');b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};qm.appendChild(b);});updateQActive();}
 function updateQActive(){if(!hls)return;qm.querySelectorAll('button').forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
