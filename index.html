@@ -39,7 +39,9 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 #qw{position:relative;flex-shrink:0;margin-left:6px}
 #qm{position:absolute;bottom:calc(100% + 8px);left:0;background:rgba(10,10,10,.97);border:1px solid #333;border-radius:8px;display:none;flex-direction:column;min-width:80px;max-height:50vh;overflow-y:auto;z-index:9999;box-shadow:0 -4px 20px rgba(0,0,0,.8)}
 #qm.open{display:flex}#qm button{background:none;border:none;color:#fff;padding:6px 14px;cursor:pointer;text-align:center;font-size:12px}#qm button:hover{background:rgba(255,255,255,.08)}#qm button.active{color:#0f0;font-weight:700}#q-btn.manual{background:rgba(0,200,0,.2);color:#0f0;border:1px solid rgba(0,255,0,.35)}
-#ch-rows{flex:1 1 0;min-height:0;background:#030303;border-top:1px solid #111;display:flex;flex-direction:column;overflow-y:auto;padding:2px 0}
+#ch-rows{flex:1 1 0;min-height:0;background:#030303;border-top:1px solid #111;display:flex;flex-direction:column;overflow-y:auto;padding:2px 0;transition:opacity .3s}
+#ch-rows.dimmed .ch,#ch-rows.dimmed .multi-card,#ch-rows.dimmed .event-card{opacity:.4;filter:grayscale(.5)}
+#ch-rows.dimmed .ch.selected,#ch-rows.dimmed .multi-card.selected,#ch-rows.dimmed .event-card.selected{opacity:1;filter:none;box-shadow:0 0 15px rgba(255,255,255,.8)}
 .ch-row{flex-shrink:0;display:flex;align-items:center;border-bottom:1px solid #0a0a0a;padding:2px 0}
 .row-label{flex-shrink:0;width:50px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#050505;border-left:1px solid #111}
 .row-label .ico{font-size:14px}.row-label .lbl{font-size:8px;color:#666;font-weight:700}
@@ -49,7 +51,7 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 .ch:hover{background:#151515;border-color:#0f0;color:#fff}.ch.on{background:#0f0;color:#000;border-color:#0f0}
 .ch.iframe-ch{border-color:#f80}.ch.iframe-ch.on{background:#f80;color:#000}
 .ch.ts-ch{border-color:#f0f}.ch.ts-ch.on{background:#f0f;color:#000}
-.multi-card{flex-shrink:0;background:#0a0a0a;border:1px solid #333;border-radius:8px;display:flex;flex-direction:column;align-items:center;overflow:hidden;width:72px}
+.multi-card{flex-shrink:0;background:#0a0a0a;border:1px solid #333;border-radius:8px;display:flex;flex-direction:column;align-items:center;overflow:hidden;width:72px;cursor:pointer}
 .multi-card .lw{width:100%;height:40px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#111}
 .multi-card .lw img{width:100%;height:100%;object-fit:contain;padding:3px}
 .multi-card .lw img.cv{object-fit:cover;padding:0}
@@ -61,7 +63,7 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 .bein-style{border-color:#555}.bein-style:hover{border-color:#c8a000}.bein-style .q-row button:hover,.bein-style .q-row button.on{background:#c8a000;color:#000}
 .alwan-style{border-color:#555}.alwan-style:hover{border-color:#e05}.alwan-style .q-row button:hover,.alwan-style .q-row button.on{background:#e05;color:#fff}
 .thm-style{border-color:#555}.thm-style:hover{border-color:#0af}.thm-style .q-row button:hover,.thm-style .q-row button.on{background:#0af;color:#000}
-.event-card{flex-shrink:0;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;display:flex;flex-direction:column;align-items:center;overflow:hidden;width:72px}
+.event-card{flex-shrink:0;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;display:flex;flex-direction:column;align-items:center;overflow:hidden;width:72px;cursor:pointer}
 .event-card:hover{border-color:#0f0}
 .event-card .ev-icon{font-size:20px;padding:5px 0 0}
 .event-card .ev-name{font-size:8px;color:#aaa;padding:1px 2px;text-align:center;width:100%}
@@ -70,6 +72,8 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 .event-card .q-row button:not(:last-child){border-left:1px solid #222}
 .event-card .q-row button:hover,.event-card .q-row button.on{background:#0f0;color:#000}
 #err-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:9999}
+.new-ch{border-color:#fff !important;box-shadow:0 0 12px rgba(255,255,255,.7)}
+.new-ch:hover{box-shadow:0 0 20px rgba(255,255,255,1)}
 </style>
 </head>
 <body>
@@ -118,10 +122,8 @@ function getProxyUrl(url) {
     if (!url) return '';
     if (url.includes('auratvdz.lovable.app/api/public/stream')) return url;
     if (url.includes('my-proxy.alameeeretv.workers.dev')) return url;
-
     var safeUrl = url.replace(/http:\/\/(\d+\.\d+\.\d+\.\d+)/g, 'http://$1.nip.io');
     var isTsUrl = safeUrl.split('?')[0].endsWith('.ts');
-
     if (isTsUrl || safeUrl.includes('token=')) {
         return TS_PROXY + '?url=' + encodeURIComponent(safeUrl) + '&ua=' + encodeURIComponent(TS_UA);
     }
@@ -138,12 +140,12 @@ var ROWS=[
 var BASE='http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/';
 var BL='https://static.wixstatic.com/media/0f6f17_b14c529157884897b2f02fe167b51bd7~mv2.jpg';
 var BEIN_CH=[
-{name:'bein 1',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.165.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14670.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XA1FTQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGl8EBVcCDwUGBQwNVgQHBAcBBAdXVwAEVVUMA1wBAlMBGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAFYCDkYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUELAAAEVAMbSBEQTUdRBF1qXFAQDQRRDwYHSBdCDQkGQQIIAg9ZAA9SAFsAGRYQQ1BHa1tTF18IBwRUBg9RGQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
-{name:'bein 2',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.165.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F769629.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XAVJdQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGl9XAAIPAFMCUVwMVQEFDAZRBlVXUQpSAQJXA1AFBQJcGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAFYEAUYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUEJDAcGUA8bSBEQTUdRBF1qXFAQDQJTAAcFXRkUEA0OBhoDBABZDg9SBVcJDBhHRUZQRm1eUUcDAAFXBQVdUR4%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
-{name:'bein 3',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14672.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XD1xcQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGloAVldVWlELAlwGVwRVAgVRAQRRVg5UBFQNAlMGBlYJGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXA1EEC1YGQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwQEWAMIRh9BSkFGAFFYal1WFQ9UDQcAVhkUEA0OBhoDBABZDg9SBVcLBxhHRUZQRm1eUUcDAAFXBQVdUR4%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
-{name:'bein 4',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14673.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XAVJRQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGloGU1EHAVABUl1XAFcFAgxXVFUCBFoJBAAGUAYHUVYOGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAVgACVcRTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaDwwBVQcbSBEQTUdRBF1qXFAQDQRRDwYESBdCDQkGQQIIAg9ZAA9SB1ABGRYQQ1BHa1tTF18IBwRUBg9RGQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
-{name:'bein 5',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14674.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XD1VVQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgECUwAACwBRBwpTAgQFBAcHVFRWUgoGUQANUlVWUVoMGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAVcPCFcRTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaDwMOVAYbSBEQTUdRBF1qXFAQDQRRDwYDSBdCDQkGQQIIAg9ZAA9SB1QAGRYQQ1BHa1tTF18IBwRUBg9RGQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
-{name:'bein 6',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14675.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XAVxQQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGl0BVVQFDV1QBw0DVQBUB1QHUAQHUQwBUwIHVAJdWlBcGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBVAPDlQKQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwcGWAELXBFPG0ZAF1VUWGtbUxdfCAUBUwAaRhAKDl0bDwZWDgFSBVQIAAFJEkBGUUBoXAEbCwZSBgZXXVYe&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
+{name:'bein 1',isNew:true,logo:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjOpopC3xXohcLmciN53KEA167Hu81lx28tAWV9SDGBAjqr3MX9z6WXto&s=10',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.165.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14670.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XA1FTQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGl8EBVcCDwUGBQwNVgQHBAcBBAdXVwAEVVUMA1wBAlMBGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAFYCDkYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUELAAAEVAMbSBEQTUdRBF1qXFAQDQRRDwYHSBdCDQkGQQIIAg9ZAA9SAFsAGRYQQ1BHa1tTF18IBwRUBg9RGQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
+{name:'bein 2',isNew:true,logo:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjOpopC3xXohcLmciN53KEA167Hu81lx28tAWV9SDGBAjqr3MX9z6WXto&s=10',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.165.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F769629.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XAVJdQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGl9XAAIPAFMCUVwMVQEFDAZRBlVXUQpSAQJXA1AFBQJcGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAFYEAUYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUEJDAcGUA8bSBEQTUdRBF1qXFAQDQJTAAcFXRkUEA0OBhoDBABZDg9SBVcJDBhHRUZQRm1eUUcDAAFXBQVdUR4%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
+{name:'bein 3',isNew:true,logo:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjOpopC3xXohcLmciN53KEA167Hu81lx28tAWV9SDGBAjqr3MX9z6WXto&s=10',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14672.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XD1xcQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGloAVldVWlELAlwGVwRVAgVRAQRRVg5UBFQNAlMGBlYJGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXA1EEC1YGQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwQEWAMIRh9BSkFGAFFYal1WFQ9UDQcAVhkUEA0OBhoDBABZDg9SBVcLBxhHRUZQRm1eUUcDAAFXBQVdUR4%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
+{name:'bein 4',isNew:true,logo:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjOpopC3xXohcLmciN53KEA167Hu81lx28tAWV9SDGBAjqr3MX9z6WXto&s=10',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14673.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XAVJRQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGloGU1EHAVABUl1XAFcFAgxXVFUCBFoJBAAGUAYHUVYOGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAVgACVcRTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaDwwBVQcbSBEQTUdRBF1qXFAQDQRRDwYESBdCDQkGQQIIAg9ZAA9SB1ABGRYQQ1BHa1tTF18IBwRUBg9RGQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
+{name:'bein 5',isNew:true,logo:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjOpopC3xXohcLmciN53KEA167Hu81lx28tAWV9SDGBAjqr3MX9z6WXto&s=10',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14674.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XD1VVQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgECUwAACwBRBwpTAgQFBAcHVFRWUgoGUQANUlVWUVoMGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAVcPCFcRTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaDwMOVAYbSBEQTUdRBF1qXFAQDQRRDwYDSBdCDQkGQQIIAg9ZAA9SB1QAGRYQQ1BHa1tTF18IBwRUBg9RGQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
+{name:'bein 6',isNew:true,logo:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjOpopC3xXohcLmciN53KEA167Hu81lx28tAWV9SDGBAjqr3MX9z6WXto&s=10',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14675.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XAVxQQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGl0BVVQFDV1QBw0DVQBUB1QHUAQHUQwBUwIHVAJdWlBcGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBVAPDlQKQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwcGWAELXBFPG0ZAF1VUWGtbUxdfCAUBUwAaRhAKDl0bDwZWDgFSBVQIAAFJEkBGUUBoXAEbCwZSBgZXXVYe&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
 {name:'News',num:'N',logo:BL,sd:BASE+'274145.ts',hd:BASE+'28939.ts',uhd:BASE+'44.ts'},
 {name:'1',num:'1',logo:BL,sd:BASE+'2541.ts',hd:BASE+'1.ts',uhd:BASE+'3854.ts'},
 {name:'2',num:'2',logo:BL,sd:BASE+'2540.ts',hd:BASE+'2.ts',uhd:BASE+'3853.ts'},
@@ -158,18 +160,9 @@ var BEIN_CH=[
 var AL='https://static.wixstatic.com/media/0f6f17_0b9748ca0f2a41698c2d620d753ac140~mv2.jpg';
 var AO='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuhH7QXR24YA4PeJNfQRsxALFC3Sbaw_fhpg&s';
 var ALWAN_CH=[
-{name:'الوان 1',levels:[
-{label:'SD',url:'http://103.76.130.136:8080/live/0545580310/7337741654/772276.m3u8?token=ThdWW0NHBE1UFV4XD1RXQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgFUDwRVXFwAB1wBDVwGAAFWU1QBAA4BD1UDVVBVVFsIGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXA1MPCEYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUEKAAUAWQMbSBEQTUdRBF1qXFAQDQJSCwMAUhkUEA0OBhoDBABZDg9SC1oOBhhHRUZQRm1eUUcDAAFXBQVdUR4='},
-{label:'HD',url:'http://103.76.130.131:8080/live/0545580310/7337741654/772277.m3u8?token=ThdWW0NHBE1UFV4XBFJVUUEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhtUVlYOCFEHVl9QAQdSBVMNAQ4FBwkJVgcMUwBTB1sPWhcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVIDDF0RTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaCgwPVQEBRh9BSkFGAFFYal1WFQ9SDgMFUwIaRhAKDl0bDwZWDgFSBVsAAQRJEkBGUUBoXAEbCwZSBgZXXVYe'}
-]},
-{name:'الوان 2',levels:[
-{label:'SD',url:'http://103.76.130.136:8080/live/0545580310/7337741654/772273.m3u8?token=ThdWW0NHBE1UFV4XDlBSQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgEGDwMCCVEGVl0GVQYJBQcHAgEFBF1VVVEHDlBVW1oOGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXA1gGDkYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUEKAAQFUAcbSBEQTUdRBF1qXFAQDQJSCwMAVxkUEA0OBhoDBABZDg9SClEJBhhHRUZQRm1eUUcDAAFXBQVdUR4='},
-{label:'HD',url:'http://103.76.130.131:8080/live/0545580310/7337741654/772274.m3u8?token=ThdWW0NHBE1UFV4XBFFQW0EUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhsEU1gBDlVWBg1UAwdVAQ0AAVYNUF0IUlICBwBdUwAKWhcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVcFDlERTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaCgwPWQEBRh9BSkFGAFFYal1WFQ9SDgMFUwEaRhAKDl0bDwZWDgFSBVoIAQFJEkBGUUBoXAEbCwZSBgZXXVYe'}
-]},
-{name:'الوان 3',levels:[
-{label:'SD',url:'http://103.76.130.164:8080/live/0545580310/7337741654/772270.m3u8?token=ThdWW0NHBE1UFV4XBkZIQQBXTFtDE08bXl0WVVkYR1VNQVFcRFwKVxMNRlgFEVxBTxpcTUMERFcFXzxdUEIMU1AXDlxCWQkVE18FRl5GXkFRCFtWBAQCCAVRUF8NBFUDBFABBFZTXQpTBVMHA1JUAEEUG1xEPkRcF0cRXFRZAEIXDwQeFVwWSRMNCkBaCEhBDllBalQOWFcBUBdQWloWEg8EGBBaWgtQRVgWakYNAEFZGgkXG0NZVztXBlRUWgESDxcFEBsXFVBVFV4XBkZIQRBMS1BWDGlQABFZDgIGVwcFGRZGXlgAGwsGUw0OUlJaUAoBGRUURVwWbApdFw5UBgYFBwsCSA=='},
-{label:'HD',url:'http://103.76.130.164:8080/live/0545580310/7337741654/772271.m3u8?token=ThdWW0NHBE1UFV4XBFFWUkEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhsCVlRTDAcDVVpWUAcJVAcEBwANVloDVF1WUgBTUwdbWxcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVUAAV0DVRsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcDVw4AVQZBFRdHEUJQVFltXlFHAwYAVgcBVUhBF1FUUBVbBw5cC1UPDAZdARkXQUFSRzpQVRVeBABXVFBaDUQ='}
-]},
+{name:'الوان 1',isNew:true,logo:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe0DT49qB-VmFJ5kUgQlEXRdY6FGRWyznc9_tmwUwApQ&s=10',levels:[{label:'SD',url:'http://103.76.130.136:8080/live/0545580310/7337741654/772276.m3u8?token=ThdWW0NHBE1UFV4XD1RXQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgFUDwRVXFwAB1wBDVwGAAFWU1QBAA4BD1UDVVBVVFsIGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXA1MPCEYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUEKAAUAWQMbSBEQTUdRBF1qXFAQDQJSCwMAUhkUEA0OBhoDBABZDg9SC1oOBhhHRUZQRm1eUUcDAAFXBQVdUR4='},{label:'HD',url:'http://103.76.130.131:8080/live/0545580310/7337741654/772277.m3u8?token=ThdWW0NHBE1UFV4XBFJVUUEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhtUVlYOCFEHVl9QAQdSBVMNAQ4FBwkJVgcMUwBTB1sPWhcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVIDDF0RTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaCgwPVQEBRh9BSkFGAFFYal1WFQ9SDgMFUwIaRhAKDl0bDwZWDgFSBVsAAQRJEkBGUUBoXAEbCwZSBgZXXVYe'}]},
+{name:'الوان 2',isNew:true,logo:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe0DT49qB-VmFJ5kUgQlEXRdY6FGRWyznc9_tmwUwApQ&s=10',levels:[{label:'SD',url:'http://103.76.130.136:8080/live/0545580310/7337741654/772273.m3u8?token=ThdWW0NHBE1UFV4XDlBSQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgEGDwMCCVEGVl0GVQYJBQcHAgEFBF1VVVEHDlBVW1oOGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXA1gGDkYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUEKAAQFUAcbSBEQTUdRBF1qXFAQDQJSCwMAVxkUEA0OBhoDBABZDg9SClEJBhhHRUZQRm1eUUcDAAFXBQVdUR4='},{label:'HD',url:'http://103.76.130.131:8080/live/0545580310/7337741654/772274.m3u8?token=ThdWW0NHBE1UFV4XBFFQW0EUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhsEU1gBDlVWBg1UAwdVAQ0AAVYNUF0IUlICBwBdUwAKWhcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVcFDlERTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaCgwPWQEBRh9BSkFGAFFYal1WFQ9SDgMFUwEaRhAKDl0bDwZWDgFSBVoIAQFJEkBGUUBoXAEbCwZSBgZXXVYe'}]},
+{name:'الوان 3',isNew:true,logo:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe0DT49qB-VmFJ5kUgQlEXRdY6FGRWyznc9_tmwUwApQ&s=10',levels:[{label:'SD',url:'http://103.76.130.164:8080/live/0545580310/7337741654/772270.m3u8?token=ThdWW0NHBE1UFV4XBkZIQQBXTFtDE08bXl0WVVkYR1VNQVFcRFwKVxMNRlgFEVxBTxpcTUMERFcFXzxdUEIMU1AXDlxCWQkVE18FRl5GXkFRCFtWBAQCCAVRUF8NBFUDBFABBFZTXQpTBVMHA1JUAEEUG1xEPkRcF0cRXFRZAEIXDwQeFVwWSRMNCkBaCEhBDllBalQOWFcBUBdQWloWEg8EGBBaWgtQRVgWakYNAEFZGgkXG0NZVztXBlRUWgESDxcFEBsXFVBVFV4XBkZIQRBMS1BWDGlQABFZDgIGVwcFGRZGXlgAGwsGUw0OUlJaUAoBGRUURVwWbApdFw5UBgYFBwsCSA=='},{label:'HD',url:'http://103.76.130.164:8080/live/0545580310/7337741654/772271.m3u8?token=ThdWW0NHBE1UFV4XBFFWUkEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhsCVlRTDAcDVVpWUAcJVAcEBwANVloDVF1WUgBTUwdbWxcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVUAAV0DVRsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcDVw4AVQZBFRdHEUJQVFltXlFHAwYAVgcBVUhBF1FUUBVbBw5cC1UPDAZdARkXQUFSRzpQVRVeBABXVFBaDUQ='}]},
 {name:'Sport 1',num:'1',logo:AL,sport:true,sd:BASE+'1641624.ts',hd:BASE+'1641618.ts',uhd:BASE+'1641605.ts'},
 {name:'Sport 2',num:'2',logo:AL,sport:true,sd:BASE+'1641625.ts',hd:BASE+'1641619.ts',uhd:BASE+'1641606.ts'},
 {name:'Sport 3',num:'3',logo:AL,sport:true,sd:BASE+'1641626.ts',hd:BASE+'1641620.ts',uhd:BASE+'1641607.ts'},
@@ -193,17 +186,15 @@ var ALWAN_CH=[
 ];
 var TL='https://static.wixstatic.com/media/0f6f17_0681a2e33f8d42d7ad61caf189caf0ac~mv2.jpg';
 var THM_CH=[
-{name:'8 1',logo:TL,hd:'http://103.76.130.131:8080/live/0545580310/7337741654/746713.m3u8?token=ThdWW0NHBE1UFV4XBVVUW0EUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhtRUVkACQVRAglTBwNTBAcDC1IFUQ9VD1cHAwVUUQELDRcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVIBDlELUxsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcEUQIKVAtBFRdHEUJQVFltXlFHAwYDUgIHV0hBF1FUUBVbBw5cC1UPAgxUARkXQUFSRzpQVRVeBABXVFBaDUQ=',sd:'http://103.76.130.136:8080/live/0545580310/7337741654/746714.m3u8?token=ThdWW0NHBE1UFV4XDlZVQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgpWVAJQWFcAVAwHDAMGUQAEAARQVAEAAF1WBAVSAAZZGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBlEPClQGQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwQPVAAOXBFPG0ZAF1VUWGtbUxdfDgUBUwQCSEYXClVcFw1QAQFcBVUODQ1VHBdAR1dFagxdEw1VAwVUV1pWRQ=='},
-{name:'8 2',logo:TL,hd:'http://103.76.130.165:8080/live/0545580310/7337741654/746716.m3u8?token=ThdWW0NHBE1UFV4XBFJSVEEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhtXUlIBW1dXWgsFBwQCVFRRC1INAQpXAlAMUgEGUVVdWBcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVMDDlcFVhsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcFUA8NVAZBFRdHEUJQVFltXlFHAwYDUgIHUkhBF1FUUBVbBw5cC1UPDQRTBhkXQUFSRzpQVRVeBABXVFBaDUQ=',sd:'http://103.76.130.131:8080/live/0545580310/7337741654/746717.m3u8?token=ThdWW0NHBE1UFV4XD1dQQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGlxTVAMFW1ZXUg4AAVVTVAEFBVEDBlpVBlRUBFECAVEPGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBFYBAFQAQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwYHUg4KXRFPG0ZAF1VUWGtbUxdfDgUBUwQBSEYXClVcFw1QAQFcBVUBBAVVHBdAR1dFagxdEw1VAwVUV1pWRQ=='},
-{name:'8 3',logo:TL,hd:'http://103.76.130.131:8080/live/0545580310/7337741654/746719.m3u8?token=ThdWW0NHBE1UFV4XBFxUUEEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhsGD1gOAFMAUgsFV1wFAwEAVlMEAwFQVlECDwJcUQIOXRcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVIBAVQFURsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcEUQIOUQFBFRdHEUJQVFltXlFHAwYDUgIHXUhBF1FUUBVbBw5cC1UPDQZUARkXQUFSRzpQVRVeBABXVFBaDUQ=',sd:'http://103.76.130.165:8080/live/0545580310/7337741654/746720.m3u8?token=ThdWW0NHBE1UFV4XDlJTQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGg5UDwcDXFZSBggMUAFUDAMAUwRXXQ5TBlFRAQZSU1cKGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBVQBAFYDQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwcFUQcAURFPG0ZAF1VUWGtbUxdfDgUBUwcGSEYXClVcFw1QAQFcBVUBBwNcHBdAR1dFagxdEw1VAwVUV1pWRQ=='},
+{name:'8 1',isNew:true,logo:'https://upload.wikimedia.org/wikipedia/commons/e/e9/Thmanyah_Logo.svg',levels:[{label:'SD',url:'http://103.76.130.136:8080/live/0545580310/7337741654/746714.m3u8?token=ThdWW0NHBE1UFV4XDlZVQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgpWVAJQWFcAVAwHDAMGUQAEAARQVAEAAF1WBAVSAAZZGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBlEPClQGQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwQPVAAOXBFPG0ZAF1VUWGtbUxdfDgUBUwQCSEYXClVcFw1QAQFcBVUODQ1VHBdAR1dFagxdEw1VAwVUV1pWRQ=='},{label:'HD',url:'http://103.76.130.131:8080/live/0545580310/7337741654/746713.m3u8?token=ThdWW0NHBE1UFV4XBVVUW0EUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhtRUVkACQVRAglTBwNTBAcDC1IFUQ9VD1cHAwVUUQELDRcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVIBDlELUxsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcEUQIKVAtBFRdHEUJQVFltXlFHAwYDUgIHV0hBF1FUUBVbBw5cC1UPAgxUARkXQUFSRzpQVRVeBABXVFBaDUQ='}]},
+{name:'8 2',isNew:true,logo:'https://upload.wikimedia.org/wikipedia/commons/e/e9/Thmanyah_Logo.svg',levels:[{label:'SD',url:'http://103.76.130.131:8080/live/0545580310/7337741654/746717.m3u8?token=ThdWW0NHBE1UFV4XD1dQQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGlxTVAMFW1ZXUg4AAVVTVAEFBVEDBlpVBlRUBFECAVEPGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBFYBAFQAQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwYHUg4KXRFPG0ZAF1VUWGtbUxdfDgUBUwQBSEYXClVcFw1QAQFcBVUBBAVVHBdAR1dFagxdEw1VAwVUV1pWRQ=='},{label:'HD',url:'http://103.76.130.165:8080/live/0545580310/7337741654/746716.m3u8?token=ThdWW0NHBE1UFV4XBFJSVEEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhtXUlIBW1dXWgsFBwQCVFRRC1INAQpXAlAMUgEGUVVdWBcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVMDDlcFVhsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcFUA8NVAZBFRdHEUJQVFltXlFHAwYDUgIHUkhBF1FUUBVbBw5cC1UPDQRTBhkXQUFSRzpQVRVeBABXVFBaDUQ='}]},
+{name:'8 3',isNew:true,logo:'https://upload.wikimedia.org/wikipedia/commons/e/e9/Thmanyah_Logo.svg',levels:[{label:'SD',url:'http://103.76.130.165:8080/live/0545580310/7337741654/746720.m3u8?token=ThdWW0NHBE1UFV4XDlJTQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGg5UDwcDXFZSBggMUAFUDAMAUwRXXQ5TBlFRAQZSU1cKGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBVQBAFYDQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwcFUQcAURFPG0ZAF1VUWGtbUxdfDgUBUwcGSEYXClVcFw1QAQFcBVUBBwNcHBdAR1dFagxdEw1VAwVUV1pWRQ=='},{label:'HD',url:'http://103.76.130.131:8080/live/0545580310/7337741654/746719.m3u8?token=ThdWW0NHBE1UFV4XBFxUUEEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhsGD1gOAFMAUgsFV1wFAwEAVlMEAwFQVlECDwJcUQIOXRcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVIBAVQFURsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcEUQIOUQFBFRdHEUJQVFltXlFHAwYDUgIHXUhBF1FUUBVbBw5cC1UPDQZUARkXQUFSRzpQVRVeBABXVFBaDUQ='}]},
 {name:'1',num:'1',logo:TL,hd:BASE+'1549876.ts',uhd:BASE+'1630479.ts'},
 {name:'2',num:'2',logo:TL,hd:BASE+'1549877.ts',uhd:BASE+'1549875.ts'},
 {name:'3',num:'3',logo:TL,hd:BASE+'1848332.ts'},
 {name:'منصة 1',num:'M1',logo:TL,uhd:BASE+'1597497.ts'},
 {name:'منصة 2',num:'M2',logo:TL,uhd:BASE+'1597570.ts'},
-{name:'منصة 3',num:'M3',logo:TL,uhd:BASE+'1597571.ts'},
-{name:'تجربة ١',single:'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.164.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F746717.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XD1dTQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgsABlcFAVJVAQ8BBVwEUQZSBFQGB1oABlBRUAVSVAIOGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBVABD1EBQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwQEVQQJURFPG0ZAF1VUWGtbUxdfDgUBUwQBSEYXClVcFw1QAQFcBlQNBw1SHBdAR1dFagxdEw1VAwVUV1pWRQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV'},
-{name:'تجربة ٢',single:'https://my-proxy.alameeeretv.workers.dev/?url=http://ahm79.store/live/0545580310/7337741654/746717.m3u8'}
+{name:'منصة 3',num:'M3',logo:TL,uhd:BASE+'1597571.ts'}
 ];
 var EVT=[
 {lbl:'1',url:'https://v4.sryyyeexxzzzs.app/live/v/event1/1280x720/index.m3u8'},
@@ -273,35 +264,79 @@ function startHls(rawUrl){
     }else{hideLoader();toast('المتصفح غير متوافق');}
 }
 
-function loadEvent(s){curEvtUrl=s.url;document.querySelectorAll('.q-row button,.ch').forEach(function(b){b.classList.remove('on');});s.btn.classList.add('on');chTitle.textContent='event1 '+s.lbl;chTitle.style.display='block';cur={r:-3,i:0};startHls(s.url);}
+function setSelectedAndDim(element) {
+    document.querySelectorAll('#ch-rows .selected').forEach(function(el) { el.classList.remove('selected'); });
+    if (element) element.classList.add('selected');
+    chRows.classList.add('dimmed');
+}
+
+function loadEvent(s){curEvtUrl=s.url;document.querySelectorAll('.q-row button,.ch').forEach(function(b){b.classList.remove('on');});s.btn.classList.add('on');chTitle.textContent='event1 '+s.lbl;chTitle.style.display='block';cur={r:-3,i:0};startHls(s.url);setSelectedAndDim(s.btn.closest('.event-card'));}
 function buildEventRow(){var box=document.getElementById('row-4');if(!box)return;var card=document.createElement('div');card.className='event-card';var ico=document.createElement('div');ico.className='ev-icon';ico.textContent='⚽';card.appendChild(ico);var nm=document.createElement('div');nm.className='ev-name';nm.textContent='event1';card.appendChild(nm);var qRow=document.createElement('div');qRow.className='q-row';EVT.forEach(function(s){var btn=document.createElement('button');btn.textContent=s.lbl;s.btn=btn;btn.onclick=function(){loadEvent(s);};qRow.appendChild(btn);});card.appendChild(qRow);box.appendChild(card);}
 function buildMultiRow(data,boxId,sc){
     var box=document.getElementById(boxId);if(!box)return;box.innerHTML='';
     data.forEach(function(ch,ci){
         if(ch.single){
-            var b=document.createElement('button');
-            b.className='ch';
-            b.textContent=ch.name;
-            b.onclick=function(){
-                document.querySelectorAll('.ch').forEach(function(x){x.classList.remove('on');});
-                b.classList.add('on');
-                chTitle.textContent=ch.name;chTitle.style.display='block';
-                cur={r:-2,i:ci};startHls(ch.single);
-            };
-            box.appendChild(b);
+            if(ch.logo){
+                var card=document.createElement('div');card.className='multi-card '+sc;
+                if(ch.isNew)card.classList.add('new-ch');
+                var wrap=document.createElement('div');wrap.className='lw';
+                var img=document.createElement('img');img.src=ch.logo;img.alt=ch.name;img.onerror=function(){this.style.display='none';};
+                wrap.appendChild(img);card.appendChild(wrap);
+                var nm=document.createElement('div');nm.className='ch-name';nm.textContent=ch.name;card.appendChild(nm);
+                card.onclick=function(){
+                    document.querySelectorAll('.multi-card').forEach(function(c){c.style.borderColor='';});
+                    card.style.borderColor='#0f0';
+                    chTitle.textContent=ch.name;chTitle.style.display='block';
+                    cur={r:-2,i:ci};startHls(ch.single);
+                    setSelectedAndDim(card);
+                };
+                box.appendChild(card);
+            } else {
+                var b=document.createElement('button');
+                b.className='ch';
+                if(ch.isNew)b.classList.add('new-ch');
+                b.textContent=ch.name;
+                b.onclick=function(){
+                    document.querySelectorAll('.ch').forEach(function(x){x.classList.remove('on');});
+                    b.classList.add('on');
+                    chTitle.textContent=ch.name;chTitle.style.display='block';
+                    cur={r:-2,i:ci};startHls(ch.single);
+                    setSelectedAndDim(b);
+                };
+                box.appendChild(b);
+            }
             return;
         }
         if(ch.levels){
-            var b=document.createElement('button');
-            b.className='ch';
-            b.textContent=ch.name;
-            b.onclick=function(){
-                document.querySelectorAll('.ch').forEach(function(x){x.classList.remove('on');});
-                b.classList.add('on');
-                chTitle.textContent=ch.name;chTitle.style.display='block';
-                cur={r:-2,i:ci};startHls({levels:ch.levels});
-            };
-            box.appendChild(b);
+            if(ch.logo){
+                var card=document.createElement('div');card.className='multi-card '+sc;
+                if(ch.isNew)card.classList.add('new-ch');
+                var wrap=document.createElement('div');wrap.className='lw';
+                var img=document.createElement('img');img.src=ch.logo;img.alt=ch.name;img.onerror=function(){this.style.display='none';};
+                wrap.appendChild(img);card.appendChild(wrap);
+                var nm=document.createElement('div');nm.className='ch-name';nm.textContent=ch.name;card.appendChild(nm);
+                card.onclick=function(){
+                    document.querySelectorAll('.multi-card').forEach(function(c){c.style.borderColor='';});
+                    card.style.borderColor='#0f0';
+                    chTitle.textContent=ch.name;chTitle.style.display='block';
+                    cur={r:-2,i:ci};startHls({levels:ch.levels});
+                    setSelectedAndDim(card);
+                };
+                box.appendChild(card);
+            } else {
+                var b=document.createElement('button');
+                b.className='ch';
+                if(ch.isNew)b.classList.add('new-ch');
+                b.textContent=ch.name;
+                b.onclick=function(){
+                    document.querySelectorAll('.ch').forEach(function(x){x.classList.remove('on');});
+                    b.classList.add('on');
+                    chTitle.textContent=ch.name;chTitle.style.display='block';
+                    cur={r:-2,i:ci};startHls({levels:ch.levels});
+                    setSelectedAndDim(b);
+                };
+                box.appendChild(b);
+            }
             return;
         }
         var card=document.createElement('div');card.className='multi-card '+sc;
@@ -322,6 +357,7 @@ function buildMultiRow(data,boxId,sc){
                 btn.classList.add('on');
                 chTitle.textContent=ch.name+' '+q.lbl;chTitle.style.display='block';
                 cur={r:-2,i:ci};startHls(ch[q.key]);
+                setSelectedAndDim(card);
             };
             qRow.appendChild(btn);
         });
@@ -352,11 +388,14 @@ function load(ri,ci){
     if(retryT){clearTimeout(retryT);retryT=null;}
     document.querySelectorAll('.ch').forEach(function(b){b.classList.remove('on');});
     document.querySelectorAll('.q-row button').forEach(function(b){b.classList.remove('on');});
-    var btn=document.getElementById('ch-'+ri+'-'+ci);if(btn)btn.classList.add('on');
+    var btn=document.getElementById('ch-'+ri+'-'+ci);if(btn){btn.classList.add('on');setSelectedAndDim(btn);}
     var ch=ROWS[ri].channels[ci];
     chTitle.textContent=ch.n;chTitle.style.display='block';
     var t=ch.t||'hls';
-    if(t==='ts'){startHls(ch.u);return;}
+    if(t==='ts'){
+        openExternalPlayer(ch.u);
+        return;
+    }
     if(t==='iframe'){
         if(hls){hls.destroy();hls=null;}
         vid.style.display='none';ifw.style.display='block';pw.classList.add('playing');
@@ -365,6 +404,48 @@ function load(ri,ci){
         qm.innerHTML='';return;
     }
     startHls(ch.u);
+}
+function openExternalPlayer(url) {
+    var cleanUrl = url.replace(/^https?:\/\//, '');
+    var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isIOS) {
+        var vlcUrl = 'vlc://' + cleanUrl;
+        var win = window.open(vlcUrl, '_blank', 'noopener');
+        setTimeout(function() {
+            if (!document.hidden) {
+                var appStoreUrl = 'https://apps.apple.com/us/app/vlc-media-player/id650377962';
+                var installWin = window.open(appStoreUrl, '_blank', 'noopener');
+                if (!installWin) {
+                    var a = document.createElement('a');
+                    a.href = appStoreUrl;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            }
+        }, 2000);
+    } else {
+        var packageName = 'info.t4w.vp';
+        var intentUrl = 'intent://' + cleanUrl + '#Intent;package=' + packageName + ';type=video/*;end';
+        var win = window.open(intentUrl, '_blank', 'noopener');
+        setTimeout(function() {
+            if (!document.hidden) {
+                var playStoreUrl = 'https://play.google.com/store/apps/details?id=' + packageName;
+                var installWin = window.open(playStoreUrl, '_blank', 'noopener');
+                if (!installWin) {
+                    var a = document.createElement('a');
+                    a.href = playStoreUrl;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            }
+        }, 2000);
+    }
 }
 function buildQ(){qm.innerHTML='';if(!hls)return;var lvls=hls.levels;if(!lvls||!lvls.length)return;var a=document.createElement('button');a.textContent='تلقائي';a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};qm.appendChild(a);lvls.forEach(function(lv,i){var b=document.createElement('button');b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};qm.appendChild(b);});updateQActive();}
 function updateQActive(){if(!hls)return;qm.querySelectorAll('button').forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
