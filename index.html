@@ -90,7 +90,7 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 <div id="vw"><button class="cb" id="mute-btn" onclick="toggleMute()">&#x1F50A;</button><input type="range" id="vs" min="0" max="1" step=".05" value="1" oninput="setVolume(this.value)"></div>
 <button class="cb" onclick="skip(-10)">&#x23EA;</button>
 <button class="cb" onclick="skip(10)">&#x23E9;</button>
-<button class="cb" id="fit-btn" onclick="cycleAspect()">&#x2195; عادي</button>
+<button class="cb" id="fit-btn" onclick="cycleAspect()">↕ عادي</button>
 <button class="cb" id="spd-btn" onclick="toggleSpeed()">&#x1F4E1;</button>
 <button class="cb" onclick="doFullscreen()">&#x26F6;</button>
 <div id="fg"></div>
@@ -118,11 +118,13 @@ function getProxyUrl(url) {
     if (!url) return '';
     if (url.includes('auratvdz.lovable.app/api/public/stream')) return url;
     if (url.includes('my-proxy.alameeeretv.workers.dev')) return url;
-    var isTsUrl = url.split('?')[0].endsWith('.ts');
+    // تحويل IP مباشر إلى nip.io لتجاوز Cloudflare Error 1003
+    var safeUrl = url.replace(/http:\/\/(\d+\.\d+\.\d+\.\d+)/g, 'http://$1.nip.io');
+    var isTsUrl = safeUrl.split('?')[0].endsWith('.ts');
     if (isTsUrl) {
-        return TS_PROXY + '?url=' + encodeURIComponent(url) + '&ua=' + encodeURIComponent(TS_UA);
+        return TS_PROXY + '?url=' + encodeURIComponent(safeUrl) + '&ua=' + encodeURIComponent(TS_UA);
     }
-    return 'https://auratvdz.lovable.app/api/public/stream?url=' + encodeURIComponent(url);
+    return 'https://auratvdz.lovable.app/api/public/stream?url=' + encodeURIComponent(safeUrl);
 }
 
 var ROWS=[
