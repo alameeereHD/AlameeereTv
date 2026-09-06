@@ -72,11 +72,72 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 #err-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#a00;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:9999}
 .new-ch{border-color:#fff !important;box-shadow:0 0 12px rgba(255,255,255,.7)}
 .new-ch:hover{box-shadow:0 0 20px rgba(255,255,255,1)}
+
+/* ===== مربع الحوار الخارجي ===== */
+#ext-dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:10000;opacity:0;transition:opacity .3s}
+#ext-dialog-overlay.show{display:flex;opacity:1}
+#ext-dialog{background:#111;border:1px solid #333;border-radius:20px;width:90%;max-width:340px;padding:0;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.9);transform:scale(.9);transition:transform .3s}
+#ext-dialog-overlay.show #ext-dialog{transform:scale(1)}
+#ext-dialog-header{background:#0a0a0a;padding:18px 20px 12px;text-align:center;border-bottom:1px solid #222}
+#ext-dialog-header .icon{font-size:42px;margin-bottom:6px;display:block}
+#ext-dialog-header h3{color:#fff;font-size:17px;font-weight:700;margin:0}
+#ext-dialog-header p{color:#aaa;font-size:12px;margin-top:4px}
+#ext-dialog-body{padding:18px 20px}
+#ext-dialog-body .info-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 12px;background:#0a0a0a;border-radius:10px;border:1px solid #1a1a1a}
+#ext-dialog-body .info-row .icon-small{font-size:20px}
+#ext-dialog-body .info-row .info-text{flex:1}
+#ext-dialog-body .info-row .info-text .label{color:#888;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+#ext-dialog-body .info-row .info-text .value{color:#fff;font-size:13px;font-weight:600;margin-top:1px}
+#ext-dialog-body .message{color:#ccc;font-size:13px;line-height:1.7;text-align:center;margin:8px 0 4px}
+#ext-dialog-body .message strong{color:#0f0}
+#ext-dialog-footer{display:flex;padding:0 20px 20px;gap:10px}
+#ext-dialog-footer button{flex:1;padding:12px 0;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s}
+#ext-btn-cancel{background:#1a1a1a;color:#999}
+#ext-btn-cancel:hover{background:#252525;color:#fff}
+#ext-btn-confirm{background:#0066ff;color:#fff;box-shadow:0 4px 15px rgba(0,102,255,.3)}
+#ext-btn-confirm:hover{background:#1a75ff;transform:translateY(-1px)}
+#ext-btn-confirm:active{transform:translateY(0)}
 </style>
 </head>
 <body>
 <div id="app">
 <div id="err-toast"></div>
+
+<!-- مربع الحوار الخارجي -->
+<div id="ext-dialog-overlay">
+  <div id="ext-dialog">
+    <div id="ext-dialog-header">
+      <span class="icon" id="ext-dialog-icon">📺</span>
+      <h3 id="ext-dialog-title">مشغل خارجي مطلوب</h3>
+      <p id="ext-dialog-subtitle">هذه القناة تحتاج مشغلاً خارجياً</p>
+    </div>
+    <div id="ext-dialog-body">
+      <div class="info-row">
+        <span class="icon-small" id="ext-player-icon">🎬</span>
+        <div class="info-text">
+          <div class="label">المشغل المطلوب</div>
+          <div class="value" id="ext-player-name">VLC Media Player</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <span class="icon-small">📱</span>
+        <div class="info-text">
+          <div class="label">الجهاز</div>
+          <div class="value" id="ext-device-name">iPhone / iPad</div>
+        </div>
+      </div>
+      <p class="message" id="ext-dialog-msg">
+        لكي تعمل هذه القناة، يجب تثبيت <strong>المشغل الخارجي</strong> على جهازك.<br>
+        اضغط "موافق" لفتح المشغل أو تنزيله من المتجر.
+      </p>
+    </div>
+    <div id="ext-dialog-footer">
+      <button id="ext-btn-cancel" onclick="closeExtDialog()">إلغاء</button>
+      <button id="ext-btn-confirm" onclick="confirmExtDialog()">موافق</button>
+    </div>
+  </div>
+</div>
+
 <div id="player-wrap">
 <video id="vid" class="fc" playsinline webkit-playsinline></video>
 <div id="brand-overlay"><span>AlameeereTv</span></div>
@@ -199,6 +260,7 @@ var EVT=[
 {lbl:'2',url:'https://v4.sryyyeexxzzzs.app/live/v/event1/720p50/index.m3u8'},
 {lbl:'3',url:'https://v4.sryyyeexxzzzs.app/live/event1/playlist.m3u8'}
 ];
+
 var hls=null,cur={r:-1,i:-1},retryT=null,curEvtUrl=null;
 var vid=document.getElementById('vid'),ifw=document.getElementById('iframe-wrap'),ifp=document.getElementById('iframe-player');
 var qm=document.getElementById('qm'),qBtn=document.getElementById('q-btn'),loader=document.getElementById('loader');
@@ -206,24 +268,130 @@ var chTitle=document.getElementById('ch-title'),dblHint=document.getElementById(
 var swInd=document.getElementById('swipe-ind'),siIcon=document.getElementById('si-icon'),siBar=document.getElementById('si-bar'),siLabel=document.getElementById('si-label');
 var brightL=document.getElementById('brightness-layer'),pw=document.getElementById('player-wrap'),chRows=document.getElementById('ch-rows');
 var fitBtn=document.getElementById('fit-btn'),speedBadge=document.getElementById('speed-badge'),spdBtn=document.getElementById('spd-btn');
+
 var brightness=parseFloat(localStorage.getItem('brightness')||'0');brightL.style.opacity=brightness;
 var ASPECTS=[{cls:'fc',lbl:'↕ عادي'},{cls:'fv',lbl:'⛶ ملء'},{cls:'ff',lbl:'↔ مفيد'}];
 var aIdx=parseInt(localStorage.getItem('aIdx')||'0');
 function applyAspect(i){vid.className=ASPECTS[i].cls;fitBtn.textContent=ASPECTS[i].lbl;fitBtn.classList.toggle('on',i!==0);localStorage.setItem('aIdx',i);}
 function cycleAspect(){aIdx=(aIdx+1)%3;applyAspect(aIdx);}applyAspect(aIdx);
+
 function doFullscreen(){if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);return;}var el=document.documentElement;Promise.resolve(el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():null).then(function(){if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){});setFUI(true);}).catch(function(){setFUI(true);});}
 function setFUI(f){chRows.style.display=f?'none':'flex';if(!f&&screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}
 document.addEventListener('fullscreenchange',function(){setFUI(!!document.fullscreenElement);});
 document.addEventListener('webkitfullscreenchange',function(){setFUI(!!(document.fullscreenElement||document.webkitFullscreenElement));});
+
 var speedOn=localStorage.getItem('speedOn')!=='0',isTesting=false,spInt=null,uIdx=0;
 var TU=['https://httpbin.org/bytes/200000','https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'];
 function runSpeedTest(){if(isTesting)return;isTesting=true;speedBadge.textContent='📡 ...';var u=TU[uIdx%TU.length]+'?r='+Date.now(),t0=Date.now();fetch(u,{cache:'no-store'}).then(function(r){return r.blob();}).then(function(b){showSpeed(((b.size||200000)*8)/((Date.now()-t0)/1000));isTesting=false;}).catch(function(){uIdx++;isTesting=false;});}
 function showSpeed(b){speedBadge.textContent=b>=1e6?'📡 '+(b/1e6).toFixed(1)+' Mbps':'📡 '+Math.round(b/1000)+' Kbps';speedBadge.style.color=b>=1e7?'#0f0':b>=2e6?'#ff0':b>=5e5?'#f80':'#f44';}
 function applySpeedVis(){speedBadge.classList.toggle('hide',!speedOn);spdBtn.classList.toggle('on',speedOn);if(speedOn){if(!spInt){runSpeedTest();spInt=setInterval(runSpeedTest,15000);}}else{if(spInt){clearInterval(spInt);spInt=null;}}}
 function toggleSpeed(){speedOn=!speedOn;localStorage.setItem('speedOn',speedOn?'1':'0');applySpeedVis();}applySpeedVis();
+
 function showLoader(){loader.style.display='flex';}function hideLoader(){loader.style.display='none';}
 function toast(msg){var t=document.getElementById('err-toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},4000);}
 function reloadCurrentStream(){if(curEvtUrl)startHls(curEvtUrl);else if(cur.r>=0)load(cur.r,cur.i);}
+
+/* ===== مربع الحوار الخارجي ===== */
+var extDialogOverlay = document.getElementById('ext-dialog-overlay');
+var extDialogTitle = document.getElementById('ext-dialog-title');
+var extDialogSubtitle = document.getElementById('ext-dialog-subtitle');
+var extDialogMsg = document.getElementById('ext-dialog-msg');
+var extPlayerName = document.getElementById('ext-player-name');
+var extDeviceName = document.getElementById('ext-device-name');
+var extPlayerIcon = document.getElementById('ext-player-icon');
+var extDialogIcon = document.getElementById('ext-dialog-icon');
+var extPendingUrl = null;
+var extIsIOS = false;
+var extPendingChName = '';
+
+function openExtDialog(url, chName) {
+    extPendingUrl = url;
+    extPendingChName = chName || '';
+    extIsIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    extDialogTitle.textContent = 'مشغل خارجي مطلوب';
+    extDialogSubtitle.textContent = chName || 'هذه القناة تحتاج مشغلاً خارجياً';
+    extDialogIcon.textContent = '📺';
+
+    if (extIsIOS) {
+        extPlayerName.textContent = 'VLC Media Player';
+        extPlayerIcon.textContent = '🍎';
+        extDeviceName.textContent = 'iPhone / iPad';
+        extDialogMsg.innerHTML = 'لكي تعمل قناة <strong>"' + (chName || 'هذه') + '"</strong>، يجب تثبيت <strong>VLC</strong> على جهازك.<br>اضغط "موافق" لفتح المشغل أو تنزيله من App Store.';
+    } else {
+        extPlayerName.textContent = 'VP Player (أو VLC)';
+        extPlayerIcon.textContent = '🤖';
+        extDeviceName.textContent = 'Android';
+        extDialogMsg.innerHTML = 'لكي تعمل قناة <strong>"' + (chName || 'هذه') + '"</strong>، يجب تثبيت <strong>المشغل الخارجي</strong> على جهازك.<br>اضغط "موافق" لفتح المشغل أو تنزيله من Google Play.';
+    }
+
+    extDialogOverlay.classList.add('show');
+}
+
+function closeExtDialog() {
+    extDialogOverlay.classList.remove('show');
+    extPendingUrl = null;
+    extPendingChName = '';
+}
+
+function confirmExtDialog() {
+    if (!extPendingUrl) {
+        closeExtDialog();
+        return;
+    }
+
+    var url = extPendingUrl;
+    var cleanUrl = url.replace(/^https?:\/\//, '');
+    closeExtDialog();
+
+    if (extIsIOS) {
+        // iOS - فتح VLC
+        var vlcUrl = 'vlc://' + cleanUrl;
+        var win = window.open(vlcUrl, '_blank', 'noopener');
+        setTimeout(function() {
+            if (!document.hidden) {
+                var appStoreUrl = 'https://apps.apple.com/sa/app/vlc-media-player/id650377962';
+                var installWin = window.open(appStoreUrl, '_blank', 'noopener');
+                if (!installWin) {
+                    var a = document.createElement('a');
+                    a.href = appStoreUrl;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            }
+        }, 2000);
+    } else {
+        // Android - فتح Intent
+        var packageName = 'info.t4w.vp';
+        var intentUrl = 'intent://' + cleanUrl + '#Intent;package=' + packageName + ';type=video/*;end';
+        var win = window.open(intentUrl, '_blank', 'noopener');
+        setTimeout(function() {
+            if (!document.hidden) {
+                var playStoreUrl = 'https://play.google.com/store/apps/details?id=info.t4w.vp';
+                var installWin = window.open(playStoreUrl, '_blank', 'noopener');
+                if (!installWin) {
+                    var a = document.createElement('a');
+                    a.href = playStoreUrl;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            }
+        }, 2000);
+    }
+}
+
+// إغلاق المربع عند الضغط خارجها
+extDialogOverlay.addEventListener('click', function(e) {
+    if (e.target === extDialogOverlay) {
+        closeExtDialog();
+    }
+});
 
 function createMasterPlaylist(levels) {
     var master = '#EXTM3U\n#EXT-X-VERSION:3\n';
@@ -380,7 +548,7 @@ function load(ri,ci){
     chTitle.textContent=ch.n;chTitle.style.display='block';
     var t=ch.t||'hls';
     if(t==='ts'){
-        openExternalPlayer(ch.u);
+        openExtDialog(ch.u, ch.n);
         return;
     }
     if(t==='iframe'){
@@ -392,48 +560,7 @@ function load(ri,ci){
     }
     startHls(ch.u);
 }
-function openExternalPlayer(url) {
-    var cleanUrl = url.replace(/^https?:\/\//, '');
-    var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (isIOS) {
-        var vlcUrl = 'vlc://' + cleanUrl;
-        var win = window.open(vlcUrl, '_blank', 'noopener');
-        setTimeout(function() {
-            if (!document.hidden) {
-                var appStoreUrl = 'https://apps.apple.com/us/app/vlc-media-player/id650377962';
-                var installWin = window.open(appStoreUrl, '_blank', 'noopener');
-                if (!installWin) {
-                    var a = document.createElement('a');
-                    a.href = appStoreUrl;
-                    a.target = '_blank';
-                    a.rel = 'noopener';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }
-            }
-        }, 2000);
-    } else {
-        var packageName = 'info.t4w.vp';
-        var intentUrl = 'intent://' + cleanUrl + '#Intent;package=' + packageName + ';type=video/*;end';
-        var win = window.open(intentUrl, '_blank', 'noopener');
-        setTimeout(function() {
-            if (!document.hidden) {
-                var playStoreUrl = 'https://play.google.com/store/apps/details?id=' + packageName;
-                var installWin = window.open(playStoreUrl, '_blank', 'noopener');
-                if (!installWin) {
-                    var a = document.createElement('a');
-                    a.href = playStoreUrl;
-                    a.target = '_blank';
-                    a.rel = 'noopener';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }
-            }
-        }, 2000);
-    }
-}
+
 function buildQ(){qm.innerHTML='';if(!hls)return;var lvls=hls.levels;if(!lvls||!lvls.length)return;var a=document.createElement('button');a.textContent='تلقائي';a.onclick=function(){hls.currentLevel=-1;hls.autoLevelEnabled=true;qBtn.classList.remove('manual');updateQActive();closeQ();};qm.appendChild(a);lvls.forEach(function(lv,i){var b=document.createElement('button');b.textContent=lv.height?lv.height+'p':Math.round(lv.bitrate/1000)+'k';b.onclick=function(){hls.autoLevelEnabled=false;hls.currentLevel=i;qBtn.classList.add('manual');updateQActive();closeQ();};qm.appendChild(b);});updateQActive();}
 function updateQActive(){if(!hls)return;qm.querySelectorAll('button').forEach(function(b,i){if(i===0)b.classList.toggle('active',hls.currentLevel===-1);else b.classList.toggle('active',hls.currentLevel===(i-1));});}
 function closeQ(){qm.classList.remove('open');}
@@ -446,7 +573,7 @@ var swT=null,swSV=0,swTm=null,isSwiping=false,tyS=0;
 function showSwipe(type,val){clearTimeout(swTm);if(type==='vol'){siIcon.textContent='🔊';siLabel.textContent='الصوت '+Math.round(val*100)+'%';siBar.style.width=(val*100)+'%';siBar.style.background='#0f0';}else{siIcon.textContent='☀️';siLabel.textContent='الإضاءة '+Math.round((1-val/.85)*100)+'%';siBar.style.width=((1-val/.85)*100)+'%';siBar.style.background='#fbbf24';}swInd.style.display='flex';swTm=setTimeout(function(){swInd.style.display='none';},1200);}
 var lTap=0,dblT=null,dblHT=null,hCtrl=null;
 function showDH(txt){dblTxt.textContent=txt;dblHint.classList.add('show');clearTimeout(dblHT);dblHT=setTimeout(function(){dblHint.classList.remove('show');},1500);}
-document.addEventListener('touchend',function(e){if(e.target.closest('#controls-overlay')||e.target.closest('#ch-rows')||e.target.closest('#qm')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;if(isSwiping)return;var now=Date.now();if(now-lTap<400&&lTap>0){lTap=0;clearTimeout(dblT);dblT=null;doFullscreen();showDH('⛶ شاشة كاملة');}else{lTap=now;clearTimeout(dblT);if(e.target.closest('#player-wrap')){dblT=setTimeout(function(){lTap=0;pw.classList.add('show-ctrl');clearTimeout(hCtrl);hCtrl=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);},400);}}},{passive:true});
+document.addEventListener('touchend',function(e){if(e.target.closest('#controls-overlay')||e.target.closest('#ch-rows')||e.target.closest('#qm')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap')||e.target.closest('#ext-dialog'))return;if(isSwiping)return;var now=Date.now();if(now-lTap<400&&lTap>0){lTap=0;clearTimeout(dblT);dblT=null;doFullscreen();showDH('⛶ شاشة كاملة');}else{lTap=now;clearTimeout(dblT);if(e.target.closest('#player-wrap')){dblT=setTimeout(function(){lTap=0;pw.classList.add('show-ctrl');clearTimeout(hCtrl);hCtrl=setTimeout(function(){pw.classList.remove('show-ctrl');},3000);},400);}}},{passive:true});
 pw.addEventListener('touchstart',function(e){if(e.target.closest('#controls-overlay')||e.target.closest('#loader')||e.target.closest('#speed-badge')||e.target.closest('#iframe-wrap'))return;var t=e.touches[0];tyS=t.clientY;isSwiping=false;var r=pw.getBoundingClientRect();swT=(t.clientX-r.left)>(r.width/2)?'vol':'brightness';swSV=swT==='vol'?vid.volume:brightness;},{passive:true});
 pw.addEventListener('touchmove',function(e){if(!swT||e.target.closest('#controls-overlay')||e.target.closest('#iframe-wrap'))return;var t=e.touches[0],dy=tyS-t.clientY;if(!isSwiping&&Math.abs(dy)>12)isSwiping=true;if(!isSwiping)return;var delta=dy/pw.getBoundingClientRect().height;if(swT==='vol'){var v=Math.max(0,Math.min(1,swSV+delta));setVolume(v);showSwipe('vol',v);}else{var b=Math.max(0,Math.min(.85,swSV-delta));brightness=b;brightL.style.opacity=b;localStorage.setItem('brightness',b);showSwipe('brightness',b);}},{passive:true});
 pw.addEventListener('touchend',function(){swT=null;setTimeout(function(){isSwiping=false;},50);},{passive:true});
