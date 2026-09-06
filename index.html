@@ -118,7 +118,7 @@ function getProxyUrl(url) {
     if (!url) return '';
     if (url.includes('auratvdz.lovable.app/api/public/stream')) return url;
     if (url.includes('my-proxy.alameeeretv.workers.dev')) return url;
-    // تحويل IP مباشر إلى nip.io لتجاوز Cloudflare Error 1003
+    // تحويل IP مباشر إلى nip.io لتجاوز حظر Cloudflare Error 1003
     var safeUrl = url.replace(/http:\/\/(\d+\.\d+\.\d+\.\d+)/g, 'http://$1.nip.io');
     var isTsUrl = safeUrl.split('?')[0].endsWith('.ts');
     if (isTsUrl) {
