@@ -1,349 +1,300 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alameeere TV</title>
-    <!-- مكتبة HLS.js للتشغيل السريع للبث -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تطبيق البث المباشر</title>
+  <!-- مكتبة HLS.js للبث المباشر بأقصى سرعة -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0f172a;
+      color: #ffffff;
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* المشغل الداخلي */
+    .player-section {
+      width: 100%;
+      background-color: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 25px;
+      aspect-ratio: 16 / 9;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
 
-    <style>
-        /* ================= ==========================================
-           1. التصميم والتنسيق الخارجي (تأثير السيراميك اللامع)
-           ================= ========================================== */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
+    /* أسطر القنوات */
+    .section-title {
+      font-size: 1.4rem;
+      margin: 20px 0 10px 0;
+      color: #38bdf8;
+      border-bottom: 2px solid #1e293b;
+      padding-bottom: 5px;
+    }
+    .channels-row {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 15px;
+      scroll-behavior: smooth;
+    }
+    .channels-row::-webkit-scrollbar {
+      height: 6px;
+    }
+    .channels-row::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
 
-        body {
-            background-color: #0f172a;
-            color: #ffffff;
-            min-height: 100vh;
-            padding: 15px;
-            /* خلفية سيراميك ممتدة ونظيفة */
-            background-image: 
-                linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 40%, rgba(0, 0, 0, 0.3) 100%);
-            background-attachment: fixed;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* حاوية المشغل الأساسي بتأثير السيراميك المصقول */
-        .player-wrapper {
-            position: relative;
-            width: 100%;
-            background: #000;
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 
-                inset 0px 1px 2px 0px rgba(255, 255, 255, 0.6),
-                0 8px 24px rgba(0, 0, 0, 0.4);
-        }
-
-        video {
-            width: 100%;
-            max-height: 500px;
-            display: block;
-            object-fit: contain;
-        }
-
-        /* شبكة عرض القنوات */
-        .channels-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 15px;
-        }
-
-        /* كروت القنوات - لمس وبصمة سيراميك */
-        .channel-card {
-            position: relative;
-            background: rgba(30, 41, 59, 0.7);
-            border-radius: 12px;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.4);
-            background-image: 
-                linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(0, 0, 0, 0.2) 100%);
-            box-shadow: 
-                inset 0px 1px 1px 0px rgba(255, 255, 255, 0.7),
-                0 4px 12px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(8px);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .channel-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 40%;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
-            pointer-events: none;
-        }
-
-        .channel-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 
-                inset 0px 1px 2px 0px rgba(255, 255, 255, 0.9),
-                0 6px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        /* تعبئة إطار الشعار بدون هوامش وبنفس الأبعاد الموحدة */
-        .logo-box {
-            width: 100%;
-            height: 75px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border-radius: 8px;
-            margin-bottom: 6px;
-            padding: 0 !important;
-        }
-
-        .logo-box img {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        .channel-title {
-            font-size: 12px;
-            font-weight: bold;
-            text-align: center;
-            color: #f8fafc;
-            margin-bottom: 6px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-        }
-
-        /* أزرار الجودات الفرعية (SD / HD / FHD) */
-        .quality-buttons {
-            display: flex;
-            gap: 4px;
-            width: 100%;
-            justify-content: center;
-            z-index: 2;
-        }
-
-        .btn-q {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            color: #fff;
-            padding: 3px 6px;
-            font-size: 10px;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .btn-q:hover {
-            background: rgba(255, 255, 255, 0.45);
-            transform: scale(1.05);
-        }
-    </style>
+    /* كروت القنوات */
+    .channel-card {
+      min-width: 140px;
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      border: 1px solid #334155;
+    }
+    .channel-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #f8fafc;
+    }
+    
+    /* الأزرار */
+    .btn-group {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background-color: #0284c7;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: background 0.2s, transform 0.1s;
+      width: 100%;
+    }
+    .btn:hover {
+      background-color: #0369a1;
+    }
+    .btn:active {
+      transform: scale(0.96);
+    }
+    .btn-quality {
+      flex: 1;
+      padding: 4px 6px;
+      font-size: 0.75rem;
+      background-color: #475569;
+    }
+    .btn-quality:hover {
+      background-color: #0284c7;
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- المشغل الداخلي الأساسي -->
-    <div class="player-wrapper">
-        <video id="main-player" controls autoplay muted playsinline></video>
+  <div class="container">
+    <!-- المشغل الداخلي -->
+    <div class="player-section">
+      <video id="internalPlayer" controls autoplay muted></video>
     </div>
 
-    <!-- شبكة عرض القنوات -->
-    <div id="channels-container" class="channels-grid"></div>
-</div>
+    <!-- أسطر القنوات -->
+    <div id="content"></div>
+  </div>
 
-<script>
-    // ================= ==========================================
-    // 2. إعدادات البث والمشغل الأساسي والخارجي
-    // ================= ==========================================
-    let hls = null;
-    let isLaunchingExternal = false;
+  <script>
+    // --- 1. إعداد المشغل الداخلي للسرعة الخاطفة ---
+    const videoElement = document.getElementById('internalPlayer');
+    let hlsInstance = null;
 
-    // تشغيل البث بالمشغل الأساسي فوراً بأسرع خفّة وأدنى جودة (Fast Auto Quality)
-    function playInternalStream(streamUrl) {
-        const videoElement = document.getElementById('main-player');
-
-        if (Hls.isSupported()) {
-            if (hls) hls.destroy();
-
-            hls = new Hls({
-                enableWorker: true,
-                lowLatencyMode: true,
-                backBufferLength: 0,
-                maxBufferLength: 2,
-                maxMaxBufferLength: 4,
-                startLevel: 0 // البدء بأقل جودة فوراً لأسرع فتح للبث
-            });
-
-            hls.loadSource(streamUrl);
-            hls.attachMedia(videoElement);
-
-            hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-                if (data.levels && data.levels.length > 0) {
-                    hls.currentLevel = 0;
-                }
-                videoElement.play().catch(e => console.log("Autoplay blocked:", e));
-            });
-
-        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-            videoElement.src = streamUrl;
-            videoElement.play();
+    function playInternalStream(url) {
+      if (Hls.isSupported()) {
+        if (hlsInstance) {
+          hlsInstance.destroy(); // تنظيف البث السابق
         }
+        
+        hlsInstance = new Hls({
+          startLevel: 0,           // البدء فوراً بأدنى جودة لسرعة التشغيل
+          maxBufferLength: 1,      // تقليل التخزين المؤقت للبدء الخاطف
+          maxMaxBufferLength: 2,
+          maxBufferSize: 1 * 1024 * 1024, // 1 ميجابايت فقط للتخزين المؤقت
+          liveSyncDurationCount: 1,
+          enableWorker: true
+        });
+
+        hlsInstance.loadSource(url);
+        hlsInstance.attachMedia(videoElement);
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
+          videoElement.play();
+        });
+      } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+        // دعم متصفحات Safari / iOS
+        videoElement.src = url;
+        videoElement.addEventListener('loadedmetadata', function () {
+          videoElement.play();
+        });
+      }
     }
 
-    // التوجيه للمشغل الخارجي مباشرة بدون متصفح وتفادي النقر المزدوج
-    function launchExternalPlayer(streamUrl) {
-        if (isLaunchingExternal) return;
-        isLaunchingExternal = true;
+    // --- 2. منع النقر المزدوج عند فتح المشغل الخارجي ---
+    let isOpeningExternal = false;
 
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        const encodedUrl = encodeURIComponent(streamUrl);
+    function openExternalPlayer(url) {
+      if (isOpeningExternal) return; // حماية ضد النقر المزدوج السريع
+      isOpeningExternal = true;
 
-        if (/android/i.test(userAgent)) {
-            // أندرويد: Url Video Player المباشر + Fallback للمتجر
-            const intentUrl = `intent:${streamUrl}#Intent;package=info.t4w.vp;action=android.intent.action.VIEW;type=video/*;S.browser_fallback_url=https://play.google.com/store/apps/details?id=info.t4w.vp;end`;
-            window.location.href = intentUrl;
-        } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-            // آيفون: VLC المباشر + Fallback للمتجر
-            const vlcUrl = `vlc-x-callback://x-callback-url/stream?url=${encodedUrl}`;
-            window.location.href = vlcUrl;
+      // توجيه للمشغل الخارجي (intent / app scheme)
+      window.location.href = url;
 
-            setTimeout(() => {
-                window.location.href = "https://apps.apple.com/us/app/vlc-media-player/id650377962";
-            }, 2000);
-        } else {
-            window.open(streamUrl, '_blank');
-        }
-
-        setTimeout(() => {
-            isLaunchingExternal = false;
-        }, 1500);
+      // إعادة تفعيل الإمكانية بعد ثانية واحدة
+      setTimeout(() => {
+        isOpeningExternal = false;
+      }, 1000);
     }
 
-    // دالة تحديد التوجيه والجودة
-    function playChannel(streamUrl, forceExternal) {
-        if (forceExternal) {
-            launchExternalPlayer(streamUrl);
-        } else {
-            playInternalStream(streamUrl);
-        }
-    }
-
-    // ================= ==========================================
-    // 3. قاعدة بيانات القنوات والمنطق المحدد للتشغيل
-    // ================= ==========================================
-    
-    // قائمة القنوات المجهزة (مقسمة ومصنفة)
-    const channelsData = [
-        // beIN Sports (1 إلى 5 مشغل أساسي، الباقي مشغل خارجي بجودات)
-        { id: 'bein-1', group: 'bein', index: 1, name: 'beIN Sports 1', logo: 'https://via.placeholder.com/150/0000FF/888888?text=beIN1', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'bein-2', group: 'bein', index: 2, name: 'beIN Sports 2', logo: 'https://via.placeholder.com/150/0000FF/888888?text=beIN2', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'bein-3', group: 'bein', index: 3, name: 'beIN Sports 3', logo: 'https://via.placeholder.com/150/0000FF/888888?text=beIN3', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'bein-4', group: 'bein', index: 4, name: 'beIN Sports 4', logo: 'https://via.placeholder.com/150/0000FF/888888?text=beIN4', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'bein-5', group: 'bein', index: 5, name: 'beIN Sports 5', logo: 'https://via.placeholder.com/150/0000FF/888888?text=beIN5', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'bein-6', group: 'bein', index: 6, name: 'beIN Sports 6', logo: 'https://via.placeholder.com/150/0000FF/888888?text=beIN6', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', qualities: { sd: 'https://stream.url/sd.m3u8', hd: 'https://stream.url/hd.m3u8', fhd: 'https://stream.url/fhd.m3u8' } },
-        { id: 'bein-news', group: 'bein', index: 7, name: 'beIN News', logo: 'https://via.placeholder.com/150/0000FF/888888?text=beIN+News', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', qualities: { sd: 'https://stream.url/sd.m3u8', hd: 'https://stream.url/hd.m3u8' } },
-
-        // قنوات ألوان (أول 3 مشغل أساسي، الباقي مشغل خارجي)
-        { id: 'alwan-1', group: 'alwan', index: 1, name: 'ألوان 1', logo: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Alwan1', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'alwan-2', group: 'alwan', index: 2, name: 'ألوان 2', logo: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Alwan2', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'alwan-3', group: 'alwan', index: 3, name: 'ألوان 3', logo: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Alwan3', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'alwan-4', group: 'alwan', index: 4, name: 'ألوان 4', logo: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Alwan4', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', qualities: { sd: 'https://stream.url/sd.m3u8', hd: 'https://stream.url/hd.m3u8' } },
-
-        // قنوات منصة ثمانية (أول 3 مشغل أساسي، الباقي مشغل خارجي بجودات SD/HD)
-        { id: 'eight-1', group: 'eight', index: 1, name: 'ثمانية 1', logo: 'https://via.placeholder.com/150/008000/FFFFFF?text=8-1', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'eight-2', group: 'eight', index: 2, name: 'ثمانية 2', logo: 'https://via.placeholder.com/150/008000/FFFFFF?text=8-2', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'eight-3', group: 'eight', index: 3, name: 'ثمانية 3', logo: 'https://via.placeholder.com/150/008000/FFFFFF?text=8-3', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-        { id: 'eight-4', group: 'eight', index: 4, name: 'ثمانية 4', logo: 'https://via.placeholder.com/150/008000/FFFFFF?text=8-4', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', qualities: { sd: 'https://stream.url/sd.m3u8', hd: 'https://stream.url/hd.m3u8' } },
-
-        // قنوات الفجر (جميعها تعمل بمشغل خارجي)
-        { id: 'fajr-1', group: 'alfajr', index: 1, name: 'الفجر 1', logo: 'https://via.placeholder.com/150/FFFF00/000000?text=Fajr1', defaultUrl: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', qualities: { sd: 'https://stream.url/sd.m3u8', hd: 'https://stream.url/hd.m3u8' } }
+    // --- 3. بيانات القنوات ---
+    const categories = [
+      {
+        name: "beIN Sports",
+        type: "bein",
+        channels: [
+          { name: "beIN 1", url: "https://example.com/bein1.m3u8" },
+          { name: "beIN 2", url: "https://example.com/bein2.m3u8" },
+          { name: "beIN 3", url: "https://example.com/bein3.m3u8" },
+          { name: "beIN 4", url: "https://example.com/bein4.m3u8" },
+          { name: "beIN 5", url: "https://example.com/bein5.m3u8" },
+          { name: "beIN 6", url: "https://example.com/bein6.m3u8", qualities: { SD: "intent://example.com/bein6_sd.m3u8", HD: "intent://example.com/bein6_hd.m3u8", FHD: "intent://example.com/bein6_fhd.m3u8" } },
+          { name: "beIN 7", url: "https://example.com/bein7.m3u8", qualities: { SD: "intent://example.com/bein7_sd.m3u8", HD: "intent://example.com/bein7_hd.m3u8", FHD: "intent://example.com/bein7_fhd.m3u8" } }
+        ]
+      },
+      {
+        name: "ألوان (Alwan)",
+        type: "alwan",
+        channels: [
+          { name: "ألوان 1", url: "https://example.com/alwan1.m3u8" },
+          { name: "ألوان 2", url: "https://example.com/alwan2.m3u8" },
+          { name: "ألوان 3", url: "https://example.com/alwan3.m3u8" },
+          { name: "ألوان 4", url: "intent://example.com/alwan4.m3u8" },
+          { name: "ألوان 5", url: "intent://example.com/alwan5.m3u8" }
+        ]
+      },
+      {
+        name: "ثمانية (8)",
+        type: "thamanya",
+        channels: [
+          { name: "ثمانية 1", url: "https://example.com/8_1.m3u8" },
+          { name: "ثمانية 2", url: "https://example.com/8_2.m3u8" },
+          { name: "ثمانية 3", url: "https://example.com/8_3.m3u8" },
+          { name: "ثمانية 4", url: "intent://example.com/8_4.m3u8", qualities: { "1": "intent://example.com/8_4_1.m3u8", "2": "intent://example.com/8_4_2.m3u8", "3": "intent://example.com/8_4_3.m3u8" } },
+          { name: "ثمانية 5", url: "intent://example.com/8_5.m3u8", qualities: { "1": "intent://example.com/8_5_1.m3u8", "2": "intent://example.com/8_5_2.m3u8", "3": "intent://example.com/8_5_3.m3u8" } }
+        ]
+      },
+      {
+        name: "الفجر",
+        type: "alfajr",
+        channels: [
+          { name: "الفجر 1", url: "intent://example.com/fajr1.m3u8" },
+          { name: "الفجر 2", url: "intent://example.com/fajr2.m3u8" },
+          { name: "الفجر 3", url: "intent://example.com/fajr3.m3u8" }
+        ]
+      }
     ];
 
-    // دالة بناء شبكة القنوات برمجيًا
-    function renderChannels() {
-        const container = document.getElementById('channels-container');
-        container.innerHTML = '';
+    // --- 4. معالجة وتوليد واجهة القنوات حسب المنطق المطلوبة ---
+    const contentDiv = document.getElementById('content');
 
-        channelsData.forEach(ch => {
-            // تطبيق قواعد المشغل الأساسي والخارجي
-            let forceExternal = false;
+    categories.forEach(category => {
+      const title = document.createElement('h2');
+      title.className = 'section-title';
+      title.innerText = category.name;
+      contentDiv.appendChild(title);
 
-            if (ch.group === 'alfajr') {
-                forceExternal = true;
-            } else if (ch.group === 'bein' && ch.index > 5) {
-                forceExternal = true;
-            } else if (ch.group === 'alwan' && ch.index > 3) {
-                forceExternal = true;
-            } else if (ch.group === 'eight' && ch.index > 3) {
-                forceExternal = true;
-            }
+      const row = document.createElement('div');
+      row.className = 'channels-row';
 
-            // إنشاء أزرار الجودات الفرعية
-            let qualitiesHtml = '';
-            if (ch.qualities) {
-                qualitiesHtml = `<div class="quality-buttons">`;
-                if (ch.qualities.sd) {
-                    qualitiesHtml += `<button onclick="event.stopPropagation(); playChannel('${ch.qualities.sd}', ${forceExternal})" class="btn-q">SD</button>`;
-                }
-                if (ch.qualities.hd) {
-                    qualitiesHtml += `<button onclick="event.stopPropagation(); playChannel('${ch.qualities.hd}', ${forceExternal})" class="btn-q">HD</button>`;
-                }
-                if (ch.qualities.fhd) {
-                    qualitiesHtml += `<button onclick="event.stopPropagation(); playChannel('${ch.qualities.fhd}', ${forceExternal})" class="btn-q">FHD</button>`;
-                }
-                qualitiesHtml += `</div>`;
-            }
+      category.channels.forEach((channel, index) => {
+        const card = document.createElement('div');
+        card.className = 'channel-card';
 
-            const card = document.createElement('div');
-            card.className = 'channel-card';
-            card.onclick = () => playChannel(ch.defaultUrl, forceExternal);
+        const nameEl = document.createElement('div');
+        nameEl.className = 'channel-title';
+        nameEl.innerText = channel.name;
+        card.appendChild(nameEl);
 
-            card.innerHTML = `
-                <div class="logo-box">
-                    <img src="${ch.logo}" alt="${ch.name}">
-                </div>
-                <div class="channel-title">${ch.name}</div>
-                ${qualitiesHtml}
-            `;
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'btn-group';
 
-            container.appendChild(card);
-        });
-    }
+        // التطبيق حسب الشروط المحدد لكل فئة:
+        let isInternal = false;
 
-    // تشغيل العرض عند تحميل الصفحة
-    window.onload = () => {
-        renderChannels();
-        // تشغيل أول قناة تلقائيًا بوجود أول كود
-        if (channelsData.length > 0) {
-            playInternalStream(channelsData[0].defaultUrl);
+        if (category.type === 'bein' && index < 5) isInternal = true;
+        else if (category.type === 'alwan' && index < 3) isInternal = true;
+        else if (category.type === 'thamanya' && index < 3) isInternal = true;
+        else if (category.type === 'alfajr') isInternal = false;
+
+        if (isInternal) {
+          // زر تشغيل داخلي
+          const btn = document.createElement('button');
+          btn.className = 'btn';
+          btn.innerText = 'تشغيل';
+          btn.onclick = () => playInternalStream(channel.url);
+          btnGroup.appendChild(btn);
+        } else {
+          // مشغل خارجي (مع فحص وجود أزرار جودات)
+          if (channel.qualities) {
+            Object.keys(channel.qualities).forEach(qLabel => {
+              const qBtn = document.createElement('button');
+              qBtn.className = 'btn btn-quality';
+              qBtn.innerText = qLabel;
+              qBtn.onclick = () => openExternalPlayer(channel.qualities[qLabel]);
+              btnGroup.appendChild(qBtn);
+            });
+          } else {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.innerText = 'خارجي';
+            btn.onclick = () => openExternalPlayer(channel.url);
+            btnGroup.appendChild(btn);
+          }
         }
-    };
-</script>
 
+        card.appendChild(btnGroup);
+        row.appendChild(card);
+      });
+
+      contentDiv.appendChild(row);
+    });
+
+    // تشغيل أول قناة تلقائياً في المشغل الداخلي عند التحميل
+    playInternalStream(categories[0].channels[0].url);
+  </script>
 </body>
 </html>
