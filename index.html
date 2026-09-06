@@ -97,6 +97,84 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 #ext-btn-confirm{background:#0066ff;color:#fff;box-shadow:0 4px 15px rgba(0,102,255,.3)}
 #ext-btn-confirm:hover{background:#1a75ff;transform:translateY(-1px)}
 #ext-btn-confirm:active{transform:translateY(0)}
+
+/* ===== حالة القناة ===== */
+#brand-overlay.error{
+    opacity:1 !important;
+    z-index:60 !important;
+    background:#000;
+}
+
+#brand-overlay.error span{
+    color:#f00 !important;
+    text-shadow:0 0 10px rgba(255,0,0,.45),
+                0 0 25px rgba(255,0,0,.7);
+    animation:none;
+}
+
+#brand-overlay.loading{
+    opacity:1;
+    z-index:50;
+}
+
+#brand-overlay.loading span{
+    color:#fff;
+}
+
+/* ===== القناة المحددة ===== */
+.ch.channel-active{
+    background:#0f0 !important;
+    color:#000 !important;
+    border-color:#0f0 !important;
+    box-shadow:0 0 12px rgba(0,255,0,.45);
+}
+
+.ch.iframe-ch.channel-active{
+    background:#f80 !important;
+    border-color:#f80 !important;
+}
+
+.ch.ts-ch.channel-active{
+    background:#f0f !important;
+    border-color:#f0f !important;
+}
+
+.multi-card.channel-active{
+    border-color:#0f0 !important;
+    box-shadow:0 0 12px rgba(0,255,0,.5);
+}
+
+.multi-card.channel-active .ch-name{
+    color:#fff;
+}
+
+/* ===== تمرير الصفوف بسلاسة ===== */
+.row-scroll{
+    scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    touch-action:pan-x;
+    scrollbar-width:thin;
+    will-change:scroll-position;
+}
+
+.row-scroll::-webkit-scrollbar{
+    height:3px;
+}
+
+.row-scroll::-webkit-scrollbar-thumb{
+    background:#333;
+    border-radius:4px;
+}
+
+/* منع تحديد النص أثناء السحب */
+.row-scroll,
+.ch,
+.multi-card,
+.event-card{
+    -webkit-user-select:none;
+    user-select:none;
+}
 </style>
 </head>
 <body>
@@ -141,7 +219,13 @@ video.fc{object-fit:contain}video.fv{object-fit:fill}video.ff{object-fit:contain
 <div id="player-wrap">
 <video id="vid" class="fc" playsinline webkit-playsinline></video>
 <div id="brand-overlay"><span>AlameeereTv</span></div>
-<div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay;encrypted-media"></iframe></div>
+<div id="iframe-wrap"><iframe
+    id="iframe-player"
+    allowfullscreen
+    allow="autoplay;encrypted-media;fullscreen"
+    sandbox="allow-scripts allow-forms allow-same-origin allow-presentation"
+    referrerpolicy="no-referrer">
+</iframe></div>
 <div id="brightness-layer"></div>
 <div id="loader"><div class="wt">AlameeereTv</div></div>
 <div id="ch-title"></div>
@@ -268,6 +352,47 @@ var chTitle=document.getElementById('ch-title'),dblHint=document.getElementById(
 var swInd=document.getElementById('swipe-ind'),siIcon=document.getElementById('si-icon'),siBar=document.getElementById('si-bar'),siLabel=document.getElementById('si-label');
 var brightL=document.getElementById('brightness-layer'),pw=document.getElementById('player-wrap'),chRows=document.getElementById('ch-rows');
 var fitBtn=document.getElementById('fit-btn'),speedBadge=document.getElementById('speed-badge'),spdBtn=document.getElementById('spd-btn');
+
+var brandOverlay = document.getElementById('brand-overlay');
+
+function clearChannelActive(){
+    document.querySelectorAll(
+        '.ch.channel-active,.multi-card.channel-active,.event-card.channel-active'
+    ).forEach(function(el){
+        el.classList.remove('channel-active');
+    });
+}
+
+function setChannelActive(el){
+    clearChannelActive();
+    if(el) el.classList.add('channel-active');
+}
+
+function channelLoading(el){
+    setChannelActive(el);
+
+    brandOverlay.classList.remove('error');
+    brandOverlay.classList.add('loading');
+    brandOverlay.style.opacity='1';
+    brandOverlay.style.zIndex='50';
+}
+
+function channelWorking(){
+    brandOverlay.classList.remove('error','loading');
+    brandOverlay.style.opacity='0';
+    brandOverlay.style.zIndex='-1';
+
+    pw.classList.add('playing');
+}
+
+function channelError(){
+    brandOverlay.classList.remove('loading');
+    brandOverlay.classList.add('error');
+    brandOverlay.style.opacity='1';
+    brandOverlay.style.zIndex='60';
+
+    pw.classList.remove('playing');
+}
 
 var brightness=parseFloat(localStorage.getItem('brightness')||'0');brightL.style.opacity=brightness;
 var ASPECTS=[{cls:'fc',lbl:'↕ عادي'},{cls:'fv',lbl:'⛶ ملء'},{cls:'ff',lbl:'↔ مفيد'}];
@@ -405,29 +530,196 @@ function createMasterPlaylist(levels) {
 }
 
 function startHls(rawUrl){
+
     var url;
-    if (rawUrl && rawUrl.levels) {
-        url = createMasterPlaylist(rawUrl.levels.map(function(lv) {
-            return {label: lv.label, url: getProxyUrl(lv.url)};
-        }));
-    } else {
-        url = getProxyUrl(rawUrl);
+
+    if(rawUrl && rawUrl.levels){
+        url=createMasterPlaylist(
+            rawUrl.levels.map(function(lv){
+                return {
+                    label:lv.label,
+                    url:getProxyUrl(lv.url)
+                };
+            })
+        );
+    }else{
+        url=getProxyUrl(rawUrl);
     }
-    vid.style.display='block';ifw.style.display='none';ifp.src='';showLoader();
-    if(hls){hls.destroy();hls=null;}
-    vid.removeAttribute('src');vid.load();
+
+    /* عند بدء قناة جديدة */
+    channelLoading();
+
+    vid.style.display='block';
+    ifw.style.display='none';
+    ifp.src='';
+
+    showLoader();
+
+    if(hls){
+        hls.destroy();
+        hls=null;
+    }
+
+    vid.removeAttribute('src');
+    vid.load();
+
+    var started=false;
+    var failed=false;
+
+    /* مهلة لاكتشاف القنوات التي لا تعمل */
+    var failTimer=setTimeout(function(){
+
+        if(!started){
+            failed=true;
+            hideLoader();
+            channelError();
+            toast('القناة لا تعمل حالياً');
+        }
+
+    },12000);
+
     if(Hls.isSupported()){
-        hls=new Hls({enableWorker:true,startLevel:0,autoLevelEnabled:false,maxBufferLength:10,maxMaxBufferLength:30,manifestLoadingMaxRetry:4,fragLoadingMaxRetry:4,liveSyncDurationCount:2,lowLatencyMode:true});
+
+        hls=new Hls({
+            enableWorker:true,
+
+            /* يبدأ دائماً بأقل جودة */
+            startLevel:0,
+            autoStartLoad:true,
+            capLevelToPlayerSize:false,
+
+            /* لا يغير الجودة تلقائياً */
+            maxAutoLevel:0,
+
+            maxBufferLength:10,
+            maxMaxBufferLength:30,
+
+            manifestLoadingMaxRetry:3,
+            fragLoadingMaxRetry:3,
+
+            liveSyncDurationCount:2,
+            lowLatencyMode:true,
+
+            backBufferLength:30
+        });
+
         hls.loadSource(url);
         hls.attachMedia(vid);
-        hls.on(Hls.Events.MANIFEST_PARSED,function(){hideLoader();pw.classList.add('playing');vid.play().catch(function(){});buildQ();});
-        hls.on(Hls.Events.FRAG_BUFFERED,function(){hideLoader();});
-        hls.on(Hls.Events.ERROR,function(e,d){if(d.fatal){if(d.type===Hls.ErrorTypes.NETWORK_ERROR){showLoader();hls.startLoad();retryT=setTimeout(function(){reloadCurrentStream();},5000);}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){hls.recoverMediaError();}else{retryT=setTimeout(function(){reloadCurrentStream();},5000);}}});
+
+        hls.on(Hls.Events.MANIFEST_PARSED,function(){
+
+            buildQ();
+
+            /* نبدأ فعلياً بأقل مستوى */
+            if(hls.levels && hls.levels.length){
+                hls.autoLevelEnabled=false;
+                hls.currentLevel=0;
+            }
+
+            vid.play().catch(function(){});
+
+        });
+
+        hls.on(Hls.Events.FRAG_BUFFERED,function(){
+
+            if(started || failed)return;
+
+            started=true;
+            clearTimeout(failTimer);
+
+            hideLoader();
+            channelWorking();
+
+        });
+
+        hls.on(Hls.Events.ERROR,function(e,d){
+
+            if(!d || !d.fatal)return;
+
+            if(d.type===Hls.ErrorTypes.MEDIA_ERROR){
+
+                try{
+                    hls.recoverMediaError();
+                }catch(err){
+                    if(!started){
+                        failed=true;
+                        clearTimeout(failTimer);
+                        hideLoader();
+                        channelError();
+                    }
+                }
+
+            }else if(d.type===Hls.ErrorTypes.NETWORK_ERROR){
+
+                if(!started){
+                    /* نعطي القناة فرصة قبل اعتبارها متوقفة */
+                    try{
+                        hls.startLoad();
+                    }catch(err){}
+                }else{
+                    showLoader();
+
+                    clearTimeout(retryT);
+
+                    retryT=setTimeout(function(){
+                        reloadCurrentStream();
+                    },5000);
+                }
+
+            }else{
+
+                if(!started){
+                    failed=true;
+                    clearTimeout(failTimer);
+                    hideLoader();
+                    channelError();
+                }else{
+                    clearTimeout(retryT);
+
+                    retryT=setTimeout(function(){
+                        reloadCurrentStream();
+                    },5000);
+                }
+            }
+        });
+
     }else if(vid.canPlayType('application/vnd.apple.mpegurl')){
+
         vid.src=url;
-        vid.addEventListener('loadeddata',function(){hideLoader();pw.classList.add('playing');},{once:true});
+
+        vid.addEventListener('loadeddata',function(){
+
+            if(started || failed)return;
+
+            started=true;
+            clearTimeout(failTimer);
+
+            hideLoader();
+            channelWorking();
+
+        },{once:true});
+
+        vid.addEventListener('error',function(){
+
+            if(started || failed)return;
+
+            failed=true;
+            clearTimeout(failTimer);
+
+            hideLoader();
+            channelError();
+
+        },{once:true});
+
         vid.play().catch(function(){});
-    }else{hideLoader();toast('المتصفح غير متوافق');}
+
+    }else{
+
+        clearTimeout(failTimer);
+        hideLoader();
+        channelError();
+        toast('المتصفح غير متوافق مع هذا البث');
+    }
 }
 
 function loadEvent(s){curEvtUrl=s.url;document.querySelectorAll('.q-row button,.ch').forEach(function(b){b.classList.remove('on');});s.btn.classList.add('on');chTitle.textContent='event1 '+s.lbl;chTitle.style.display='block';cur={r:-3,i:0};startHls(s.url);}
@@ -508,8 +800,20 @@ function buildMultiRow(data,boxId,sc){
         [{lbl:'SD',key:'sd'},{lbl:'HD',key:'hd'},{lbl:'4K',key:'uhd'}].forEach(function(q){
             if(!ch[q.key])return;
             var btn=document.createElement('button');btn.textContent=q.lbl;
-            btn.onclick=function(){
-                document.querySelectorAll('.q-row button').forEach(function(b){b.classList.remove('on');});
+            btn.onclick=function(e){
+
+                e.stopPropagation();
+
+                document.querySelectorAll('.q-row button').forEach(function(b){
+                    b.classList.remove('on');
+                });
+
+                document.querySelectorAll('.multi-card').forEach(function(c){
+                    c.classList.remove('channel-active');
+                });
+
+                card.classList.add('channel-active');
+
                 btn.classList.add('on');
                 chTitle.textContent=ch.name+' '+q.lbl;chTitle.style.display='block';
                 cur={r:-2,i:ci};startHls(ch[q.key]);
@@ -541,9 +845,29 @@ function load(ri,ci){
     if(ri<0||ri>=ROWS.length||ci<0||ci>=ROWS[ri].channels.length)return;
     curEvtUrl=null;cur={r:ri,i:ci};
     if(retryT){clearTimeout(retryT);retryT=null;}
-    document.querySelectorAll('.ch').forEach(function(b){b.classList.remove('on');});
-    document.querySelectorAll('.q-row button').forEach(function(b){b.classList.remove('on');});
-    var btn=document.getElementById('ch-'+ri+'-'+ci);if(btn)btn.classList.add('on');
+
+    document.querySelectorAll('.ch').forEach(function(b){
+        b.classList.remove('on','channel-active');
+    });
+
+    document.querySelectorAll('.multi-card').forEach(function(b){
+        b.classList.remove('channel-active');
+    });
+
+    document.querySelectorAll('.event-card').forEach(function(b){
+        b.classList.remove('channel-active');
+    });
+
+    document.querySelectorAll('.q-row button').forEach(function(b){
+        b.classList.remove('on');
+    });
+
+    var btn=document.getElementById('ch-'+ri+'-'+ci);
+
+    if(btn){
+        btn.classList.add('on','channel-active');
+    }
+
     var ch=ROWS[ri].channels[ci];
     chTitle.textContent=ch.n;chTitle.style.display='block';
     var t=ch.t||'hls';
