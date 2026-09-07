@@ -3,810 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>AlameeereTv</title>
+<title>AlameeereTv – جميع القنوات بشعاراتها</title>
 <style>
-/* ========== CSS كامل (من style.txt) ========== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  width: 100%;
-  height: 100%;
-  background: #000;
-  overflow: hidden;
-  font-family: system-ui, -apple-system, sans-serif;
-}
-
-#app {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-}
-
-#player-wrap {
-  flex: 0 0 40%;
-  min-height: 200px;
-  position: relative;
-  user-select: none;
-  overflow: hidden;
-  background: #000;
-}
-
-video {
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: #000;
-}
-
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, sans-serif; }
+#app { display: flex; flex-direction: column; width: 100%; height: 100%; }
+#player-wrap { flex: 0 0 40%; min-height: 200px; position: relative; background: #000; overflow: hidden; }
+video { width: 100%; height: 100%; display: block; background: #000; }
 video.fc { object-fit: contain; }
 video.fv { object-fit: fill; }
-video.ff {
-  object-fit: contain;
-  transform: scaleY(.72);
-  transform-origin: center;
-}
-
-#brand-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #000;
-  z-index: 50;
-  pointer-events: none;
-  transition: opacity .5s;
-}
-
-#brand-overlay span {
-  color: #fff;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  animation: wave 2s ease-in-out infinite;
-}
-
-@keyframes wave {
-  0%, 100% { transform: translateY(0); text-shadow: 0 0 10px rgba(0, 255, 0, .4); }
-  25% { transform: translateY(-8px); text-shadow: 0 0 24px rgba(0, 255, 0, .9); }
-  75% { transform: translateY(6px); text-shadow: 0 0 18px rgba(0, 255, 0, .6); }
-}
-
+video.ff { object-fit: contain; transform: scaleY(.72); transform-origin: center; }
+#brand-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; z-index: 50; pointer-events: none; transition: opacity .5s; }
+#brand-overlay span { color: #fff; font-size: 28px; font-weight: 700; letter-spacing: 2px; animation: wave 2s ease-in-out infinite; }
+@keyframes wave { 0%,100% { transform: translateY(0); text-shadow: 0 0 10px rgba(0,255,0,.4); } 25% { transform: translateY(-8px); text-shadow: 0 0 24px rgba(0,255,0,.9); } 75% { transform: translateY(6px); text-shadow: 0 0 18px rgba(0,255,0,.6); } }
 #player-wrap.playing #brand-overlay { opacity: 0; z-index: -1; }
-
-#brand-overlay.error {
-  opacity: 1 !important;
-  z-index: 60 !important;
-  background: #000;
-}
-
-#brand-overlay.error span {
-  color: #f00 !important;
-  text-shadow: 0 0 10px rgba(255, 0, 0, .45), 0 0 25px rgba(255, 0, 0, .7);
-  animation: none;
-}
-
+#brand-overlay.error { opacity: 1 !important; z-index: 60 !important; background: #000; }
+#brand-overlay.error span { color: #f00 !important; text-shadow: 0 0 10px rgba(255,0,0,.45),0 0 25px rgba(255,0,0,.7); animation: none; }
 #brand-overlay.loading { opacity: 1; z-index: 50; }
 #brand-overlay.loading span { color: #fff; }
-
-#loader {
-  position: absolute;
-  inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background: rgba(0, 0, 0, .75);
-  z-index: 10;
-}
-
-#loader .wt {
-  color: #fff;
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  animation: wave 1.5s ease-in-out infinite;
-}
-
-#iframe-wrap {
-  position: absolute;
-  inset: 0;
-  display: none;
-  z-index: 5;
-}
-
-#iframe-wrap iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-#brightness-layer {
-  position: absolute;
-  inset: 0;
-  background: #000;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 4;
-}
-
-#ch-title {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(0, 0, 0, .6);
-  backdrop-filter: blur(6px);
-  padding: 5px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  z-index: 6;
-  display: none;
-}
-
-#speed-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background: rgba(0, 0, 0, .65);
-  backdrop-filter: blur(6px);
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #0f0;
-  z-index: 6;
-  transition: opacity .3s;
-  cursor: pointer;
-  user-select: none;
-}
-
+#loader { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(0,0,0,.75); z-index: 10; }
+#loader .wt { color: #fff; font-size: 26px; font-weight: 700; letter-spacing: 2px; animation: wave 1.5s ease-in-out infinite; }
+#iframe-wrap { position: absolute; inset: 0; display: none; z-index: 5; }
+#iframe-wrap iframe { width: 100%; height: 100%; border: none; }
+#brightness-layer { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 4; }
+#ch-title { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,.6); backdrop-filter: blur(6px); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; z-index: 6; display: none; }
+#speed-badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.65); backdrop-filter: blur(6px); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #0f0; z-index: 6; transition: opacity .3s; cursor: pointer; user-select: none; }
 #speed-badge.hide { opacity: 0; pointer-events: none; }
-
-#dbl-hint {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 15;
-  opacity: 0;
-  transition: opacity .3s;
-}
-
-#dbl-hint span {
-  background: rgba(0, 0, 0, .75);
-  color: #fff;
-  font-size: 15px;
-  padding: 12px 26px;
-  border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, .2);
-}
-
+#dbl-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 15; opacity: 0; transition: opacity .3s; }
+#dbl-hint span { background: rgba(0,0,0,.75); color: #fff; font-size: 15px; padding: 12px 26px; border-radius: 22px; border: 1px solid rgba(255,255,255,.2); }
 #dbl-hint.show { opacity: 1; }
-
-#swipe-ind {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, .78);
-  border: 1px solid rgba(255, 255, 255, .15);
-  border-radius: 16px;
-  padding: 14px 22px;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  z-index: 20;
-  pointer-events: none;
-  min-width: 130px;
-}
-
+#swipe-ind { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,.78); border: 1px solid rgba(255,255,255,.15); border-radius: 16px; padding: 14px 22px; display: none; flex-direction: column; align-items: center; gap: 8px; z-index: 20; pointer-events: none; min-width: 130px; }
 #si-icon { font-size: 26px; }
-
-#si-bar-bg {
-  width: 100%;
-  height: 6px;
-  background: rgba(255, 255, 255, .15);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-#si-bar {
-  height: 100%;
-  background: #0f0;
-  border-radius: 3px;
-}
-
-#si-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, .75);
-}
-
-#controls-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, .92));
-  padding: 30px 8px 10px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  opacity: 0;
-  transition: opacity .3s;
-  pointer-events: none;
-  z-index: 100;
-  overflow: visible;
-}
-
-#player-wrap.show-ctrl #controls-overlay {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.cb {
-  background: rgba(255, 255, 255, .12);
-  border: none;
-  color: #fff;
-  padding: 5px 8px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 11px;
-  backdrop-filter: blur(6px);
-  transition: .2s;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.cb:hover { background: rgba(255, 255, 255, .28); }
-
-.cb.on {
-  background: rgba(0, 200, 0, .2);
-  color: #0f0;
-  border: 1px solid rgba(0, 255, 0, .3);
-}
-
-#vw {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-#vs {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 48px;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, .3);
-  outline: none;
-  cursor: pointer;
-}
-
-#vs::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: #0f0;
-  cursor: pointer;
-}
-
+#si-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; }
+#si-bar { height: 100%; background: #0f0; border-radius: 3px; }
+#si-label { font-size: 12px; color: rgba(255,255,255,.75); }
+#controls-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent,rgba(0,0,0,.92)); padding: 30px 8px 10px; display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 100; overflow: visible; }
+#player-wrap.show-ctrl #controls-overlay { opacity: 1; pointer-events: auto; }
+.cb { background: rgba(255,255,255,.12); border: none; color: #fff; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-size: 11px; backdrop-filter: blur(6px); transition: .2s; white-space: nowrap; flex-shrink: 0; }
+.cb:hover { background: rgba(255,255,255,.28); }
+.cb.on { background: rgba(0,200,0,.2); color: #0f0; border: 1px solid rgba(0,255,0,.3); }
+#vw { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+#vs { -webkit-appearance: none; appearance: none; width: 48px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.3); outline: none; cursor: pointer; }
+#vs::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #0f0; cursor: pointer; }
 #fg { flex: 1; min-width: 2px; }
-
-#qw {
-  position: relative;
-  flex-shrink: 0;
-  margin-left: 6px;
-}
-
-#qm {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 0;
-  background: rgba(10, 10, 10, .97);
-  border: 1px solid #333;
-  border-radius: 8px;
-  display: none;
-  flex-direction: column;
-  min-width: 80px;
-  max-height: 50vh;
-  overflow-y: auto;
-  z-index: 9999;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, .8);
-}
-
+#qw { position: relative; flex-shrink: 0; margin-left: 6px; }
+#qm { position: absolute; bottom: calc(100% + 8px); left: 0; background: rgba(10,10,10,.97); border: 1px solid #333; border-radius: 8px; display: none; flex-direction: column; min-width: 80px; max-height: 50vh; overflow-y: auto; z-index: 9999; box-shadow: 0 -4px 20px rgba(0,0,0,.8); }
 #qm.open { display: flex; }
-
-#qm button {
-  background: none;
-  border: none;
-  color: #fff;
-  padding: 6px 14px;
-  cursor: pointer;
-  text-align: center;
-  font-size: 12px;
-}
-
-#qm button:hover { background: rgba(255, 255, 255, .08); }
+#qm button { background: none; border: none; color: #fff; padding: 6px 14px; cursor: pointer; text-align: center; font-size: 12px; }
+#qm button:hover { background: rgba(255,255,255,.08); }
 #qm button.active { color: #0f0; font-weight: 700; }
-
-#q-btn.manual {
-  background: rgba(0, 200, 0, .2);
-  color: #0f0;
-  border: 1px solid rgba(0, 255, 0, .35);
-}
-
-#ch-rows {
-  flex: 1 1 0;
-  min-height: 0;
-  background: #030303;
-  border-top: 1px solid #111;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 2px 0;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
-.ch-row {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #0a0a0a;
-  padding: 2px 0;
-}
-
-.row-label {
-  flex-shrink: 0;
-  width: 50px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  background: #050505;
-  border-left: 1px solid #111;
-}
-
+#q-btn.manual { background: rgba(0,200,0,.2); color: #0f0; border: 1px solid rgba(0,255,0,.35); }
+#ch-rows { flex: 1 1 0; min-height: 0; background: #030303; border-top: 1px solid #111; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; padding: 2px 0; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.ch-row { flex-shrink: 0; display: flex; align-items: center; border-bottom: 1px solid #0a0a0a; padding: 2px 0; }
+.row-label { flex-shrink: 0; width: 50px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: #050505; border-left: 1px solid #111; }
 .row-label .ico { font-size: 14px; }
 .row-label .ico-sm { font-size: 9px; }
 .row-label .lbl { font-size: 8px; color: #666; font-weight: 700; }
-
-.row-scroll {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  align-items: center;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-  touch-action: pan-x;
-  scrollbar-width: thin;
-}
-
+.row-scroll { flex: 1; min-width: 0; display: flex; gap: 4px; padding: 4px; overflow-x: auto; overflow-y: hidden; align-items: center; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x; scrollbar-width: thin; }
 .row-scroll::-webkit-scrollbar { height: 3px; }
-.row-scroll::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 4px;
-}
-
-.row-scroll,
-.ch,
-.multi-card,
-.event-card {
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.ch {
-  min-width: 65px;
-  height: 40px;
-  background: #0a0a0a;
-  border: 1px solid #1a1a1a;
-  color: #bbb;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: .2s;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2px;
-}
-
+.row-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+.row-scroll, .ch, .multi-card, .event-card { -webkit-user-select: none; user-select: none; }
+.ch { min-width: 65px; height: 40px; background: #0a0a0a; border: 1px solid #1a1a1a; color: #bbb; font-size: 10px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: .2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2px; }
 .ch:hover { background: #151515; border-color: #0f0; color: #fff; }
 .ch.on { background: #0f0; color: #000; border-color: #0f0; }
 .ch.iframe-ch { border-color: #f80; }
 .ch.iframe-ch.on { background: #f80; color: #000; }
 .ch.ts-ch { border-color: #f0f; }
 .ch.ts-ch.on { background: #f0f; color: #000; }
-
-.ch.channel-active {
-  background: #0f0 !important;
-  color: #000 !important;
-  border-color: #0f0 !important;
-  box-shadow: 0 0 12px rgba(0, 255, 0, .45);
-}
-
-.ch.iframe-ch.channel-active {
-  background: #f80 !important;
-  border-color: #f80 !important;
-}
-
-.ch.ts-ch.channel-active {
-  background: #f0f !important;
-  border-color: #f0f !important;
-}
-
-.multi-card,
-.event-card {
-  flex-shrink: 0;
-  background: #0a0a0a;
-  border: 1px solid #333;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow: hidden;
-  width: 72px;
-  cursor: pointer;
-}
-
+.ch.channel-active { background: #0f0 !important; color: #000 !important; border-color: #0f0 !important; box-shadow: 0 0 12px rgba(0,255,0,.45); }
+.ch.iframe-ch.channel-active { background: #f80 !important; border-color: #f80 !important; }
+.ch.ts-ch.channel-active { background: #f0f !important; border-color: #f0f !important; }
+.multi-card, .event-card { flex-shrink: 0; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; display: flex; flex-direction: column; align-items: center; overflow: hidden; width: 72px; cursor: pointer; }
 .event-card { border-color: #2a2a2a; }
 .event-card:hover { border-color: #0f0; }
-
-.multi-card .lw {
-  width: 100%;
-  height: 40px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background: #111;
-}
-
-.multi-card .lw img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 3px;
-}
-
+.multi-card .lw { width: 100%; height: 40px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #111; }
+.multi-card .lw img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
 .multi-card .lw img.cv { object-fit: cover; padding: 0; }
-
-.multi-card .lw .cn {
-  position: absolute;
-  bottom: 2px;
-  left: 3px;
-  background: rgba(0, 0, 0, .8);
-  color: #fff;
-  font-size: 9px;
-  font-weight: 900;
-  padding: 1px 4px;
-  border-radius: 3px;
-  line-height: 1;
-}
-
-.multi-card .ch-name,
-.event-card .ev-name {
-  font-size: 8px;
-  color: #aaa;
-  padding: 2px 2px 0;
-  text-align: center;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.event-card .ev-name { padding: 1px 2px; }
+.multi-card .lw .cn { position: absolute; bottom: 2px; left: 3px; background: rgba(0,0,0,.8); color: #fff; font-size: 9px; font-weight: 900; padding: 1px 4px; border-radius: 3px; line-height: 1; }
+.multi-card .ch-name, .event-card .ev-name { display: none; }
 .event-card .ev-icon { font-size: 20px; padding: 5px 0 0; }
-
-.multi-card .q-row,
-.event-card .q-row {
-  display: flex;
-  width: 100%;
-}
-
-.multi-card .q-row button,
-.event-card .q-row button {
-  flex: 1;
-  background: #111;
-  border: none;
-  border-top: 1px solid #222;
-  color: #999;
-  font-size: 8px;
-  font-weight: 700;
-  padding: 3px 0;
-  cursor: pointer;
-  transition: .15s;
-}
-
-.event-card .q-row button {
-  color: #ccc;
-  font-size: 9px;
-  padding: 4px 0;
-}
-
-.multi-card .q-row button:not(:last-child),
-.event-card .q-row button:not(:last-child) {
-  border-left: 1px solid #222;
-}
-
+.multi-card .q-row, .event-card .q-row { display: flex; width: 100%; }
+.multi-card .q-row button, .event-card .q-row button { flex: 1; background: #111; border: none; border-top: 1px solid #222; color: #999; font-size: 8px; font-weight: 700; padding: 3px 0; cursor: pointer; transition: .15s; }
+.event-card .q-row button { color: #ccc; font-size: 9px; padding: 4px 0; }
+.multi-card .q-row button:not(:last-child), .event-card .q-row button:not(:last-child) { border-left: 1px solid #222; }
 .bein-style { border-color: #555; }
 .bein-style:hover { border-color: #c8a000; }
-.bein-style .q-row button:hover,
-.bein-style .q-row button.on { background: #c8a000; color: #000; }
-
+.bein-style .q-row button:hover, .bein-style .q-row button.on { background: #c8a000; color: #000; }
 .alwan-style { border-color: #555; }
 .alwan-style:hover { border-color: #e05; }
-.alwan-style .q-row button:hover,
-.alwan-style .q-row button.on { background: #e05; color: #fff; }
-
+.alwan-style .q-row button:hover, .alwan-style .q-row button.on { background: #e05; color: #fff; }
 .thm-style { border-color: #555; }
 .thm-style:hover { border-color: #0af; }
-.thm-style .q-row button:hover,
-.thm-style .q-row button.on { background: #0af; color: #000; }
-
-.event-card .q-row button:hover,
-.event-card .q-row button.on { background: #0f0; color: #000; }
-
-.multi-card.channel-active {
-  border-color: #0f0 !important;
-  box-shadow: 0 0 12px rgba(0, 255, 0, .5);
-}
-
-.multi-card.channel-active .ch-name { color: #fff; }
-
-.new-ch {
-  border-color: #fff !important;
-  box-shadow: 0 0 12px rgba(255, 255, 255, .7);
-}
-
-.new-ch:hover { box-shadow: 0 0 20px rgba(255, 255, 255, 1); }
-
-#err-toast {
-  position: fixed;
-  bottom: 90px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #a00;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 13px;
-  display: none;
-  z-index: 9999;
-}
-
-#ext-dialog-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, .85);
-  backdrop-filter: blur(8px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  opacity: 0;
-  transition: opacity .3s;
-}
-
-#ext-dialog-overlay.show {
-  display: flex;
-  opacity: 1;
-}
-
-#ext-dialog {
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 340px;
-  padding: 0;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, .9);
-  transform: scale(.9);
-  transition: transform .3s;
-}
-
+.thm-style .q-row button:hover, .thm-style .q-row button.on { background: #0af; color: #000; }
+.event-card .q-row button:hover, .event-card .q-row button.on { background: #0f0; color: #000; }
+.multi-card.channel-active { border-color: #0f0 !important; box-shadow: 0 0 12px rgba(0,255,0,.5); }
+.new-ch { border-color: #fff !important; box-shadow: 0 0 12px rgba(255,255,255,.7); }
+.new-ch:hover { box-shadow: 0 0 20px rgba(255,255,255,1); }
+#err-toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #a00; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 9999; }
+#ext-dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 10000; opacity: 0; transition: opacity .3s; }
+#ext-dialog-overlay.show { display: flex; opacity: 1; }
+#ext-dialog { background: #111; border: 1px solid #333; border-radius: 20px; width: 90%; max-width: 340px; padding: 0; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.9); transform: scale(.9); transition: transform .3s; }
 #ext-dialog-overlay.show #ext-dialog { transform: scale(1); }
-
-#ext-dialog-header {
-  background: #0a0a0a;
-  padding: 18px 20px 12px;
-  text-align: center;
-  border-bottom: 1px solid #222;
-}
-
-#ext-dialog-header .icon {
-  font-size: 42px;
-  margin-bottom: 6px;
-  display: block;
-}
-
-#ext-dialog-header h3 {
-  color: #fff;
-  font-size: 17px;
-  font-weight: 700;
-  margin: 0;
-}
-
-#ext-dialog-header p {
-  color: #aaa;
-  font-size: 12px;
-  margin-top: 4px;
-}
-
+#ext-dialog-header { background: #0a0a0a; padding: 18px 20px 12px; text-align: center; border-bottom: 1px solid #222; }
+#ext-dialog-header .icon { font-size: 42px; margin-bottom: 6px; display: block; }
+#ext-dialog-header h3 { color: #fff; font-size: 17px; font-weight: 700; margin: 0; }
+#ext-dialog-header p { color: #aaa; font-size: 12px; margin-top: 4px; }
 #ext-dialog-body { padding: 18px 20px; }
-
-#ext-dialog-body .info-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  background: #0a0a0a;
-  border-radius: 10px;
-  border: 1px solid #1a1a1a;
-}
-
+#ext-dialog-body .info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 12px; background: #0a0a0a; border-radius: 10px; border: 1px solid #1a1a1a; }
 #ext-dialog-body .info-row .icon-small { font-size: 20px; }
 #ext-dialog-body .info-row .info-text { flex: 1; }
-
-#ext-dialog-body .info-row .info-text .label {
-  color: #888;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-
-#ext-dialog-body .info-row .info-text .value {
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  margin-top: 1px;
-}
-
-#ext-dialog-body .message {
-  color: #ccc;
-  font-size: 13px;
-  line-height: 1.7;
-  text-align: center;
-  margin: 8px 0 4px;
-}
-
+#ext-dialog-body .info-row .info-text .label { color: #888; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+#ext-dialog-body .info-row .info-text .value { color: #fff; font-size: 13px; font-weight: 600; margin-top: 1px; }
+#ext-dialog-body .message { color: #ccc; font-size: 13px; line-height: 1.7; text-align: center; margin: 8px 0 4px; }
 #ext-dialog-body .message strong { color: #0f0; }
-
-#ext-dialog-footer {
-  display: flex;
-  padding: 0 20px 20px;
-  gap: 10px;
-}
-
-#ext-dialog-footer button {
-  flex: 1;
-  padding: 12px 0;
-  border: none;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: .2s;
-}
-
+#ext-dialog-footer { display: flex; padding: 0 20px 20px; gap: 10px; }
+#ext-dialog-footer button { flex: 1; padding: 12px 0; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: .2s; }
 #ext-btn-cancel { background: #1a1a1a; color: #999; }
 #ext-btn-cancel:hover { background: #252525; color: #fff; }
-
 #ext-btn-store { background: #222; color: #ccc; }
 #ext-btn-store:hover { background: #2c2c2c; color: #fff; }
-
-#ext-btn-confirm {
-  background: #0066ff;
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(0, 102, 255, .3);
-}
-
-#ext-btn-confirm:hover {
-  background: #1a75ff;
-  transform: translateY(-1px);
-}
-
+#ext-btn-confirm { background: #0066ff; color: #fff; box-shadow: 0 4px 15px rgba(0,102,255,.3); }
+#ext-btn-confirm:hover { background: #1a75ff; transform: translateY(-1px); }
 #ext-btn-confirm:active { transform: translateY(0); }
 </style>
 </head>
 <body>
 <div id="app">
   <div id="err-toast"></div>
-
   <div id="ext-dialog-overlay">
     <div id="ext-dialog">
-      <div id="ext-dialog-header">
-        <span class="icon" id="ext-dialog-icon">📺</span>
-        <h3 id="ext-dialog-title">مشغل خارجي مطلوب</h3>
-        <p id="ext-dialog-subtitle">هذه القناة تحتاج مشغلاً خارجياً</p>
-      </div>
+      <div id="ext-dialog-header"><span class="icon" id="ext-dialog-icon">📺</span><h3 id="ext-dialog-title">مشغل خارجي مطلوب</h3><p id="ext-dialog-subtitle">هذه القناة تحتاج مشغلاً خارجياً</p></div>
       <div id="ext-dialog-body">
-        <div class="info-row">
-          <span class="icon-small" id="ext-player-icon">🎬</span>
-          <div class="info-text">
-            <div class="label">المشغل المطلوب</div>
-            <div class="value" id="ext-player-name">VLC Media Player</div>
-          </div>
-        </div>
-        <div class="info-row">
-          <span class="icon-small">📱</span>
-          <div class="info-text">
-            <div class="label">الجهاز</div>
-            <div class="value" id="ext-device-name">iPhone / iPad</div>
-          </div>
-        </div>
-        <p class="message" id="ext-dialog-msg">
-          اضغط "فتح المشغل" لتشغيل القناة في التطبيق الخارجي.
-        </p>
+        <div class="info-row"><span class="icon-small" id="ext-player-icon">🎬</span><div class="info-text"><div class="label">المشغل المطلوب</div><div class="value" id="ext-player-name">VLC Media Player</div></div></div>
+        <div class="info-row"><span class="icon-small">📱</span><div class="info-text"><div class="label">الجهاز</div><div class="value" id="ext-device-name">iPhone / iPad</div></div></div>
+        <p class="message" id="ext-dialog-msg">اضغط "فتح المشغل" لتشغيل القناة في التطبيق الخارجي.</p>
       </div>
-      <div id="ext-dialog-footer">
-        <button type="button" id="ext-btn-cancel">إلغاء</button>
-        <button type="button" id="ext-btn-store">تنزيل</button>
-        <button type="button" id="ext-btn-confirm">فتح المشغل</button>
-      </div>
+      <div id="ext-dialog-footer"><button type="button" id="ext-btn-cancel">إلغاء</button><button type="button" id="ext-btn-store">تنزيل</button><button type="button" id="ext-btn-confirm">فتح المشغل</button></div>
     </div>
   </div>
-
   <div id="player-wrap">
     <video id="vid" class="fc" playsinline webkit-playsinline></video>
     <div id="brand-overlay"><span>AlameeereTv</span></div>
-    <div id="iframe-wrap">
-      <iframe
-        id="iframe-player"
-        allowfullscreen
-        allow="autoplay;encrypted-media;fullscreen"
-        sandbox="allow-scripts allow-presentation"
-        referrerpolicy="no-referrer">
-      </iframe>
-    </div>
+    <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay;encrypted-media;fullscreen" sandbox="allow-scripts allow-presentation" referrerpolicy="no-referrer"></iframe></div>
     <div id="brightness-layer"></div>
     <div id="loader"><div class="wt">AlameeereTv</div></div>
     <div id="ch-title"></div>
     <div id="speed-badge">📡 السرعة</div>
-    <div id="swipe-ind">
-      <div id="si-icon">🔊</div>
-      <div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div>
-      <div id="si-label">الصوت</div>
-    </div>
+    <div id="swipe-ind"><div id="si-icon">🔊</div><div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div><div id="si-label">الصوت</div></div>
     <div id="dbl-hint"><span id="dbl-txt">⛶</span></div>
     <div id="controls-overlay">
       <button type="button" class="cb" id="play-btn">⏯</button>
-      <div id="vw">
-        <button type="button" class="cb" id="mute-btn">🔊</button>
-        <input type="range" id="vs" min="0" max="1" step=".05" value="1">
-      </div>
+      <div id="vw"><button type="button" class="cb" id="mute-btn">🔊</button><input type="range" id="vs" min="0" max="1" step=".05" value="1"></div>
       <button type="button" class="cb" id="skip-back-btn">⏪</button>
       <button type="button" class="cb" id="skip-fwd-btn">⏩</button>
       <button type="button" class="cb" id="fit-btn">↕ عادي</button>
@@ -815,13 +162,9 @@ video.ff {
       <div id="fg"></div>
       <button type="button" class="cb" id="reload-btn">🔄</button>
       <button type="button" class="cb" id="ext-play-btn">📤 خارجي</button>
-      <div id="qw">
-        <button type="button" class="cb" id="q-btn">جودة</button>
-        <div id="qm"></div>
-      </div>
+      <div id="qw"><button type="button" class="cb" id="q-btn">جودة</button><div id="qm"></div></div>
     </div>
   </div>
-
   <div id="ch-rows">
     <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">١</span></div><div class="row-scroll" id="row-0"></div></div>
     <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">٢</span></div><div class="row-scroll" id="row-1"></div></div>
@@ -837,66 +180,76 @@ video.ff {
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
 // ============================================================
-//  data.js (جميع البيانات والمتغيرات)
+//  جميع القنوات مع شعاراتها الحقيقية (صور)
 // ============================================================
 var TS_UA = 'Mozilla/5.0 (QtEmbedded; U; Linux; C) IPTV';
 var TS_PROXY = 'https://my-proxy.alameeeretv.workers.dev/';
 
+// ===== شعارات القنوات (روابط صور حقيقية) =====
+var LOGO_ALJAZEERA = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Al_Jazeera_Logo.svg/1200px-Al_Jazeera_Logo.svg.png';
+var LOGO_ARABIYA = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Al_Arabiya_Logo.svg/1200px-Al_Arabiya_Logo.svg.png';
+var LOGO_SKY = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Sky_News_Arabia_logo.svg/1200px-Sky_News_Arabia_logo.svg.png';
+var LOGO_MBC = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/MBC_Group_Logo.svg/1200px-MBC_Group_Logo.svg.png';
+var LOGO_BEIN = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/BeIN_Sports_logo.svg/1200px-BeIN_Sports_logo.svg.png';
+var LOGO_QURAN = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Quran_Logo.svg/1200px-Quran_Logo.svg.png';
+var LOGO_GENERIC = 'https://img.icons8.com/color/96/000000/tv.png';
+
+// ===== البيانات =====
 var ROWS = [
   {
     channels: [
-      { n: 'الجزيرة', u: 'https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8', t: 'hls' },
-      { n: 'العربية', u: 'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8', t: 'hls' },
-      { n: 'الحدث', u: 'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8', t: 'hls' },
-      { n: 'سكاي نيوز', u: 'https://stream.skynewsarabia.com/hls/sna.m3u8', t: 'hls' },
-      { n: 'القرآن', u: 'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8', t: 'hls' },
-      { n: 'السنة', u: 'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8', t: 'hls' }
+      { n: 'الجزيرة', u: 'https://live-hls-web-aja-gcp.thehlive.com/AJA/index.m3u8', t: 'hls', logo: LOGO_ALJAZEERA },
+      { n: 'العربية', u: 'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8', t: 'hls', logo: LOGO_ARABIYA },
+      { n: 'الحدث', u: 'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8', t: 'hls', logo: LOGO_ARABIYA },
+      { n: 'سكاي نيوز', u: 'https://stream.skynewsarabia.com/hls/sna.m3u8', t: 'hls', logo: LOGO_SKY },
+      { n: 'القرآن', u: 'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8', t: 'hls', logo: LOGO_QURAN },
+      { n: 'السنة', u: 'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8', t: 'hls', logo: LOGO_GENERIC }
     ]
   },
   {
     channels: [
-      { n: 'MBC 1 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8', t: 'hls' },
-      { n: 'MBC 2 HD', u: 'http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token==', t: 'hls' },
-      { n: 'MBC 3 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8', t: 'hls' },
-      { n: 'MBC 4 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8', t: 'hls' },
-      { n: 'MBC 5 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8', t: 'hls' },
-      { n: 'MBC Action HD', u: 'https://flu.systemnet.tv/MBCAction/mono.m3u8', t: 'hls' },
-      { n: 'MBC Drama HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8', t: 'hls' },
-      { n: 'MBC Iraq HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8', t: 'hls' },
-      { n: 'MBC Masr HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8', t: 'hls' },
-      { n: 'osn star', u: 'http://cloth.orangecord.net/pdf/OSNStarMoviesHD/index.m3u8?token==', t: 'hls' }
+      { n: 'MBC 1 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8', t: 'hls', logo: LOGO_MBC },
+      { n: 'MBC 2 HD', u: 'http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token==', t: 'hls', logo: LOGO_MBC },
+      { n: 'MBC 3 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8', t: 'hls', logo: LOGO_MBC },
+      { n: 'MBC 4 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8', t: 'hls', logo: LOGO_MBC },
+      { n: 'MBC 5 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8', t: 'hls', logo: LOGO_MBC },
+      { n: 'MBC Action HD', u: 'https://flu.systemnet.tv/MBCAction/mono.m3u8', t: 'hls', logo: LOGO_MBC },
+      { n: 'MBC Drama HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8', t: 'hls', logo: LOGO_MBC },
+      { n: 'MBC Iraq HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8', t: 'hls', logo: LOGO_MBC },
+      { n: 'MBC Masr HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8', t: 'hls', logo: LOGO_MBC },
+      { n: 'osn star', u: 'http://cloth.orangecord.net/pdf/OSNStarMoviesHD/index.m3u8?token==', t: 'hls', logo: LOGO_GENERIC }
     ]
   },
   {
     channels: [
-      { n: 'beIN S1', u: 'https://28.1yalla-shoot.space/albaplayer/live1/', t: 'iframe' },
-      { n: 'beIN 1', u: 'https://pl.koralive1.cc/albaplayer/1bein1/?serv=0', t: 'iframe' },
-      { n: 'beIN 2', u: 'https://23.1yallashoot.site/albaplayer/live2/', t: 'iframe' },
-      { n: 'beIN Sport 3', u: 'http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token==', t: 'hls' },
-      { n: 'Stream 1', u: 'https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8', t: 'hls' },
-      { n: 'Smarop SP', u: 'https://we.smarop.store/spoos1.m3u8', t: 'hls' },
-      { n: 'Sigma TV', u: 'https://sl3.sigmatv.com/hls/live.m3u8', t: 'hls' }
+      { n: 'beIN S1', u: 'https://28.1yalla-shoot.space/albaplayer/live1/', t: 'iframe', logo: LOGO_BEIN },
+      { n: 'beIN 1', u: 'https://pl.koralive1.cc/albaplayer/1bein1/?serv=0', t: 'iframe', logo: LOGO_BEIN },
+      { n: 'beIN 2', u: 'https://23.1yallashoot.site/albaplayer/live2/', t: 'iframe', logo: LOGO_BEIN },
+      { n: 'beIN Sport 3', u: 'http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token==', t: 'hls', logo: LOGO_BEIN },
+      { n: 'Stream 1', u: 'https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8', t: 'hls', logo: LOGO_GENERIC },
+      { n: 'Smarop SP', u: 'https://we.smarop.store/spoos1.m3u8', t: 'hls', logo: LOGO_GENERIC },
+      { n: 'Sigma TV', u: 'https://sl3.sigmatv.com/hls/live.m3u8', t: 'hls', logo: LOGO_GENERIC }
     ]
   },
   {
     channels: [
-      { n: 'BeIN Movies 1', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/40773.ts', t: 'ts' },
-      { n: 'BeIN Movies 2', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35030.ts', t: 'ts' },
-      { n: 'BeIN Drama', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35026.ts', t: 'ts' },
-      { n: 'BeIN Series 1', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35024.ts', t: 'ts' },
-      { n: 'فتافيت', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/64588.ts', t: 'ts' },
-      { n: 'FOX Movies', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/196050.ts', t: 'ts' },
-      { n: 'JEEM', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts', t: 'ts' },
-      { n: 'Baraem', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts', t: 'ts' }
+      { n: 'BeIN Movies 1', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/40773.ts', t: 'ts', logo: LOGO_BEIN },
+      { n: 'BeIN Movies 2', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35030.ts', t: 'ts', logo: LOGO_BEIN },
+      { n: 'BeIN Drama', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35026.ts', t: 'ts', logo: LOGO_BEIN },
+      { n: 'BeIN Series 1', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35024.ts', t: 'ts', logo: LOGO_BEIN },
+      { n: 'فتافيت', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/64588.ts', t: 'ts', logo: LOGO_GENERIC },
+      { n: 'FOX Movies', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/196050.ts', t: 'ts', logo: LOGO_GENERIC },
+      { n: 'JEEM', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts', t: 'ts', logo: LOGO_GENERIC },
+      { n: 'Baraem', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts', t: 'ts', logo: LOGO_GENERIC }
     ]
   },
   {
     channels: [
-      { n: 'الفجر 1', u: 'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts', t: 'ts' },
-      { n: 'الفجر 2', u: 'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463533.ts', t: 'ts' },
-      { n: 'الفجر 3', u: 'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463534.ts', t: 'ts' },
-      { n: 'الفجر 4', u: 'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463535.ts', t: 'ts' },
-      { n: 'الفجر 5', u: 'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463536.ts', t: 'ts' }
+      { n: 'الفجر 1', u: 'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts', t: 'ts', logo: LOGO_GENERIC },
+      { n: 'الفجر 2', u: 'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463533.ts', t: 'ts', logo: LOGO_GENERIC },
+      { n: 'الفجر 3', u: 'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463534.ts', t: 'ts', logo: LOGO_GENERIC },
+      { n: 'الفجر 4', u: 'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463535.ts', t: 'ts', logo: LOGO_GENERIC },
+      { n: 'الفجر 5', u: 'http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463536.ts', t: 'ts', logo: LOGO_GENERIC }
     ]
   }
 ];
@@ -993,10 +346,9 @@ var EVT = [
 ];
 
 // ============================================================
-//  app.js (المنطق والتشغيل - معدل بالكامل)
+//  التطبيق
 // ============================================================
 (function () {
-  // ========== المتغيرات العامة ==========
   var hls = null;
   var cur = { r: -1, i: -1 };
   var retryT = null;
@@ -1068,7 +420,6 @@ var EVT = [
   var dblHT = null;
   var hCtrl = null;
 
-  // ========== دوال مساعدة ==========
   function $(sel, root) {
     return (root || document).querySelector(sel);
   }
@@ -1225,9 +576,6 @@ var EVT = [
     setTimeout(function () { t.style.display = 'none'; }, 4000);
   }
 
-  // ========== أهم التعديلات تبدأ من هنا ==========
-
-  // دالة إعادة تحميل التيار الحالي (دعم iframe)
   function reloadCurrentStream() {
     if (ifw.style.display === 'block' && curPlayUrl) {
       ifp.src = '';
@@ -1354,8 +702,7 @@ var EVT = [
     hls = null;
   }
 
-  // ======================= START HLS (المعدل) =======================
-  var qBuilt = false;   // لمنع إعادة بناء قائمة الجودة أكثر من مرة
+  var qBuilt = false;
 
   function startHls(rawUrl) {
     var url;
@@ -1489,7 +836,6 @@ var EVT = [
     channelError();
     toast('المتصفح غير متوافق مع هذا البث');
   }
-  // ======================= نهاية startHls =======================
 
   function showTitle(text) {
     chTitle.textContent = text;
@@ -1503,7 +849,6 @@ var EVT = [
     $all('.multi-card').forEach(function (c) { c.style.borderColor = ''; });
   }
 
-  // ========== أحداث القنوات ==========
   function loadEvent(s) {
     curPlayUrl = s.url;
     curPlayName = 'event1 ' + s.lbl;
@@ -1542,6 +887,7 @@ var EVT = [
     img.onerror = function () { this.style.display = 'none'; };
     wrap.appendChild(img);
     card.appendChild(wrap);
+    // اسم القناة مخفي في CSS
     card.appendChild(el('div', 'ch-name', ch.name));
     card.onclick = onClick;
     return card;
@@ -1643,13 +989,33 @@ var EVT = [
       if (!box) return;
       box.innerHTML = '';
       row.channels.forEach(function (c, ci) {
-        var cls = 'ch';
-        if (c.t === 'iframe') cls += ' iframe-ch';
-        if (c.t === 'ts') cls += ' ts-ch';
-        var b = el('button', cls, c.n);
-        b.id = 'ch-' + ri + '-' + ci;
-        b.onclick = function () { load(ri, ci); };
-        box.appendChild(b);
+        if (c.logo) {
+          var card = el('div', 'multi-card');
+          var wrap = el('div', 'lw');
+          var img = el('img');
+          img.src = c.logo;
+          img.alt = c.n;
+          img.onerror = function () {
+            this.style.display = 'none';
+            wrap.textContent = '📺';
+          };
+          wrap.appendChild(img);
+          card.appendChild(wrap);
+          // اسم القناة مخفي في CSS (display:none)
+          card.appendChild(el('div', 'ch-name', c.n));
+          card.onclick = function () {
+            load(ri, ci);
+          };
+          box.appendChild(card);
+        } else {
+          var cls = 'ch';
+          if (c.t === 'iframe') cls += ' iframe-ch';
+          if (c.t === 'ts') cls += ' ts-ch';
+          var b = el('button', cls, c.n);
+          b.id = 'ch-' + ri + '-' + ci;
+          b.onclick = function () { load(ri, ci); };
+          box.appendChild(b);
+        }
       });
     });
     buildEventRow();
@@ -1670,8 +1036,22 @@ var EVT = [
       retryT = null;
     }
     resetSelection();
-    var btn = document.getElementById('ch-' + ri + '-' + ci);
-    if (btn) btn.classList.add('on', 'channel-active');
+    var box = document.getElementById('row-' + ri);
+    if (box) {
+      var children = box.children;
+      for (var idx = 0; idx < children.length; idx++) {
+        var child = children[idx];
+        if (child.classList && child.classList.contains('multi-card')) {
+          var img = child.querySelector('img');
+          if (img && img.alt === ch.n) {
+            child.classList.add('channel-active');
+            break;
+          }
+        } else if (child.id === 'ch-' + ri + '-' + ci) {
+          child.classList.add('on', 'channel-active');
+        }
+      }
+    }
     showTitle(ch.n);
     var t = ch.t || 'hls';
     if (t === 'ts') {
@@ -1695,7 +1075,6 @@ var EVT = [
     startHls(ch.u);
   }
 
-  // ========== قائمة الجودة ==========
   function buildQ() {
     qm.innerHTML = '';
     if (!hls) return;
@@ -1739,7 +1118,6 @@ var EVT = [
     if (qm.classList.contains('open')) updateQActive();
   }
 
-  // ========== أحداث التحكم ==========
   function togglePlay() {
     if (vid.paused) vid.play();
     else vid.pause();
@@ -1801,7 +1179,6 @@ var EVT = [
       || e.target.closest('#loader');
   }
 
-  // ========== تسجيل الأحداث ==========
   document.addEventListener('fullscreenchange', function () {
     setFUI(!!document.fullscreenElement);
   });
@@ -1895,7 +1272,6 @@ var EVT = [
     if (!e.target.closest('#qw')) closeQ();
   });
 
-  // ========== سكرول القنوات ==========
   function bindChannelListScroll() {
     var startX = 0;
     var startY = 0;
@@ -1938,7 +1314,6 @@ var EVT = [
     }, { passive: true });
   }
 
-  // ========== تهيئة ==========
   applyAspect(aIdx);
   applySpeedVis();
 
@@ -1951,7 +1326,6 @@ var EVT = [
   bindChannelListScroll();
   buildChannels();
   load(0, 0);
-
 })();
 </script>
 </body>
