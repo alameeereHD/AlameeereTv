@@ -180,12 +180,11 @@ video.ff { object-fit: contain; transform: scaleY(.72); transform-origin: center
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
 // ============================================================
-//  جميع القنوات مع شعاراتها الحقيقية (صور)
+//  جميع القنوات مع شعاراتها الحقيقية
 // ============================================================
 var TS_UA = 'Mozilla/5.0 (QtEmbedded; U; Linux; C) IPTV';
 var TS_PROXY = 'https://my-proxy.alameeeretv.workers.dev/';
 
-// ===== شعارات القنوات (روابط صور حقيقية) =====
 var LOGO_ALJAZEERA = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Al_Jazeera_Logo.svg/1200px-Al_Jazeera_Logo.svg.png';
 var LOGO_ARABIYA = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Al_Arabiya_Logo.svg/1200px-Al_Arabiya_Logo.svg.png';
 var LOGO_SKY = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Sky_News_Arabia_logo.svg/1200px-Sky_News_Arabia_logo.svg.png';
@@ -194,7 +193,6 @@ var LOGO_BEIN = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/BeIN_
 var LOGO_QURAN = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Quran_Logo.svg/1200px-Quran_Logo.svg.png';
 var LOGO_GENERIC = 'https://img.icons8.com/color/96/000000/tv.png';
 
-// ===== البيانات =====
 var ROWS = [
   {
     channels: [
@@ -346,7 +344,7 @@ var EVT = [
 ];
 
 // ============================================================
-//  التطبيق
+//  التطبيق الرئيسي
 // ============================================================
 (function () {
   var hls = null;
@@ -363,13 +361,6 @@ var EVT = [
   var qBtn = document.getElementById('q-btn');
   var loader = document.getElementById('loader');
   var chTitle = document.getElementById('ch-title');
-  var dblHint = document.getElementById('dbl-hint');
-  var dblTxt = document.getElementById('dbl-txt');
-  var swInd = document.getElementById('swipe-ind');
-  var siIcon = document.getElementById('si-icon');
-  var siBar = document.getElementById('si-bar');
-  var siLabel = document.getElementById('si-label');
-  var brightL = document.getElementById('brightness-layer');
   var pw = document.getElementById('player-wrap');
   var chRows = document.getElementById('ch-rows');
   var fitBtn = document.getElementById('fit-btn');
@@ -378,6 +369,10 @@ var EVT = [
   var brandOverlay = document.getElementById('brand-overlay');
   var muteBtn = document.getElementById('mute-btn');
   var volSlider = document.getElementById('vs');
+  var playBtn = document.getElementById('play-btn');
+  var fsBtn = document.getElementById('fs-btn');
+  var reloadBtn = document.getElementById('reload-btn');
+  var extPlayBtn = document.getElementById('ext-play-btn');
 
   var extDialogOverlay = document.getElementById('ext-dialog-overlay');
   var extDialogTitle = document.getElementById('ext-dialog-title');
@@ -387,10 +382,15 @@ var EVT = [
   var extDeviceName = document.getElementById('ext-device-name');
   var extPlayerIcon = document.getElementById('ext-player-icon');
   var extDialogIcon = document.getElementById('ext-dialog-icon');
+  var extBtnCancel = document.getElementById('ext-btn-cancel');
+  var extBtnStore = document.getElementById('ext-btn-store');
+  var extBtnConfirm = document.getElementById('ext-btn-confirm');
+  
   var extPendingUrl = null;
   var extIsIOS = false;
   var extPendingChName = '';
 
+  var brightL = document.getElementById('brightness-layer');
   var brightness = parseFloat(localStorage.getItem('brightness') || '0');
   brightL.style.opacity = brightness;
 
@@ -409,20 +409,6 @@ var EVT = [
     'https://httpbin.org/bytes/200000',
     'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'
   ];
-
-  var swT = null;
-  var swSV = 0;
-  var swTm = null;
-  var isSwiping = false;
-  var tyS = 0;
-  var lTap = 0;
-  var dblT = null;
-  var dblHT = null;
-  var hCtrl = null;
-
-  function $(sel, root) {
-    return (root || document).querySelector(sel);
-  }
 
   function $all(sel, root) {
     return Array.prototype.slice.call((root || document).querySelectorAll(sel));
@@ -458,8 +444,7 @@ var EVT = [
     if (node) node.classList.add('channel-active');
   }
 
-  function channelLoading(node) {
-    setChannelActive(node);
+  function channelLoading() {
     brandOverlay.classList.remove('error');
     brandOverlay.classList.add('loading');
     brandOverlay.style.opacity = '1';
@@ -488,11 +473,6 @@ var EVT = [
     localStorage.setItem('aIdx', i);
   }
 
-  function cycleAspect() {
-    aIdx = (aIdx + 1) % 3;
-    applyAspect(aIdx);
-  }
-
   function setFUI(full) {
     chRows.style.display = full ? 'none' : 'flex';
     if (!full && screen.orientation && screen.orientation.unlock) {
@@ -511,14 +491,16 @@ var EVT = [
       : root.webkitRequestFullscreen
         ? root.webkitRequestFullscreen()
         : null;
-    Promise.resolve(req).then(function () {
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(function () {});
-      }
-      setFUI(true);
-    }).catch(function () {
-      setFUI(true);
-    });
+    if (req) {
+      req.then(function () {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
+        setFUI(true);
+      }).catch(function () {
+        setFUI(true);
+      });
+    }
   }
 
   function runSpeedTest() {
@@ -558,12 +540,6 @@ var EVT = [
       clearInterval(spInt);
       spInt = null;
     }
-  }
-
-  function toggleSpeed() {
-    speedOn = !speedOn;
-    localStorage.setItem('speedOn', speedOn ? '1' : '0');
-    applySpeedVis();
   }
 
   function showLoader() { loader.style.display = 'flex'; }
@@ -675,16 +651,6 @@ var EVT = [
       : 'https://play.google.com/store/apps/details?id=org.videolan.vlc');
   }
 
-  function confirmExtDialog() {
-    if (!extPendingUrl) {
-      closeExtDialog();
-      return;
-    }
-    var url = extPendingUrl;
-    closeExtDialog();
-    launchExternalPlayer(url);
-  }
-
   function createMasterPlaylist(levels) {
     var master = '#EXTM3U\n#EXT-X-VERSION:3\n';
     levels.forEach(function (lv) {
@@ -702,7 +668,46 @@ var EVT = [
     hls = null;
   }
 
-  var qBuilt = false;
+  function buildQ() {
+    qm.innerHTML = '';
+    if (!hls || !hls.levels || hls.levels.length <= 1) {
+      qBtn.style.display = 'none';
+      return;
+    }
+    qBtn.style.display = 'inline-block';
+    
+    var autoBtn = el('button', hls.autoLevelEnabled ? 'active' : '', 'تلقائي');
+    autoBtn.onclick = function () {
+      hls.currentLevel = -1;
+      qBtn.classList.remove('manual');
+      updateQSelection();
+      qm.classList.remove('open');
+    };
+    qm.appendChild(autoBtn);
+
+    hls.levels.forEach(function (lvl, idx) {
+      var lbl = lvl.height ? lvl.height + 'p' : 'جودة ' + (idx + 1);
+      var btn = el('button', (!hls.autoLevelEnabled && hls.currentLevel === idx) ? 'active' : '', lbl);
+      btn.onclick = function () {
+        hls.currentLevel = idx;
+        qBtn.classList.add('manual');
+        updateQSelection();
+        qm.classList.remove('open');
+      };
+      qm.appendChild(btn);
+    });
+  }
+
+  function updateQSelection() {
+    var btns = $all('button', qm);
+    btns.forEach(function (b, idx) {
+      if (idx === 0) {
+        b.classList.toggle('active', hls.autoLevelEnabled);
+      } else {
+        b.classList.toggle('active', !hls.autoLevelEnabled && hls.currentLevel === (idx - 1));
+      }
+    });
+  }
 
   function startHls(rawUrl) {
     var url;
@@ -743,7 +748,7 @@ var EVT = [
       channelWorking();
     }
 
-    if (Hls.isSupported()) {
+    if (window.Hls && Hls.isSupported()) {
       hls = new Hls({
         enableWorker: true,
         startLevel: 0,
@@ -762,10 +767,7 @@ var EVT = [
       hls.attachMedia(vid);
 
       hls.on(Hls.Events.MANIFEST_PARSED, function () {
-        if (!qBuilt) {
-          buildQ();
-          qBuilt = true;
-        }
+        buildQ();
         if (hls.levels && hls.levels.length) {
           hls.autoLevelEnabled = false;
           hls.currentLevel = 0;
@@ -854,7 +856,7 @@ var EVT = [
     curPlayName = 'event1 ' + s.lbl;
     curEvtUrl = s.url;
     resetSelection();
-    s.btn.classList.add('on');
+    if (s.btn) s.btn.classList.add('on');
     showTitle('event1 ' + s.lbl);
     cur = { r: -3, i: 0 };
     startHls(s.url);
@@ -887,17 +889,9 @@ var EVT = [
     img.onerror = function () { this.style.display = 'none'; };
     wrap.appendChild(img);
     card.appendChild(wrap);
-    // اسم القناة مخفي في CSS
     card.appendChild(el('div', 'ch-name', ch.name));
     card.onclick = onClick;
     return card;
-  }
-
-  function makeTextChannel(ch, onClick) {
-    var b = el('button', 'ch', ch.name);
-    if (ch.isNew) b.classList.add('new-ch');
-    b.onclick = onClick;
-    return b;
   }
 
   function isExtUrl(url) {
@@ -920,412 +914,179 @@ var EVT = [
 
   function selectMulti(card, name, source, ci) {
     resetSelection();
-    card.style.borderColor = '#0f0';
-    card.classList.add('channel-active');
+    setChannelActive(card);
     showTitle(name);
-    cur = { r: -2, i: ci };
-    playChannel(source, name);
+    curPlayName = name;
+    curPlayUrl = resolvePlayUrl(source);
+    playChannel(curPlayUrl, name);
   }
 
-  function buildMultiRow(data, boxId, styleClass) {
-    var box = document.getElementById(boxId);
+  function buildMultiRow(containerId, channels, styleClass) {
+    var box = document.getElementById(containerId);
     if (!box) return;
-    box.innerHTML = '';
-    data.forEach(function (ch, ci) {
-      if (ch.single || ch.levels) {
-        var source = ch.single || { levels: ch.levels };
-        if (ch.logo) {
-          var card = makeLogoCard(ch, styleClass, function () {
-            selectMulti(card, ch.name, source, ci);
-          });
-          box.appendChild(card);
-        } else {
-          var btn = makeTextChannel(ch, function () {
+    channels.forEach(function (ch, ci) {
+      if (ch.levels) {
+        var card = makeLogoCard(ch, styleClass, null);
+        var qRow = el('div', 'q-row');
+        ch.levels.forEach(function (lv) {
+          var btn = el('button', '', lv.label);
+          btn.onclick = function (e) {
+            e.stopPropagation();
             resetSelection();
-            btn.classList.add('on', 'channel-active');
-            showTitle(ch.name);
-            cur = { r: -2, i: ci };
-            playChannel(source, ch.name);
-          });
-          box.appendChild(btn);
-        }
-        return;
-      }
-
-      var card = el('div', 'multi-card ' + styleClass);
-      var wrap = el('div', 'lw');
-      var img = el('img');
-      img.src = ch.logo;
-      img.alt = ch.name;
-      if (ch.sport) img.className = 'cv';
-      img.onerror = function () { this.style.display = 'none'; };
-      wrap.appendChild(img);
-      if (ch.num) wrap.appendChild(el('span', 'cn', ch.num));
-      card.appendChild(wrap);
-      card.appendChild(el('div', 'ch-name', ch.name));
-      var qRow = el('div', 'q-row');
-      [{ lbl: 'SD', key: 'sd' }, { lbl: 'HD', key: 'hd' }, { lbl: '4K', key: 'uhd' }].forEach(function (q) {
-        if (!ch[q.key]) return;
-        var qBtnEl = el('button', '', q.lbl);
-        qBtnEl.onclick = function (e) {
-          e.stopPropagation();
-          resetSelection();
-          card.classList.add('channel-active');
-          qBtnEl.classList.add('on');
-          showTitle(ch.name + ' ' + q.lbl);
-          cur = { r: -2, i: ci };
-          playChannel(ch[q.key], ch.name + ' ' + q.lbl);
-        };
-        qRow.appendChild(qBtnEl);
-      });
-      card.appendChild(qRow);
-      box.appendChild(card);
-    });
-  }
-
-  function buildChannels() {
-    ROWS.forEach(function (row, ri) {
-      var box = document.getElementById('row-' + ri);
-      if (!box) return;
-      box.innerHTML = '';
-      row.channels.forEach(function (c, ci) {
-        if (c.logo) {
-          var card = el('div', 'multi-card');
-          var wrap = el('div', 'lw');
-          var img = el('img');
-          img.src = c.logo;
-          img.alt = c.n;
-          img.onerror = function () {
-            this.style.display = 'none';
-            wrap.textContent = '📺';
+            setChannelActive(card);
+            btn.classList.add('on');
+            showTitle(ch.name + ' (' + lv.label + ')');
+            playChannel(lv.url, ch.name);
           };
-          wrap.appendChild(img);
-          card.appendChild(wrap);
-          // اسم القناة مخفي في CSS (display:none)
-          card.appendChild(el('div', 'ch-name', c.n));
-          card.onclick = function () {
-            load(ri, ci);
-          };
-          box.appendChild(card);
-        } else {
-          var cls = 'ch';
-          if (c.t === 'iframe') cls += ' iframe-ch';
-          if (c.t === 'ts') cls += ' ts-ch';
-          var b = el('button', cls, c.n);
-          b.id = 'ch-' + ri + '-' + ci;
-          b.onclick = function () { load(ri, ci); };
-          box.appendChild(b);
-        }
-      });
-    });
-    buildEventRow();
-    buildMultiRow(BEIN_CH, 'row-bein', 'bein-style');
-    buildMultiRow(ALWAN_CH, 'row-alwan', 'alwan-style');
-    buildMultiRow(THM_CH, 'row-thm', 'thm-style');
-  }
-
-  function load(ri, ci) {
-    if (ri < 0 || ri >= ROWS.length || ci < 0 || ci >= ROWS[ri].channels.length) return;
-    var ch = ROWS[ri].channels[ci];
-    curEvtUrl = null;
-    curPlayUrl = ch.u || null;
-    curPlayName = ch.n || '';
-    cur = { r: ri, i: ci };
-    if (retryT) {
-      clearTimeout(retryT);
-      retryT = null;
-    }
-    resetSelection();
-    var box = document.getElementById('row-' + ri);
-    if (box) {
-      var children = box.children;
-      for (var idx = 0; idx < children.length; idx++) {
-        var child = children[idx];
-        if (child.classList && child.classList.contains('multi-card')) {
-          var img = child.querySelector('img');
-          if (img && img.alt === ch.n) {
-            child.classList.add('channel-active');
-            break;
+          qRow.appendChild(btn);
+        });
+        card.appendChild(qRow);
+        box.appendChild(card);
+      } else if (ch.single) {
+        var cardS = makeLogoCard(ch, styleClass, function () {
+          selectMulti(cardS, ch.name, ch.single, ci);
+        });
+        box.appendChild(cardS);
+      } else {
+        var cardM = makeLogoCard(ch, styleClass, null);
+        var qRowM = el('div', 'q-row');
+        ['sd', 'hd', 'uhd'].forEach(function (qKey) {
+          if (ch[qKey]) {
+            var btn = el('button', '', qKey.toUpperCase());
+            btn.onclick = function (e) {
+              e.stopPropagation();
+              resetSelection();
+              setChannelActive(cardM);
+              btn.classList.add('on');
+              showTitle(ch.name + ' (' + qKey.toUpperCase() + ')');
+              playChannel(ch[qKey], ch.name);
+            };
+            qRowM.appendChild(btn);
           }
-        } else if (child.id === 'ch-' + ri + '-' + ci) {
-          child.classList.add('on', 'channel-active');
-        }
+        });
+        cardM.appendChild(qRowM);
+        box.appendChild(cardM);
       }
-    }
+    });
+  }
+
+  function load(rIdx, cIdx) {
+    var r = ROWS[rIdx];
+    if (!r) return;
+    var ch = r.channels[cIdx];
+    if (!ch) return;
+    cur = { r: rIdx, i: cIdx };
+    curEvtUrl = null;
+    resetSelection();
+
+    var targetEl = document.querySelector('#row-' + rIdx + ' .ch:nth-child(' + (cIdx + 1) + ')');
+    setChannelActive(targetEl);
+
     showTitle(ch.n);
-    var t = ch.t || 'hls';
-    if (t === 'ts') {
-      openExtDialog(ch.u, ch.n);
-      return;
-    }
-    if (t === 'iframe') {
+    curPlayName = ch.n;
+    curPlayUrl = ch.u;
+
+    if (ch.t === 'iframe') {
       destroyHls();
       vid.style.display = 'none';
       ifw.style.display = 'block';
-      pw.classList.add('playing');
-      showLoader();
-      ifp.src = '';
-      setTimeout(function () {
-        ifp.src = ch.u;
-        hideLoader();
-      }, 400);
-      qm.innerHTML = '';
+      ifp.src = ch.u;
+      channelWorking();
       return;
     }
-    startHls(ch.u);
+
+    playChannel(ch.u, ch.n);
   }
 
-  function buildQ() {
-    qm.innerHTML = '';
-    if (!hls) return;
-    var lvls = hls.levels;
-    if (!lvls || !lvls.length) return;
-    var autoBtn = el('button', '', 'تلقائي');
-    autoBtn.onclick = function () {
-      hls.currentLevel = -1;
-      hls.autoLevelEnabled = true;
-      qBtn.classList.remove('manual');
-      updateQActive();
-      closeQ();
+  function buildStandardRows() {
+    ROWS.forEach(function (row, rIdx) {
+      var box = document.getElementById('row-' + rIdx);
+      if (!box) return;
+      row.channels.forEach(function (ch, cIdx) {
+        var btn = el('button', 'ch', ch.n);
+        if (ch.t === 'iframe') btn.classList.add('iframe-ch');
+        if (ch.t === 'ts') btn.classList.add('ts-ch');
+        btn.onclick = function () { load(rIdx, cIdx); };
+        box.appendChild(btn);
+      });
+    });
+  }
+
+  function bindEvents() {
+    playBtn.onclick = function () {
+      if (vid.paused) vid.play();
+      else vid.pause();
     };
-    qm.appendChild(autoBtn);
-    lvls.forEach(function (lv, i) {
-      var b = el('button', '', lv.height ? lv.height + 'p' : Math.round(lv.bitrate / 1000) + 'k');
-      b.onclick = function () {
-        hls.autoLevelEnabled = false;
-        hls.currentLevel = i;
-        qBtn.classList.add('manual');
-        updateQActive();
-        closeQ();
-      };
-      qm.appendChild(b);
+
+    muteBtn.onclick = function () {
+      vid.muted = !vid.muted;
+      muteBtn.textContent = vid.muted ? '🔇' : '🔊';
+    };
+
+    volSlider.oninput = function () {
+      vid.volume = parseFloat(volSlider.value);
+      vid.muted = (vid.volume === 0);
+      muteBtn.textContent = vid.muted ? '🔇' : '🔊';
+    };
+
+    fitBtn.onclick = function () {
+      aIdx = (aIdx + 1) % ASPECTS.length;
+      applyAspect(aIdx);
+    };
+
+    spdBtn.onclick = function () {
+      speedOn = !speedOn;
+      localStorage.setItem('speedOn', speedOn ? '1' : '0');
+      applySpeedVis();
+    };
+
+    fsBtn.onclick = doFullscreen;
+    reloadBtn.onclick = reloadCurrentStream;
+    extPlayBtn.onclick = openCurrentExternal;
+
+    qBtn.onclick = function (e) {
+      e.stopPropagation();
+      qm.classList.toggle('open');
+    };
+
+    document.addEventListener('click', function () {
+      qm.classList.remove('open');
     });
-    updateQActive();
-  }
 
-  function updateQActive() {
-    if (!hls) return;
-    $all('button', qm).forEach(function (b, i) {
-      if (i === 0) b.classList.toggle('active', hls.currentLevel === -1);
-      else b.classList.toggle('active', hls.currentLevel === (i - 1));
-    });
-  }
+    pw.onclick = function (e) {
+      if (e.target.closest('#controls-overlay') || e.target.closest('#speed-badge')) return;
+      pw.classList.toggle('show-ctrl');
+    };
 
-  function closeQ() { qm.classList.remove('open'); }
-
-  function toggleQ() {
-    qm.classList.toggle('open');
-    if (qm.classList.contains('open')) updateQActive();
-  }
-
-  function togglePlay() {
-    if (vid.paused) vid.play();
-    else vid.pause();
-  }
-
-  function toggleMute() {
-    vid.muted = !vid.muted;
-    muteBtn.textContent = vid.muted ? '🔇' : '🔊';
-    volSlider.value = vid.muted ? 0 : vid.volume;
-  }
-
-  function setVolume(v) {
-    vid.volume = parseFloat(v);
-    vid.muted = v == 0;
-    muteBtn.textContent = v == 0 ? '🔇' : '🔊';
-    volSlider.value = v;
-    localStorage.setItem('vol', v);
-  }
-
-  function skip(s) { vid.currentTime += s; }
-
-  function showSwipe(type, val) {
-    clearTimeout(swTm);
-    if (type === 'vol') {
-      siIcon.textContent = '🔊';
-      siLabel.textContent = 'الصوت ' + Math.round(val * 100) + '%';
-      siBar.style.width = (val * 100) + '%';
-      siBar.style.background = '#0f0';
-    } else {
-      siIcon.textContent = '☀️';
-      siLabel.textContent = 'الإضاءة ' + Math.round((1 - val / .85) * 100) + '%';
-      siBar.style.width = ((1 - val / .85) * 100) + '%';
-      siBar.style.background = '#fbbf24';
-    }
-    swInd.style.display = 'flex';
-    swTm = setTimeout(function () { swInd.style.display = 'none'; }, 1200);
-  }
-
-  function showDH(txt) {
-    dblTxt.textContent = txt;
-    dblHint.classList.add('show');
-    clearTimeout(dblHT);
-    dblHT = setTimeout(function () { dblHint.classList.remove('show'); }, 1500);
-  }
-
-  function showControls() {
-    pw.classList.add('show-ctrl');
-    clearTimeout(hCtrl);
-    hCtrl = setTimeout(function () { pw.classList.remove('show-ctrl'); }, 3000);
-  }
-
-  function isControlTarget(e) {
-    return e.target.closest('#controls-overlay')
-      || e.target.closest('#ch-rows')
-      || e.target.closest('#qm')
-      || e.target.closest('#speed-badge')
-      || e.target.closest('#iframe-wrap')
-      || e.target.closest('#ext-dialog')
-      || e.target.closest('#loader');
-  }
-
-  document.addEventListener('fullscreenchange', function () {
-    setFUI(!!document.fullscreenElement);
-  });
-  document.addEventListener('webkitfullscreenchange', function () {
-    setFUI(!!(document.fullscreenElement || document.webkitFullscreenElement));
-  });
-
-  extDialogOverlay.addEventListener('click', function (e) {
-    if (e.target === extDialogOverlay) closeExtDialog();
-  });
-  document.getElementById('ext-btn-cancel').addEventListener('click', closeExtDialog);
-  document.getElementById('ext-btn-store').addEventListener('click', openExtStore);
-  document.getElementById('ext-btn-confirm').addEventListener('click', confirmExtDialog);
-
-  document.getElementById('play-btn').addEventListener('click', togglePlay);
-  muteBtn.addEventListener('click', toggleMute);
-  volSlider.addEventListener('input', function () { setVolume(this.value); });
-  document.getElementById('skip-back-btn').addEventListener('click', function () { skip(-10); });
-  document.getElementById('skip-fwd-btn').addEventListener('click', function () { skip(10); });
-  fitBtn.addEventListener('click', cycleAspect);
-  spdBtn.addEventListener('click', toggleSpeed);
-  document.getElementById('fs-btn').addEventListener('click', doFullscreen);
-  document.getElementById('reload-btn').addEventListener('click', reloadCurrentStream);
-  document.getElementById('ext-play-btn').addEventListener('click', openCurrentExternal);
-  qBtn.addEventListener('click', toggleQ);
-  speedBadge.addEventListener('click', runSpeedTest);
-
-  document.addEventListener('touchend', function (e) {
-    if (isControlTarget(e) || isSwiping) return;
-    var now = Date.now();
-    if (now - lTap < 400 && lTap > 0) {
-      lTap = 0;
-      clearTimeout(dblT);
-      dblT = null;
-      doFullscreen();
-      showDH('⛶ شاشة كاملة');
-    } else {
-      lTap = now;
-      clearTimeout(dblT);
-      if (e.target.closest('#player-wrap')) {
-        dblT = setTimeout(function () {
-          lTap = 0;
-          showControls();
-        }, 400);
+    extBtnCancel.onclick = closeExtDialog;
+    extBtnStore.onclick = openExtStore;
+    extBtnConfirm.onclick = function () {
+      if (!extPendingUrl) {
+        closeExtDialog();
+        return;
       }
-    }
-  }, { passive: true });
-
-  pw.addEventListener('touchstart', function (e) {
-    if (isControlTarget(e)) return;
-    var t = e.touches[0];
-    tyS = t.clientY;
-    isSwiping = false;
-    var r = pw.getBoundingClientRect();
-    swT = (t.clientX - r.left) > (r.width / 2) ? 'vol' : 'brightness';
-    swSV = swT === 'vol' ? vid.volume : brightness;
-  }, { passive: true });
-
-  pw.addEventListener('touchmove', function (e) {
-    if (!swT || e.target.closest('#controls-overlay') || e.target.closest('#iframe-wrap')) return;
-    var t = e.touches[0];
-    var dy = tyS - t.clientY;
-    if (!isSwiping && Math.abs(dy) > 12) isSwiping = true;
-    if (!isSwiping) return;
-    var delta = dy / pw.getBoundingClientRect().height;
-    if (swT === 'vol') {
-      var v = Math.max(0, Math.min(1, swSV + delta));
-      setVolume(v);
-      showSwipe('vol', v);
-    } else {
-      var b = Math.max(0, Math.min(.85, swSV - delta));
-      brightness = b;
-      brightL.style.opacity = b;
-      localStorage.setItem('brightness', b);
-      showSwipe('brightness', b);
-    }
-  }, { passive: true });
-
-  pw.addEventListener('touchend', function () {
-    swT = null;
-    setTimeout(function () { isSwiping = false; }, 50);
-  }, { passive: true });
-
-  pw.addEventListener('click', function (e) {
-    if (isControlTarget(e)) return;
-    showControls();
-  });
-
-  document.addEventListener('click', function (e) {
-    if (e.target.closest('#q-btn')) return;
-    if (!e.target.closest('#qw')) closeQ();
-  });
-
-  function bindChannelListScroll() {
-    var startX = 0;
-    var startY = 0;
-    var startTop = 0;
-    var axis = null;
-    var active = false;
-
-    chRows.addEventListener('touchstart', function (e) {
-      if (!e.touches.length) return;
-      var t = e.touches[0];
-      startX = t.clientX;
-      startY = t.clientY;
-      startTop = chRows.scrollTop;
-      axis = null;
-      active = true;
-    }, { passive: true });
-
-    chRows.addEventListener('touchmove', function (e) {
-      if (!active || !e.touches.length) return;
-      var t = e.touches[0];
-      var adx = Math.abs(t.clientX - startX);
-      var ady = Math.abs(t.clientY - startY);
-      if (!axis) {
-        if (adx < 8 && ady < 8) return;
-        axis = ady > adx ? 'y' : 'x';
-      }
-      if (axis !== 'y') return;
-      e.preventDefault();
-      chRows.scrollTop = startTop - (t.clientY - startY);
-    }, { passive: false });
-
-    chRows.addEventListener('touchend', function () {
-      active = false;
-      axis = null;
-    }, { passive: true });
-
-    chRows.addEventListener('touchcancel', function () {
-      active = false;
-      axis = null;
-    }, { passive: true });
+      var url = extPendingUrl;
+      closeExtDialog();
+      launchExternalPlayer(url);
+    };
   }
 
-  applyAspect(aIdx);
-  applySpeedVis();
-
-  var savedVol = localStorage.getItem('vol');
-  if (savedVol) {
-    vid.volume = parseFloat(savedVol);
-    volSlider.value = savedVol;
+  function init() {
+    applyAspect(aIdx);
+    applySpeedVis();
+    bindEvents();
+    buildStandardRows();
+    buildEventRow();
+    buildMultiRow('row-bein', BEIN_CH, 'bein-style');
+    buildMultiRow('row-alwan', ALWAN_CH, 'alwan-style');
+    buildMultiRow('row-thm', THM_CH, 'thm-style');
   }
 
-  bindChannelListScroll();
-  buildChannels();
-  load(0, 0);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
 </script>
 </body>
