@@ -1,0 +1,19 @@
+[
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Al_Jazeera_Logo.svg", "alt": "قناة الجزيرة", "href": "#", "grade": 1 },
+
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/1/14/MBC_1.svg", "alt": "MBC1", "href": "#", "grade": 2 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/4/4d/MBC_2_Logo.svg", "alt": "MBC2", "href": "#", "grade": 2 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/7/7f/MBC_3_Logo.svg", "alt": "MBC3", "href": "#", "grade": 2 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/3/32/MBC_4_Logo.svg", "alt": "MBC4", "href": "#", "grade": 2 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/6/6b/MBC_5_Logo.svg", "alt": "MBC5", "href": "#", "grade": 2 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/2/24/MBC_Action_Logo.png", "alt": "MBC Action", "href": "#", "grade": 2 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/2/27/MBC_Drama_Logo.svg", "alt": "MBC Drama", "href": "#", "grade": 2 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/5/5d/MBC_Iraq_logo.png", "alt": "MBC Iraq", "href": "#", "grade": 2 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/b/b4/MBC_Masr_Logo.png", "alt": "MBC Masr", "href": "#", "grade": 2 },
+
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/9/98/Alarabiya_logo.svg", "alt": "قناة العربية", "href": "#", "grade": 1 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/6/67/Al_Hadath_logo.svg", "alt": "قناة الحدث", "href": "#", "grade": 1 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Sky_News_Arabia_2024.svg", "alt": "سكاي نيوز عربية", "href": "#", "grade": 1 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/1/12/Makkah_TV_logo.png", "alt": "قناة مكة", "href": "#", "grade": 1 },
+  { "src": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Al_Madinah_logo.png", "alt": "قناة المدينة", "href": "#", "grade": 1 }
+]
