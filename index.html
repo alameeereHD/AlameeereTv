@@ -139,6 +139,9 @@ video.ff { object-fit: contain; transform: scaleY(.72); transform-origin: center
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
 <script>
+var TS_UA = 'Mozilla/5.0 (QtEmbedded; U; Linux; C) IPTV';
+var TS_PROXY = 'https://my-proxy.alameeeretv.workers.dev/';
+
 var LOGO_ALJAZEERA = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Al_Jazeera_Logo.svg/1200px-Al_Jazeera_Logo.svg.png';
 var LOGO_ARABIYA = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Al_Arabiya_Logo.svg/1200px-Al_Arabiya_Logo.svg.png';
 var LOGO_SKY = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Sky_News_Arabia_logo.svg/1200px-Sky_News_Arabia_logo.svg.png';
@@ -179,7 +182,7 @@ var VARIETY_CH = [
   { n: "OSN Action", u: "http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token==", t: "hls" }
 ];
 
-// ===== الصف 3: أخبار (القديم في الملف الثاني) =====
+// ===== الصفوف الرئيسية =====
 var ROWS = [
   { channels: NEWS_CH },
   { channels: VARIETY_CH },
@@ -397,6 +400,21 @@ var THM_CH = [
     return node;
   }
 
+  function getProxyUrl(url) {
+    if (!url) return '';
+    // إذا كان الرابط يحتوي أصلاً على my-proxy → اتركه
+    if (url.indexOf('my-proxy.alameeeretv.workers.dev') !== -1) return url;
+    // تحويل IP → nip.io
+    var safeUrl = url.replace(/http:\/\/(\d+\.\d+\.\d+\.\d+)/g, 'http://$1.nip.io');
+    // إذا كان رابط TS أو فيه token → مرره عبر my-proxy
+    var isTsUrl = safeUrl.split('?')[0].slice(-3) === '.ts';
+    if (isTsUrl || safeUrl.indexOf('token=') !== -1) {
+      return TS_PROXY + '?url=' + encodeURIComponent(safeUrl) + '&ua=' + encodeURIComponent(TS_UA);
+    }
+    // غير ذلك → اتركه مباشرة
+    return url;
+  }
+
   function clearChannelActive() {
     $all('.ch.channel-active, .multi-card.channel-active, .event-card.channel-active').forEach(function (node) {
       node.classList.remove('channel-active');
@@ -551,7 +569,7 @@ var THM_CH = [
   }
 
   function startHls(rawUrl) {
-    var url = rawUrl;
+    var url = getProxyUrl(rawUrl);
 
     retryCount = 0;
     channelLoading();
@@ -866,7 +884,7 @@ var THM_CH = [
         card.appendChild(qRow);
         card.onclick = function () {
           if (isInternalCard && item.levels) {
-            playChannel({ levels: item.levels }, item.name, card);
+            playChannel(item.levels[0].url, item.name + ' (' + item.levels[0].label + ')', card);
             return;
           }
           var target = (item.levels && item.levels[0]) ? item.levels[0].url : (item.uhd || item.hd || item.sd);
@@ -926,7 +944,7 @@ var THM_CH = [
         card.appendChild(qRow);
         card.onclick = function () {
           if (isInternalCard && item.levels) {
-            playChannel({ levels: item.levels }, item.name, card);
+            playChannel(item.levels[0].url, item.name + ' (' + item.levels[0].label + ')', card);
             return;
           }
           var target = (item.levels && item.levels[0]) ? item.levels[0].url : (item.uhd || item.hd || item.sd);
