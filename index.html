@@ -2,11 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <title>AlameeereTv – جميع القنوات بشعاراتها</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, sans-serif; }
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
 #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
 #player-wrap { flex: 0 0 40%; min-height: 200px; position: relative; background: #000; overflow: hidden; }
 video { width: 100%; height: 100%; display: block; background: #000; }
@@ -203,11 +203,11 @@ var ROWS = [
   },
   {
     channels: [
-      { n: 'bein 1', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein1.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'ts', logo: LOGO_GENERIC },
-      { n: 'bein 2', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein2.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'ts', logo: LOGO_GENERIC },
-      { n: 'bein 3', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein3.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'ts', logo: LOGO_GENERIC },
-      { n: 'bein 4', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein4.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'ts', logo: LOGO_GENERIC },
-      { n: 'bein 5', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein5.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'ts', logo: LOGO_GENERIC }
+      { n: 'bein 1', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein1.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'hls', logo: LOGO_GENERIC },
+      { n: 'bein 2', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein2.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'hls', logo: LOGO_GENERIC },
+      { n: 'bein 3', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein3.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'hls', logo: LOGO_GENERIC },
+      { n: 'bein 4', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein4.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'hls', logo: LOGO_GENERIC },
+      { n: 'bein 5', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein5.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'hls', logo: LOGO_GENERIC }
     ]
   }
 ];
@@ -358,6 +358,8 @@ var THM_CH = [
   var dblT = null;
   var dblHT = null;
   var hCtrl = null;
+  var lastTouchEnd = 0;
+  var touchHandled = false;
 
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
@@ -435,6 +437,7 @@ var THM_CH = [
   function doFullscreen() {
     if (document.fullscreenElement || document.webkitFullscreenElement) {
       (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      setFUI(false);
       return;
     }
     var root = document.documentElement;
@@ -546,16 +549,6 @@ var THM_CH = [
     if (curPlayUrl) playChannel(curPlayUrl, curPlayName);
     else if (curEvtUrl) startHls(curEvtUrl);
     else if (cur.r >= 0) load(cur.r, cur.i);
-  }
-
-  function resolvePlayUrl(source) {
-    if (!source) return '';
-    if (typeof source === 'string') return source;
-    if (source.levels && source.levels.length) {
-      var hd = source.levels.filter(function (lv) { return lv.label === 'HD'; })[0];
-      return (hd || source.levels[0]).url;
-    }
-    return '';
   }
 
   function createMasterPlaylist(levels) {
@@ -823,7 +816,7 @@ var THM_CH = [
         if (ch.t === 'iframe') btn.classList.add('iframe-ch');
         if (ch.t === 'ts') btn.classList.add('ts-ch');
         btn.onclick = function () {
-          // قنوات TS → فتح خارجي مباشر
+          // قنوات TS (الصف 4 فقط) → فتح خارجي مباشر
           if (ch.t === 'ts') {
             setChannelActive(btn);
             openExternalDirect(ch.u);
@@ -853,7 +846,7 @@ var THM_CH = [
         card.appendChild(lw);
 
         var qRow = el('div', 'q-row');
-        var isExternalCard = idx >= 6; // أول 6 بطاقات داخلية، الباقي خارجي
+        var isExternalCard = idx >= 6;
 
         if (item.single) {
           var b = el('button', '', 'تشغيل');
@@ -868,7 +861,6 @@ var THM_CH = [
               var b = el('button', '', q.toUpperCase());
               b.onclick = function (e) {
                 e.stopPropagation();
-                // بطاقات خارجية → فتح خارجي مباشر
                 if (isExternalCard) {
                   setChannelActive(card);
                   openExternalDirect(item[q]);
@@ -915,13 +907,10 @@ var THM_CH = [
         card.appendChild(lw);
 
         var qRow = el('div', 'q-row');
-        var isInternalCard = idx < 3; // أول 3 بطاقات داخلية (levels)
+        var isInternalCard = idx < 3;
 
         if (item.levels) {
-          if (isInternalCard) {
-            // بطاقات داخلية → إلغاء أزرار SD/HD، الضغط على البطاقة يشغل SD
-            // (qRow يبقى فارغاً)
-          } else {
+          if (!isInternalCard) {
             item.levels.forEach(function (lv) {
               var b = el('button', '', lv.label);
               b.onclick = function (e) {
@@ -937,7 +926,6 @@ var THM_CH = [
               var b = el('button', '', q.toUpperCase());
               b.onclick = function (e) {
                 e.stopPropagation();
-                // بطاقات خارجية → فتح خارجي مباشر
                 setChannelActive(card);
                 openExternalDirect(item[q]);
               };
@@ -948,12 +936,9 @@ var THM_CH = [
         card.appendChild(qRow);
         card.onclick = function () {
           if (isInternalCard && item.levels) {
-            // بطاقة داخلية → شغل SD
-            var sd = item.levels.filter(function (lv) { return lv.label === 'SD'; })[0] || item.levels[0];
             playChannel({ levels: item.levels }, item.name, card);
             return;
           }
-          // بطاقة خارجية → فتح خارجي مباشر
           var target = (item.levels && item.levels[0]) ? item.levels[0].url : (item.uhd || item.hd || item.sd);
           if (target) {
             setChannelActive(card);
@@ -982,12 +967,10 @@ var THM_CH = [
         card.appendChild(lw);
 
         var qRow = el('div', 'q-row');
-        var isInternalCard = idx < 3; // أول 3 بطاقات داخلية (levels)
+        var isInternalCard = idx < 3;
 
         if (item.levels) {
-          if (isInternalCard) {
-            // بطاقات داخلية → إلغاء أزرار SD/HD
-          } else {
+          if (!isInternalCard) {
             item.levels.forEach(function (lv) {
               var b = el('button', '', lv.label);
               b.onclick = function (e) {
@@ -1069,28 +1052,70 @@ var THM_CH = [
       swT = null;
     });
 
-    // Double Tap for Fullscreen & Controls Display
+    // ============================================================
+    // النقر على المشغل - إصلاح كامل لـ Android
+    // ============================================================
+    function handleDoubleTap() {
+      doFullscreen();
+      dblTxt.textContent = (document.fullscreenElement || document.webkitFullscreenElement) ? 'Exit' : '⛶';
+      dblHint.classList.add('show');
+      clearTimeout(dblHT);
+      dblHT = setTimeout(function () { dblHint.classList.remove('show'); }, 600);
+    }
+
+    function handleSingleTap() {
+      dblT = setTimeout(function () {
+        pw.classList.toggle('show-ctrl');
+        clearTimeout(hCtrl);
+        if (pw.classList.contains('show-ctrl')) {
+          hCtrl = setTimeout(function () { pw.classList.remove('show-ctrl'); }, 4000);
+        }
+      }, 280);
+    }
+
+    // على الجوال: نستخدم touchend لكشف النقر المزدوج (أسرع وأدق من click)
+    pw.addEventListener('touchend', function (e) {
+      if (e.target.closest('#controls-overlay') || e.target.closest('#speed-badge')) return;
+      if (isSwiping) return;
+
+      var now = Date.now();
+      if (now - lTap < 300 && now - lTap > 30) {
+        // نقرة مزدوجة → fullscreen فوراً
+        clearTimeout(dblT);
+        dblT = null;
+        e.preventDefault();
+        handleDoubleTap();
+        lTap = 0;
+        return;
+      }
+
+      // نقرة واحدة
+      lTap = now;
+      clearTimeout(dblT);
+      handleSingleTap();
+    }, { passive: false });
+
+    // على الكمبيوتر: نستخدم click
     pw.addEventListener('click', function (e) {
       if (e.target.closest('#controls-overlay') || e.target.closest('#speed-badge')) return;
+      // تجاوز click على الجوال (لأنه يظهر بعد touchend)
+      if ('ontouchstart' in window) return;
+
       var now = Date.now();
       if (now - lTap < 300) {
         clearTimeout(dblT);
-        doFullscreen();
-        dblTxt.textContent = (document.fullscreenElement || document.webkitFullscreenElement) ? 'Exit' : '⛶';
-        dblHint.classList.add('show');
-        clearTimeout(dblHT);
-        dblHT = setTimeout(function () { dblHint.classList.remove('show'); }, 600);
+        dblT = null;
+        handleDoubleTap();
+        lTap = 0;
       } else {
-        dblT = setTimeout(function () {
-          pw.classList.toggle('show-ctrl');
-          clearTimeout(hCtrl);
-          if (pw.classList.contains('show-ctrl')) {
-            hCtrl = setTimeout(function () { pw.classList.remove('show-ctrl'); }, 4000);
-          }
-        }, 300);
+        lTap = now;
+        clearTimeout(dblT);
+        handleSingleTap();
       }
-      lTap = now;
     });
+
+    // منع zoom على الجوال
+    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
   }
 
   document.addEventListener('DOMContentLoaded', initUI);
