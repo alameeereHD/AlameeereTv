@@ -150,7 +150,7 @@ var LOGO_BEIN = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/BeIN_
 var LOGO_QURAN = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Quran_Logo.svg/1200px-Quran_Logo.svg.png';
 var LOGO_GENERIC = 'https://img.icons8.com/color/96/000000/tv.png';
 
-// ===== الصف 1: أخبار (من الملف القديم) =====
+// ===== الصف 1: أخبار =====
 var NEWS_CH = [
   { n: 'الجزيرة', u: 'https://ahm79.store/live/0545580310/7337741654/746714.m3u8', t: 'hls', logo: LOGO_ALJAZEERA },
   { n: 'العربية', u: 'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8', t: 'hls', logo: LOGO_ARABIYA },
@@ -160,26 +160,26 @@ var NEWS_CH = [
   { n: 'السنة النبوية', u: 'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8', t: 'hls', logo: LOGO_GENERIC }
 ];
 
-// ===== الصف 2: منوعات (من الملف القديم) =====
+// ===== الصف 2: منوعات (كل القنوات forceProxy) =====
 var VARIETY_CH = [
-  { n: "MBC 1", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8", t: "hls" },
-  { n: "MBC 2", u: "http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token==", t: "hls" },
-  { n: "MBC 3", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8", t: "hls" },
-  { n: "MBC 4", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8", t: "hls" },
-  { n: "MBC 5", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8", t: "hls" },
-  { n: "MBC Action", u: "https://edge66.magictvbox.com/liveApple/MBC_Action/index.m3u8", t: "hls" },
-  { n: "MBC Masr", u: "https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8", t: "hls" },
-  { n: "MBC Masr+", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-usa/cd8d40acdab28aac0582faa3bd3983f1/index.m3u8", t: "hls" },
-  { n: "MBC Masr 2", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-2/754931856515075b0aabf0e583495c68/index.m3u8", t: "hls" },
-  { n: "MBC Plus Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-plus-drama/e37251ec2aac8f6c98f75cd0fa37cd28/index.m3u8", t: "hls" },
-  { n: "MBC Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8", t: "hls" },
-  { n: "MBC Masr Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-drama/567b703c19ede6598222de81b0e4508b/index.m3u8", t: "hls" },
-  { n: "MBC Iraq", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8", t: "hls" },
-  { n: "MBC Persia", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-persia/818ee8e4b592dc497608f066d825bfb4/index.m3u8", t: "hls" },
-  { n: "AD Premium 1", u: "https://www.elahmad.ru/tv/live/shahid_shaka.php?id=abudhabi_premium_1", t: "ts" },
-  { n: "AD Premium 2", u: "https://www.elahmad.ru/tv/live/shahid_shaka.php?id=abudhabi_premium_2", t: "ts" },
-  { n: "beIN Drama", u: "http://stream.woodfencepods.com/pdf/IC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ/index.m3u8?token==", t: "hls" },
-  { n: "OSN Action", u: "http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token==", t: "hls" }
+  { n: "MBC 1", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC 2", u: "http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token==", t: "hls", forceProxy: true },
+  { n: "MBC 3", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC 4", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC 5", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC Action", u: "https://edge66.magictvbox.com/liveApple/MBC_Action/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC Masr", u: "https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC Masr+", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-usa/cd8d40acdab28aac0582faa3bd3983f1/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC Masr 2", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-2/754931856515075b0aabf0e583495c68/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC Plus Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-plus-drama/e37251ec2aac8f6c98f75cd0fa37cd28/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC Masr Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-drama/567b703c19ede6598222de81b0e4508b/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC Iraq", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8", t: "hls", forceProxy: true },
+  { n: "MBC Persia", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-persia/818ee8e4b592dc497608f066d825bfb4/index.m3u8", t: "hls", forceProxy: true },
+  { n: "AD Premium 1", u: "https://www.elahmad.ru/tv/live/shahid_shaka.php?id=abudhabi_premium_1", t: "ts", forceProxy: true },
+  { n: "AD Premium 2", u: "https://www.elahmad.ru/tv/live/shahid_shaka.php?id=abudhabi_premium_2", t: "ts", forceProxy: true },
+  { n: "beIN Drama", u: "http://stream.woodfencepods.com/pdf/IC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ/index.m3u8?token==", t: "hls", forceProxy: true },
+  { n: "OSN Action", u: "http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token==", t: "hls", forceProxy: true }
 ];
 
 // ===== الصفوف الرئيسية =====
@@ -196,18 +196,19 @@ var ROWS = [
       { n: 'السنة', u: 'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8', t: 'hls', logo: LOGO_GENERIC }
     ]
   },
+  // ===== الصف 4: MBC (كل القنوات forceProxy) =====
   {
     channels: [
-      { n: 'MBC 1 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8', t: 'hls', logo: LOGO_MBC },
-      { n: 'MBC 2 HD', u: 'http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token==', t: 'hls', logo: LOGO_MBC },
-      { n: 'MBC 3 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8', t: 'hls', logo: LOGO_MBC },
-      { n: 'MBC 4 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8', t: 'hls', logo: LOGO_MBC },
-      { n: 'MBC 5 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8', t: 'hls', logo: LOGO_MBC },
-      { n: 'MBC Action HD', u: 'https://flu.systemnet.tv/MBCAction/mono.m3u8', t: 'hls', logo: LOGO_MBC },
-      { n: 'MBC Drama HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8', t: 'hls', logo: LOGO_MBC },
-      { n: 'MBC Iraq HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8', t: 'hls', logo: LOGO_MBC },
-      { n: 'MBC Masr HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8', t: 'hls', logo: LOGO_MBC },
-      { n: 'osn star', u: 'http://cloth.orangecord.net/pdf/OSNStarMoviesHD/index.m3u8?token==', t: 'hls', logo: LOGO_GENERIC }
+      { n: 'MBC 1 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
+      { n: 'MBC 2 HD', u: 'http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token==', t: 'hls', logo: LOGO_MBC, forceProxy: true },
+      { n: 'MBC 3 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
+      { n: 'MBC 4 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
+      { n: 'MBC 5 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
+      { n: 'MBC Action HD', u: 'https://flu.systemnet.tv/MBCAction/mono.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
+      { n: 'MBC Drama HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
+      { n: 'MBC Iraq HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
+      { n: 'MBC Masr HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
+      { n: 'osn star', u: 'http://cloth.orangecord.net/pdf/OSNStarMoviesHD/index.m3u8?token==', t: 'hls', logo: LOGO_GENERIC, forceProxy: true }
     ]
   },
   {
@@ -401,12 +402,12 @@ var THM_CH = [
     return node;
   }
 
-  function getProxyUrl(url) {
+  function getProxyUrl(url, forceProxy) {
     if (!url) return '';
     if (url.indexOf('my-proxy.alameeeretv.workers.dev') !== -1) return url;
     var safeUrl = url.replace(/http:\/\/(\d+\.\d+\.\d+\.\d+)/g, 'http://$1.nip.io');
     var isTsUrl = safeUrl.split('?')[0].slice(-3) === '.ts';
-    if (isTsUrl || safeUrl.indexOf('token=') !== -1) {
+    if (forceProxy || isTsUrl || safeUrl.indexOf('token=') !== -1) {
       return TS_PROXY + '?url=' + encodeURIComponent(safeUrl) + '&ua=' + encodeURIComponent(TS_UA);
     }
     return url;
@@ -525,9 +526,6 @@ var THM_CH = [
   function showLoader() { loader.style.display = 'flex'; }
   function hideLoader() { loader.style.display = 'none'; }
 
-  // ============================================================
-  // الفتح الخارجي المباشر لقنوات TS
-  // ============================================================
   function toIntentUrl(streamUrl) {
     try {
       var u = new URL(streamUrl);
@@ -552,8 +550,6 @@ var THM_CH = [
     }
   }
 
-  // ============================================================
-
   function reloadCurrentStream() {
     if (ifw.style.display === 'block' && curPlayUrl) {
       ifp.src = '';
@@ -571,8 +567,8 @@ var THM_CH = [
     hls = null;
   }
 
-  function startHls(rawUrl) {
-    var url = getProxyUrl(rawUrl);
+  function startHls(rawUrl, forceProxy) {
+    var url = getProxyUrl(rawUrl, forceProxy);
 
     retryCount = 0;
     channelLoading();
@@ -671,7 +667,7 @@ var THM_CH = [
     setTimeout(hideLoader, 1500);
   }
 
-  function playChannel(target, name, cardNode) {
+  function playChannel(target, name, cardNode, forceProxy) {
     curPlayUrl = target;
     curPlayName = name || '';
     curEvtUrl = null;
@@ -684,7 +680,7 @@ var THM_CH = [
       playIframe(target);
       return;
     }
-    startHls(target);
+    startHls(target, forceProxy);
   }
 
   function load(r, i, node) {
@@ -698,7 +694,7 @@ var THM_CH = [
     setChannelActive(node || null);
 
     if (ch.t === 'iframe') playIframe(ch.u);
-    else startHls(ch.u);
+    else startHls(ch.u, ch.forceProxy);
   }
 
   function buildQ() {
