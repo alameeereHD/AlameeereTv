@@ -338,6 +338,7 @@ var THM_CH = [
   var curPlayName = '';
   var retryCount = 0;
   var MAX_RETRIES = 3;
+  var qBuilt = false;
 
   var vid = document.getElementById('vid');
   var ifw = document.getElementById('iframe-wrap');
@@ -402,16 +403,12 @@ var THM_CH = [
 
   function getProxyUrl(url) {
     if (!url) return '';
-    // إذا كان الرابط يحتوي أصلاً على my-proxy → اتركه
     if (url.indexOf('my-proxy.alameeeretv.workers.dev') !== -1) return url;
-    // تحويل IP → nip.io
     var safeUrl = url.replace(/http:\/\/(\d+\.\d+\.\d+\.\d+)/g, 'http://$1.nip.io');
-    // إذا كان رابط TS أو فيه token → مرره عبر my-proxy
     var isTsUrl = safeUrl.split('?')[0].slice(-3) === '.ts';
     if (isTsUrl || safeUrl.indexOf('token=') !== -1) {
       return TS_PROXY + '?url=' + encodeURIComponent(safeUrl) + '&ua=' + encodeURIComponent(TS_UA);
     }
-    // غير ذلك → اتركه مباشرة
     return url;
   }
 
@@ -566,6 +563,12 @@ var THM_CH = [
     if (curPlayUrl) playChannel(curPlayUrl, curPlayName);
     else if (curEvtUrl) startHls(curEvtUrl);
     else if (cur.r >= 0) load(cur.r, cur.i);
+  }
+
+  function destroyHls() {
+    if (!hls) return;
+    hls.destroy();
+    hls = null;
   }
 
   function startHls(rawUrl) {
@@ -756,7 +759,6 @@ var THM_CH = [
     qBtn.onclick = function (e) { e.stopPropagation(); qm.classList.toggle('open'); };
     document.addEventListener('click', function () { qm.classList.remove('open'); });
 
-    // Render standard rows
     ROWS.forEach(function (row, rIdx) {
       var container = $('#row-' + rIdx);
       if (!container) return;
@@ -776,7 +778,6 @@ var THM_CH = [
       });
     });
 
-    // Render beIN row
     var beinRow = $('#row-bein');
     if (beinRow) {
       BEIN_CH.forEach(function (item, idx) {
@@ -837,7 +838,6 @@ var THM_CH = [
       });
     }
 
-    // Render Alwan row
     var alwanRow = $('#row-alwan');
     if (alwanRow) {
       ALWAN_CH.forEach(function (item, idx) {
@@ -897,7 +897,6 @@ var THM_CH = [
       });
     }
 
-    // Render Thmanyah row
     var thmRow = $('#row-thm');
     if (thmRow) {
       THM_CH.forEach(function (item, idx) {
@@ -957,7 +956,6 @@ var THM_CH = [
       });
     }
 
-    // Touch Controls for Brightness & Volume
     pw.addEventListener('touchstart', function (e) {
       if (e.touches.length === 1) {
         swT = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -1000,7 +998,6 @@ var THM_CH = [
       swT = null;
     });
 
-    // النقر على المشغل - إصلاح كامل لـ Android
     function handleDoubleTap() {
       doFullscreen();
       dblTxt.textContent = (document.fullscreenElement || document.webkitFullscreenElement) ? 'Exit' : '⛶';
