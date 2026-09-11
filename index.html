@@ -100,47 +100,11 @@ video.ff { object-fit: contain; transform: scaleY(.72); transform-origin: center
 .new-ch { border-color: #fff !important; box-shadow: 0 0 12px rgba(255,255,255,.7); }
 .new-ch:hover { box-shadow: 0 0 20px rgba(255,255,255,1); }
 #err-toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #a00; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 9999; }
-#ext-dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 10000; opacity: 0; transition: opacity .3s; }
-#ext-dialog-overlay.show { display: flex; opacity: 1; }
-#ext-dialog { background: #111; border: 1px solid #333; border-radius: 20px; width: 90%; max-width: 340px; padding: 0; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.9); transform: scale(.9); transition: transform .3s; }
-#ext-dialog-overlay.show #ext-dialog { transform: scale(1); }
-#ext-dialog-header { background: #0a0a0a; padding: 18px 20px 12px; text-align: center; border-bottom: 1px solid #222; }
-#ext-dialog-header .icon { font-size: 42px; margin-bottom: 6px; display: block; }
-#ext-dialog-header h3 { color: #fff; font-size: 17px; font-weight: 700; margin: 0; }
-#ext-dialog-header p { color: #aaa; font-size: 12px; margin-top: 4px; }
-#ext-dialog-body { padding: 18px 20px; }
-#ext-dialog-body .info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 12px; background: #0a0a0a; border-radius: 10px; border: 1px solid #1a1a1a; }
-#ext-dialog-body .info-row .icon-small { font-size: 20px; }
-#ext-dialog-body .info-row .info-text { flex: 1; }
-#ext-dialog-body .info-row .info-text .label { color: #888; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
-#ext-dialog-body .info-row .info-text .value { color: #fff; font-size: 13px; font-weight: 600; margin-top: 1px; }
-#ext-dialog-body .message { color: #ccc; font-size: 13px; line-height: 1.7; text-align: center; margin: 8px 0 4px; }
-#ext-dialog-body .message strong { color: #0f0; }
-#ext-dialog-footer { display: flex; padding: 0 20px 20px; gap: 10px; }
-#ext-dialog-footer button { flex: 1; padding: 12px 0; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: .2s; }
-#ext-btn-cancel { background: #1a1a1a; color: #999; }
-#ext-btn-cancel:hover { background: #252525; color: #fff; }
-#ext-btn-store { background: #222; color: #ccc; }
-#ext-btn-store:hover { background: #2c2c2c; color: #fff; }
-#ext-btn-confirm { background: #0066ff; color: #fff; box-shadow: 0 4px 15px rgba(0,102,255,.3); }
-#ext-btn-confirm:hover { background: #1a75ff; transform: translateY(-1px); }
-#ext-btn-confirm:active { transform: translateY(0); }
 </style>
 </head>
 <body>
 <div id="app">
   <div id="err-toast"></div>
-  <div id="ext-dialog-overlay">
-    <div id="ext-dialog">
-      <div id="ext-dialog-header"><span class="icon" id="ext-dialog-icon">📺</span><h3 id="ext-dialog-title">مشغل خارجي مطلوب</h3><p id="ext-dialog-subtitle">هذه القناة تحتاج مشغلاً خارجياً</p></div>
-      <div id="ext-dialog-body">
-        <div class="info-row"><span class="icon-small" id="ext-player-icon">🎬</span><div class="info-text"><div class="label">المشغل المطلوب</div><div class="value" id="ext-player-name">VLC Media Player</div></div></div>
-        <div class="info-row"><span class="icon-small">📱</span><div class="info-text"><div class="label">الجهاز</div><div class="value" id="ext-device-name">iPhone / iPad</div></div></div>
-        <p class="message" id="ext-dialog-msg">اضغط "فتح المشغل" لتشغيل القناة في التطبيق الخارجي.</p>
-      </div>
-      <div id="ext-dialog-footer"><button type="button" id="ext-btn-cancel">إلغاء</button><button type="button" id="ext-btn-store">تنزيل</button><button type="button" id="ext-btn-confirm">فتح المشغل</button></div>
-    </div>
-  </div>
   <div id="player-wrap">
     <video id="vid" class="fc" playsinline webkit-playsinline></video>
     <div id="brand-overlay"><span>AlameeereTv</span></div>
@@ -161,7 +125,6 @@ video.ff { object-fit: contain; transform: scaleY(.72); transform-origin: center
       <button type="button" class="cb" id="fs-btn">⛶</button>
       <div id="fg"></div>
       <button type="button" class="cb" id="reload-btn">🔄</button>
-      <button type="button" class="cb" id="ext-play-btn">📤 خارجي</button>
       <div id="qw"><button type="button" class="cb" id="q-btn">جودة</button><div id="qm"></div></div>
     </div>
   </div>
@@ -334,12 +297,6 @@ var THM_CH = [
   { name: 'منصة 3', num: 'M3', logo: TL, uhd: BASE + '1597571.ts' }
 ];
 
-var EVT = [
-  { lbl: '1', url: 'https://v4.sryyyeexxzzzs.app/live/v/event1/1280x720/index.m3u8' },
-  { lbl: '2', url: 'https://v4.sryyyeexxzzzs.app/live/v/event1/720p50/index.m3u8' },
-  { lbl: '3', url: 'https://v4.sryyyeexxzzzs.app/live/event1/playlist.m3u8' }
-];
-
 (function () {
   var hls = null;
   var cur = { r: -1, i: -1 };
@@ -347,6 +304,8 @@ var EVT = [
   var curEvtUrl = null;
   var curPlayUrl = null;
   var curPlayName = '';
+  var retryCount = 0;
+  var MAX_RETRIES = 3;
 
   var vid = document.getElementById('vid');
   var ifw = document.getElementById('iframe-wrap');
@@ -370,18 +329,6 @@ var EVT = [
   var brandOverlay = document.getElementById('brand-overlay');
   var muteBtn = document.getElementById('mute-btn');
   var volSlider = document.getElementById('vs');
-
-  var extDialogOverlay = document.getElementById('ext-dialog-overlay');
-  var extDialogTitle = document.getElementById('ext-dialog-title');
-  var extDialogSubtitle = document.getElementById('ext-dialog-subtitle');
-  var extDialogMsg = document.getElementById('ext-dialog-msg');
-  var extPlayerName = document.getElementById('ext-player-name');
-  var extDeviceName = document.getElementById('ext-device-name');
-  var extPlayerIcon = document.getElementById('ext-player-icon');
-  var extDialogIcon = document.getElementById('ext-dialog-icon');
-  var extPendingUrl = null;
-  var extIsIOS = false;
-  var extPendingChName = '';
 
   var brightness = parseFloat(localStorage.getItem('brightness') || '0');
   brightL.style.opacity = brightness;
@@ -444,8 +391,7 @@ var EVT = [
     if (node) node.classList.add('channel-active');
   }
 
-  function channelLoading(node) {
-    setChannelActive(node);
+  function channelLoading() {
     brandOverlay.classList.remove('error');
     brandOverlay.classList.add('loading');
     brandOverlay.style.opacity = '1';
@@ -562,6 +508,35 @@ var EVT = [
     setTimeout(function () { t.style.display = 'none'; }, 4000);
   }
 
+  // ============================================================
+  // الفتح الخارجي المباشر لقنوات TS
+  // ============================================================
+  function toIntentUrl(streamUrl) {
+    try {
+      var u = new URL(streamUrl);
+      return 'intent://' + u.host + u.pathname + u.search +
+        '#Intent;scheme=' + u.protocol.replace(':', '') +
+        ';action=android.intent.action.VIEW;type=video/*;end';
+    } catch (err) {
+      return 'intent:' + streamUrl + '#Intent;action=android.intent.action.VIEW;type=video/*;end';
+    }
+  }
+
+  function isIOS() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
+  function openExternalDirect(url) {
+    if (!url) return;
+    if (isIOS()) {
+      window.location.href = 'vlc://' + url;
+    } else {
+      window.location.href = toIntentUrl(url);
+    }
+  }
+
+  // ============================================================
+
   function reloadCurrentStream() {
     if (ifw.style.display === 'block' && curPlayUrl) {
       ifp.src = '';
@@ -581,75 +556,6 @@ var EVT = [
       return (hd || source.levels[0]).url;
     }
     return '';
-  }
-
-  function openCurrentExternal() {
-    var url = curPlayUrl || curEvtUrl;
-    var name = curPlayName || chTitle.textContent || '';
-    if (!url) { toast('اختر قناة أولاً'); return; }
-    if (ifw.style.display === 'block') { toast('هذه القناة لا تدعم التشغيل الخارجي'); return; }
-    if (typeof url !== 'string') url = resolvePlayUrl(url);
-    if (!url) { toast('لا يمكن فتح هذه القناة خارجياً'); return; }
-    openExtDialog(url, name);
-  }
-
-  function openExtDialog(url, chName) {
-    extPendingUrl = url;
-    extPendingChName = chName || '';
-    extIsIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    extDialogTitle.textContent = 'مشغل خارجي مطلوب';
-    extDialogSubtitle.textContent = chName || 'هذه القناة تحتاج مشغلاً خارجياً';
-    extDialogIcon.textContent = '📺';
-    var name = chName || 'هذه';
-    if (extIsIOS) {
-      extPlayerName.textContent = 'VLC Media Player';
-      extPlayerIcon.textContent = '🍎';
-      extDeviceName.textContent = 'iPhone / iPad';
-      extDialogMsg.innerHTML = 'اضغط <strong>فتح المشغل</strong> لتشغيل قناة <strong>"' + name + '"</strong> في VLC.';
-    } else {
-      extPlayerName.textContent = 'مشغل الفيديو';
-      extPlayerIcon.textContent = '🤖';
-      extDeviceName.textContent = 'Android';
-      extDialogMsg.innerHTML = 'اضغط <strong>فتح المشغل</strong> ثم اختر VLC أو أي مشغل مثبت لتشغيل <strong>"' + name + '"</strong>.';
-    }
-    extDialogOverlay.classList.add('show');
-  }
-
-  function closeExtDialog() {
-    extDialogOverlay.classList.remove('show');
-    extPendingUrl = null;
-    extPendingChName = '';
-  }
-
-  function tapLink(href) { window.location.href = href; }
-
-  function toIntentUrl(streamUrl) {
-    try {
-      var u = new URL(streamUrl);
-      return 'intent://' + u.host + u.pathname + u.search +
-        '#Intent;scheme=' + u.protocol.replace(':', '') +
-        ';action=android.intent.action.VIEW;type=video/*;end';
-    } catch (err) {
-      return 'intent:' + streamUrl + '#Intent;action=android.intent.action.VIEW;type=video/*;end';
-    }
-  }
-
-  function launchExternalPlayer(url) {
-    if (extIsIOS) { tapLink('vlc://' + url); return; }
-    tapLink(toIntentUrl(url));
-  }
-
-  function openExtStore() {
-    tapLink(extIsIOS
-      ? 'https://apps.apple.com/sa/app/vlc-media-player/id650377962'
-      : 'https://play.google.com/store/apps/details?id=org.videolan.vlc');
-  }
-
-  function confirmExtDialog() {
-    if (!extPendingUrl) { closeExtDialog(); return; }
-    var url = extPendingUrl;
-    closeExtDialog();
-    launchExternalPlayer(url);
   }
 
   function createMasterPlaylist(levels) {
@@ -681,6 +587,7 @@ var EVT = [
       url = getProxyUrl(rawUrl);
     }
 
+    retryCount = 0;
     channelLoading();
     vid.style.display = 'block';
     ifw.style.display = 'none';
@@ -703,6 +610,7 @@ var EVT = [
     function onStarted() {
       if (started || failed) return;
       started = true;
+      retryCount = 0;
       clearTimeout(retryT);
       retryT = null;
       clearTimeout(failTimer);
@@ -761,6 +669,12 @@ var EVT = [
           if (!started) {
             try { hls.startLoad(); } catch (err) {}
           } else {
+            if (retryCount++ >= MAX_RETRIES) {
+              hideLoader();
+              channelError();
+              toast('القناة لا تعمل — توقف إعادة المحاولة');
+              return;
+            }
             showLoader();
             clearTimeout(retryT);
             retryT = setTimeout(reloadCurrentStream, 5000);
@@ -774,6 +688,12 @@ var EVT = [
           hideLoader();
           channelError();
         } else {
+          if (retryCount++ >= MAX_RETRIES) {
+            hideLoader();
+            channelError();
+            toast('القناة لا تعمل — توقف إعادة المحاولة');
+            return;
+          }
           clearTimeout(retryT);
           retryT = setTimeout(reloadCurrentStream, 5000);
         }
@@ -890,12 +810,6 @@ var EVT = [
     speedBadge.onclick = runSpeedTest;
     $('#fs-btn').onclick = doFullscreen;
     $('#reload-btn').onclick = reloadCurrentStream;
-    $('#ext-play-btn').onclick = openCurrentExternal;
-
-    $('#ext-btn-cancel').onclick = closeExtDialog;
-    $('#ext-btn-store').onclick = openExtStore;
-    $('#ext-btn-confirm').onclick = confirmExtDialog;
-    extDialogOverlay.onclick = function (e) { if (e.target === extDialogOverlay) closeExtDialog(); };
 
     qBtn.onclick = function (e) { e.stopPropagation(); qm.classList.toggle('open'); };
     document.addEventListener('click', function () { qm.classList.remove('open'); });
@@ -908,7 +822,15 @@ var EVT = [
         var btn = el('button', 'ch', ch.n);
         if (ch.t === 'iframe') btn.classList.add('iframe-ch');
         if (ch.t === 'ts') btn.classList.add('ts-ch');
-        btn.onclick = function () { load(rIdx, cIdx, btn); };
+        btn.onclick = function () {
+          // قنوات TS → فتح خارجي مباشر
+          if (ch.t === 'ts') {
+            setChannelActive(btn);
+            openExternalDirect(ch.u);
+            return;
+          }
+          load(rIdx, cIdx, btn);
+        };
         container.appendChild(btn);
       });
     });
@@ -916,7 +838,7 @@ var EVT = [
     // Render beIN row
     var beinRow = $('#row-bein');
     if (beinRow) {
-      BEIN_CH.forEach(function (item) {
+      BEIN_CH.forEach(function (item, idx) {
         var card = el('div', 'multi-card bein-style');
         if (item.isNew) card.classList.add('new-ch');
 
@@ -931,6 +853,8 @@ var EVT = [
         card.appendChild(lw);
 
         var qRow = el('div', 'q-row');
+        var isExternalCard = idx >= 6; // أول 6 بطاقات داخلية، الباقي خارجي
+
         if (item.single) {
           var b = el('button', '', 'تشغيل');
           b.onclick = function (e) {
@@ -944,6 +868,12 @@ var EVT = [
               var b = el('button', '', q.toUpperCase());
               b.onclick = function (e) {
                 e.stopPropagation();
+                // بطاقات خارجية → فتح خارجي مباشر
+                if (isExternalCard) {
+                  setChannelActive(card);
+                  openExternalDirect(item[q]);
+                  return;
+                }
                 playChannel(item[q], item.name + ' (' + q.toUpperCase() + ')', card);
               };
               qRow.appendChild(b);
@@ -952,6 +882,14 @@ var EVT = [
         }
         card.appendChild(qRow);
         card.onclick = function () {
+          if (isExternalCard) {
+            var t = item.uhd || item.hd || item.sd;
+            if (t) {
+              setChannelActive(card);
+              openExternalDirect(t);
+            }
+            return;
+          }
           var target = item.single || item.hd || item.uhd || item.sd;
           if (target) playChannel(target, item.name, card);
         };
@@ -962,7 +900,7 @@ var EVT = [
     // Render Alwan row
     var alwanRow = $('#row-alwan');
     if (alwanRow) {
-      ALWAN_CH.forEach(function (item) {
+      ALWAN_CH.forEach(function (item, idx) {
         var card = el('div', 'multi-card alwan-style');
         if (item.isNew) card.classList.add('new-ch');
 
@@ -977,22 +915,31 @@ var EVT = [
         card.appendChild(lw);
 
         var qRow = el('div', 'q-row');
+        var isInternalCard = idx < 3; // أول 3 بطاقات داخلية (levels)
+
         if (item.levels) {
-          item.levels.forEach(function (lv) {
-            var b = el('button', '', lv.label);
-            b.onclick = function (e) {
-              e.stopPropagation();
-              playChannel(lv.url, item.name + ' (' + lv.label + ')', card);
-            };
-            qRow.appendChild(b);
-          });
+          if (isInternalCard) {
+            // بطاقات داخلية → إلغاء أزرار SD/HD، الضغط على البطاقة يشغل SD
+            // (qRow يبقى فارغاً)
+          } else {
+            item.levels.forEach(function (lv) {
+              var b = el('button', '', lv.label);
+              b.onclick = function (e) {
+                e.stopPropagation();
+                openExternalDirect(lv.url);
+              };
+              qRow.appendChild(b);
+            });
+          }
         } else {
           ['sd', 'hd', 'uhd'].forEach(function (q) {
             if (item[q]) {
               var b = el('button', '', q.toUpperCase());
               b.onclick = function (e) {
                 e.stopPropagation();
-                playChannel(item[q], item.name + ' (' + q.toUpperCase() + ')', card);
+                // بطاقات خارجية → فتح خارجي مباشر
+                setChannelActive(card);
+                openExternalDirect(item[q]);
               };
               qRow.appendChild(b);
             }
@@ -1000,8 +947,18 @@ var EVT = [
         }
         card.appendChild(qRow);
         card.onclick = function () {
-          var target = (item.levels && item.levels[0]) ? item.levels[0].url : (item.hd || item.uhd || item.sd);
-          if (target) playChannel(target, item.name, card);
+          if (isInternalCard && item.levels) {
+            // بطاقة داخلية → شغل SD
+            var sd = item.levels.filter(function (lv) { return lv.label === 'SD'; })[0] || item.levels[0];
+            playChannel({ levels: item.levels }, item.name, card);
+            return;
+          }
+          // بطاقة خارجية → فتح خارجي مباشر
+          var target = (item.levels && item.levels[0]) ? item.levels[0].url : (item.uhd || item.hd || item.sd);
+          if (target) {
+            setChannelActive(card);
+            openExternalDirect(target);
+          }
         };
         alwanRow.appendChild(card);
       });
@@ -1010,7 +967,7 @@ var EVT = [
     // Render Thmanyah row
     var thmRow = $('#row-thm');
     if (thmRow) {
-      THM_CH.forEach(function (item) {
+      THM_CH.forEach(function (item, idx) {
         var card = el('div', 'multi-card thm-style');
         if (item.isNew) card.classList.add('new-ch');
 
@@ -1025,22 +982,29 @@ var EVT = [
         card.appendChild(lw);
 
         var qRow = el('div', 'q-row');
+        var isInternalCard = idx < 3; // أول 3 بطاقات داخلية (levels)
+
         if (item.levels) {
-          item.levels.forEach(function (lv) {
-            var b = el('button', '', lv.label);
-            b.onclick = function (e) {
-              e.stopPropagation();
-              playChannel(lv.url, item.name + ' (' + lv.label + ')', card);
-            };
-            qRow.appendChild(b);
-          });
+          if (isInternalCard) {
+            // بطاقات داخلية → إلغاء أزرار SD/HD
+          } else {
+            item.levels.forEach(function (lv) {
+              var b = el('button', '', lv.label);
+              b.onclick = function (e) {
+                e.stopPropagation();
+                openExternalDirect(lv.url);
+              };
+              qRow.appendChild(b);
+            });
+          }
         } else {
           ['sd', 'hd', 'uhd'].forEach(function (q) {
             if (item[q]) {
               var b = el('button', '', q.toUpperCase());
               b.onclick = function (e) {
                 e.stopPropagation();
-                playChannel(item[q], item.name + ' (' + q.toUpperCase() + ')', card);
+                setChannelActive(card);
+                openExternalDirect(item[q]);
               };
               qRow.appendChild(b);
             }
@@ -1048,8 +1012,15 @@ var EVT = [
         }
         card.appendChild(qRow);
         card.onclick = function () {
-          var target = (item.levels && item.levels[0]) ? item.levels[0].url : (item.hd || item.uhd || item.sd);
-          if (target) playChannel(target, item.name, card);
+          if (isInternalCard && item.levels) {
+            playChannel({ levels: item.levels }, item.name, card);
+            return;
+          }
+          var target = (item.levels && item.levels[0]) ? item.levels[0].url : (item.uhd || item.hd || item.sd);
+          if (target) {
+            setChannelActive(card);
+            openExternalDirect(target);
+          }
         };
         thmRow.appendChild(card);
       });
