@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الاميريTv - ULTRA PLAYER</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; user-select: none; }
+        body { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .player-wrapper { position: relative; width: 100vw; height: 100vh; background: #000; display: flex; flex-direction: column; }
+        video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+        .top-bar { position: absolute; top: 18px; left: 18px; z-index: 30; display: flex; align-items: center; gap: 18px; pointer-events: none; }
+        .brand-text { font-size: 28px; font-weight: 900; color: #ffffff; text-shadow: 0 0 15px #ffffff, 0 0 40px #ffffff88, 0 0 80px #ffffff44; letter-spacing: 1px; background: rgba(0,0,0,0.5); padding: 4px 16px; border-radius: 12px; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.3); pointer-events: none; white-space: nowrap; }
+        .top-bar select { pointer-events: auto; background: rgba(0,0,0,0.7); border: 1.5px solid #ffffff; border-radius: 30px; padding: 8px 18px; color: #ffffff; font-weight: 700; font-size: 15px; backdrop-filter: blur(8px); box-shadow: 0 0 12px rgba(255,255,255,0.3); cursor: pointer; outline: none; min-width: 110px; }
+        .top-bar select option { background: #111; color: #fff; }
+        .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 24px 20px; background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.9) 100%); pointer-events: none; transition: opacity 0.4s ease; }
+        .overlay.hidden { opacity: 0; }
+        .center-buttons { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: 0px; pointer-events: auto; z-index: 15; }
+        .btn-circle { background: rgba(0,0,0,0.6); border: 2px solid #ffffff; color: #ffffff; width: 56px; height: 56px; border-radius: 50%; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(8px); box-shadow: 0 0 20px rgba(255,255,255,0.3); transition: 0.15s; }
+        .btn-circle:active { transform: scale(0.92); background: #ffffff; color: #000; }
+        .btn-circle.play-btn { width: 80px; height: 80px; font-size: 34px; background: #ffffff; color: #000; border: none; box-shadow: 0 0 30px #ffffff, 0 0 60px rgba(255,255,255,0.4); }
+        .bottom-bar { display: flex; flex-direction: column; gap: 14px; pointer-events: auto; z-index: 15; }
+        .timeline { width: 100%; height: 10px; cursor: pointer; display: flex; align-items: center; }
+        .timeline-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.25); border-radius: 4px; position: relative; }
+        .timeline-progress { height: 100%; width: 0%; background: linear-gradient(to right, #f0f0f0, #ffffff); border-radius: 4px; box-shadow: 0 0 12px #ffffff; position: relative; }
+        .timeline-progress::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 16px #ffffff; }
+        .controls-row { display: flex; justify-content: space-between; align-items: center; }
+        .time-display { color: #ffffff; font-weight: 700; font-size: 14px; text-shadow: 0 0 10px rgba(255,255,255,0.6); direction: ltr; }
+        .actions { display: flex; gap: 10px; align-items: center; position: relative; flex-wrap: wrap; }
+        .btn-icon { background: rgba(0,0,0,0.6); border: 1px solid #ffffff; color: #ffffff; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; backdrop-filter: blur(8px); box-shadow: 0 0 8px rgba(255,255,255,0.2); transition: 0.15s; }
+        .btn-icon:active { background: #ffffff; color: #000; transform: scale(0.92); }
+        .btn-speed { font-size: 13px; font-weight: 800; }
+        .btn-aspect { font-size: 14px; font-weight: 800; letter-spacing: 0px; }
+        .quality-dropdown { position: absolute; bottom: 52px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.92); border: 1px solid #ffffff; border-radius: 12px; padding: 6px 0; min-width: 110px; display: none; flex-direction: column; box-shadow: 0 0 24px rgba(255,255,255,0.3); backdrop-filter: blur(10px); z-index: 50; }
+        .quality-dropdown button { background: transparent; border: none; color: #fff; padding: 10px 16px; font-size: 13px; font-weight: 600; text-align: center; cursor: pointer; width: 100%; transition: 0.2s; }
+        .quality-dropdown button:hover, .quality-dropdown button.active { background: rgba(255,255,255,0.15); color: #ffffff; }
+        .status-msg { position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); color: #fff; background: rgba(0,0,0,0.7); padding: 8px 20px; border-radius: 30px; font-size: 14px; border: 1px solid #ffffff; backdrop-filter: blur(4px); z-index: 20; text-align: center; pointer-events: none; white-space: nowrap; display: none; }
+        .status-msg.error { border-color: #ff4444; color: #ff4444; display: block; }
+        .status-msg.loading { border-color: #ffaa00; color: #ffaa00; display: block; }
+        .spinner { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #ffffff; border-radius: 50%; animation: spin 0.8s linear infinite; z-index: 5; }
+        @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+        .locked .center-buttons, .locked .bottom-bar { opacity: 0.2; pointer-events: none; }
+        .locked .btn-icon#btnLock { opacity: 1; pointer-events: auto; }
+    </style>
+</head>
+<body>
+
+<div class="player-wrapper" id="playerWrapper">
+    <div class="top-bar">
+        <span class="brand-text">⚡ الاميريTv</span>
+        <select id="channelSelect"></select>
+    </div>
+
+    <video id="videoPlayer" playsinline crossorigin="anonymous"></video>
+
+    <div class="spinner" id="loadingSpinner"></div>
+    <div class="status-msg" id="statusMsg"></div>
+
+    <div class="overlay" id="overlay">
+        <div></div>
+        <div class="center-buttons">
+            <button class="btn-circle play-btn" id="btnPlay"><i class="fas fa-pause"></i></button>
+        </div>
+        <div class="bottom-bar">
+            <div class="timeline" id="timelineArea">
+                <div class="timeline-bg">
+                    <div class="timeline-progress" id="timelineProgress"></div>
+                </div>
+            </div>
+            <div class="controls-row">
+                <span class="time-display" id="timeText">00:00 / 00:00</span>
+                <div class="actions">
+                    <div class="quality-dropdown" id="qualityMenu"></div>
+                    <button class="btn-icon" id="btnMute"><i class="fas fa-volume-high"></i></button>
+                    <button class="btn-icon btn-speed" id="btnSpeed">1x</button>
+                    <button class="btn-icon btn-aspect" id="btnAspect" title="قياس الشاشة">⊡</button>
+                    <button class="btn-icon" id="btnQuality"><i class="fas fa-sliders"></i></button>
+                    <button class="btn-icon" id="btnPip"><i class="fas fa-images"></i></button>
+                    <button class="btn-icon" id="btnLock"><i class="fas fa-lock-open"></i></button>
+                    <button class="btn-icon" id="btnFullscreen"><i class="fas fa-expand"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    //  قائمة القنوات (تم تحديثها بجميع القنوات الجديدة)
+    // ============================================================
+    const channels = [
+        // ===== قنوات beIN (1 - 6) مع البروكسي =====
+        { 
+            name: 'beIN 1', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2Fre.new-redirect.online%2Flive%2F978480008877005%2Findex.m3u8%3Ft%3DwpKb7nBAefkLr8-efutLlA%26e%3D1788910761&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'beIN 2', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2Fre.new-redirect.online%2Flive%2F10011244%2Findex.m3u8%3Ft%3DvcTHrUlh5NHSrc0uRTC3ew%26e%3D1788910809&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'beIN 3', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2Fre.new-redirect.online%2Flive%2F161988840%2Findex.m3u8%3Ft%3DRVDzMoElXp9YnFtzANDWzg%26e%3D1788910813&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'beIN 4', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2Fre.new-redirect.online%2Flive%2F0103088447%2Findex.m3u8%3Ft%3DHFjwxufifOlQxYYHtngMSQ%26e%3D1788910823&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'beIN 5', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2Fre.new-redirect.online%2Flive%2F115451004%2Findex.m3u8%3Ft%3Dtd2ElbjnSGwN_Z5WB7JONQ%26e%3D1788910830&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'beIN 6', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2Fre.new-redirect.online%2Flive%2F788550011%2Findex.m3u8%3Ft%3DuwF672MWb3Gl5EKvZjFIwA%26e%3D1788910834&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+
+        // ===== قنوات الألوان مع البروكسي =====
+        { 
+            name: 'الوان ١', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fblcco.linkip.org%2Flive%2F3461_.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'الوان ٢', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fblcco.linkip.org%2Flive%2F3460_.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'الوان ٣', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fblcco.linkip.org%2Flive%2F3459_.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'الوان ٥', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fblcco.linkip.org%2Flive%2F3457_.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'الوان ٦', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fblcco.linkip.org%2Flive%2F3456_.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+
+        // ===== قنوات "ثمانية" مع البروكسي =====
+        { 
+            name: 'ثمانية ١', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.164.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F746717.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XD1dTQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgsABlcFAVJVAQ8BBVwEUQZSBFQGB1oABlBRUAVSVAIOGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBVABD1EBQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwQEVQQJURFPG0ZAF1VUWGtbUxdfDgUBUwQBSEYXClVcFw1QAQFcBlQNBw1SHBdAR1dFagxdEw1VAwVUV1pWRQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'ثمانية ٢', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.164.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F746718.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XD1dTQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgsABlcFAVJVAQ8BBVwEUQZSBFQGB1oABlBRUAVSVAIOGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBVABD1EBQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwQEVQQJURFPG0ZAF1VUWGtbUxdfDgUBUwQBSEYXClVcFw1QAQFcBlQNBw1SHBdAR1dFagxdEw1VAwVUV1pWRQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: 'ثمانية ٣', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.164.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F746719.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XD1dTQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgsABlcFAVJVAQ8BBVwEUQZSBFQGB1oABlBRUAVSVAIOGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBVABD1EBQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwQEVQQJURFPG0ZAF1VUWGtbUxdfDgUBUwQBSEYXClVcFw1QAQFcBlQNBw1SHBdAR1dFagxdEw1VAwVUV1pWRQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+
+        // ===== قنوات beIN 3 420 =====
+        { 
+            name: 'beIN 3 420', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F45.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+
+        // ===== قنوات 7HD =====
+        { 
+            name: '7HD', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F2.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+
+        // ===== قنوات 1HD - 8HD =====
+        { 
+            name: '1HD', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F4.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '2HD', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F5.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '3HD', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F6.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '4HD', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F7.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '5HD', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F8.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '6HD', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F9.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '7HD (2)', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F10.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '8HD', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F11.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+
+        // ===== قنوات 360 =====
+        { 
+            name: '360 - 4', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F27.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '360 - 5', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F28.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '360 - 6', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F29.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '360 - 7', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F30.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+        { 
+            name: '360 - 8', 
+            url: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fkid.mamganjo.workers.dev%2Fapi%2Fstream%2F31.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' 
+        },
+
+        // ===== قنوات ثمانية HD (بدون بروكسي) =====
+        { 
+            name: 'ثمانية HD1', 
+            url: 'https://blcco.linkip.org/live/3453_.m3u8' 
+        },
+        { 
+            name: 'ثمانية HD2', 
+            url: 'https://blcco.linkip.org/live/3454_.m3u8' 
+        },
+        { 
+            name: 'ثمانية HD3', 
+            url: 'https://blcco.linkip.org/live/3455_.m3u8' 
+        }
+    ];
+
+    // ===================== متغيرات =====================
+    const video = document.getElementById('videoPlayer');
+    const wrapper = document.getElementById('playerWrapper');
+    const overlay = document.getElementById('overlay');
+    const statusMsg = document.getElementById('statusMsg');
+    const spinner = document.getElementById('loadingSpinner');
+    const channelSelect = document.getElementById('channelSelect');
+    const btnPlay = document.getElementById('btnPlay');
+    const playIcon = btnPlay.querySelector('i');
+    const btnMute = document.getElementById('btnMute');
+    const volumeIcon = btnMute.querySelector('i');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+    const timelineProgress = document.getElementById('timelineProgress');
+    const timelineArea = document.getElementById('timelineArea');
+    const btnSpeed = document.getElementById('btnSpeed');
+    const timeText = document.getElementById('timeText');
+    const btnPip = document.getElementById('btnPip');
+    const btnLock = document.getElementById('btnLock');
+    const btnQuality = document.getElementById('btnQuality');
+    const qualityMenu = document.getElementById('qualityMenu');
+    const btnAspect = document.getElementById('btnAspect');
+
+    let isLocked = false;
+    let dashPlayer = null, hlsPlayer = null, mpegtsPlayer = null;
+    let uiTimeout = null;
+    let aspectIndex = 0;
+    const aspectModes = ['contain', 'cover', 'fill'];
+    const aspectIcons = ['⊡', '⊞', '▭'];
+
+    // تعبئة المحدد
+    channels.forEach((ch, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = ch.name;
+        channelSelect.appendChild(opt);
+    });
+
+    // ===================== دوال =====================
+    function setStatus(text, type = 'loading') {
+        if (!text) { statusMsg.style.display = 'none'; spinner.style.display = 'none'; return; }
+        statusMsg.style.display = 'block';
+        statusMsg.textContent = text;
+        statusMsg.className = 'status-msg ' + type;
+        spinner.style.display = (type === 'loading') ? 'block' : 'none';
+    }
+
+    function hideUI() { overlay.classList.add('hidden'); }
+    function showUI() {
+        overlay.classList.remove('hidden');
+        clearTimeout(uiTimeout);
+        uiTimeout = setTimeout(() => { if (!video.paused && !isLocked) hideUI(); }, 4000);
+    }
+
+    function destroyPlayers() {
+        if (dashPlayer) { dashPlayer.destroy(); dashPlayer = null; }
+        if (hlsPlayer) { hlsPlayer.destroy(); hlsPlayer = null; }
+        if (mpegtsPlayer) { mpegtsPlayer.destroy(); mpegtsPlayer = null; }
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+        timelineProgress.style.width = '0%';
+        timeText.textContent = '00:00 / 00:00';
+        playIcon.className = 'fas fa-play';
+        video.playbackRate = 1.0;
+        btnSpeed.textContent = '1x';
+        qualityMenu.style.display = 'none';
+        setStatus('');
+    }
+
+    // ===================== المحرك الذكي =====================
+    function loadStream(url) {
+        destroyPlayers();
+        setStatus('⏳ جارٍ التحميل...', 'loading');
+        showUI();
+
+        let cleanUrl = url.split('|')[0];
+        const low = cleanUrl.toLowerCase();
+
+        // DASH
+        if (low.includes('.mpd')) {
+            dashPlayer = dashjs.MediaPlayer().create();
+            dashPlayer.initialize(video, cleanUrl, true);
+            dashPlayer.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
+                setStatus('');
+                video.play().catch(() => {});
+                setTimeout(setupDashQualities, 1500);
+            });
+            dashPlayer.on(dashjs.MediaPlayer.events.ERROR, () => setStatus('❌ خطأ في البث DASH', 'error'));
+            return;
+        }
+
+        // HLS
+        if (low.includes('.m3u8')) {
+            // تشغيل أصلي (Safari)
+            if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = cleanUrl;
+                video.addEventListener('loadedmetadata', function onMeta() {
+                    setStatus('');
+                    video.play().catch(() => {});
+                    qualityMenu.innerHTML = '<button class="active">تلقائي</button>';
+                    video.removeEventListener('loadedmetadata', onMeta);
+                });
+                video.addEventListener('error', () => setStatus('❌ فشل التشغيل الأصلي', 'error'));
+                return;
+            }
+
+            // HLS.js
+            if (Hls.isSupported()) {
+                hlsPlayer = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    xhrSetup: function(xhr, xhrUrl) {
+                        xhr.withCredentials = true;
+                        try { xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (QtEmbedded; U; Linux; C) IPTV'); } catch(e) {}
+                    }
+                });
+                hlsPlayer.loadSource(cleanUrl);
+                hlsPlayer.attachMedia(video);
+                hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => {
+                    setStatus('');
+                    video.play().catch(() => {});
+                    setupHlsQualities();
+                });
+                hlsPlayer.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        setStatus('⚠️ فشل HLS.js، محاولة مباشر...', 'loading');
+                        video.src = cleanUrl;
+                        video.load();
+                        video.play().catch(() => setStatus('❌ فشل التشغيل (CORS أو رابط منتهي)', 'error'));
+                    }
+                });
+                return;
+            }
+        }
+
+        // MPEG-TS / FLV
+        if (low.includes('.ts') || low.includes('.flv') || (typeof mpegts !== 'undefined' && mpegts.JSPlayer && mpegts.JSPlayer.isSupported())) {
+            if (typeof mpegts !== 'undefined' && mpegts.JSPlayer && mpegts.JSPlayer.isSupported()) {
+                let type = low.includes('.flv') ? 'flv' : 'mse';
+                try {
+                    mpegtsPlayer = mpegts.createPlayer({
+                        type: type,
+                        isLive: true,
+                        url: cleanUrl,
+                        withCredentials: true
+                    });
+                    mpegtsPlayer.attachMediaElement(video);
+                    mpegtsPlayer.load();
+                    mpegtsPlayer.play().then(() => {
+                        setStatus('');
+                    }).catch((err) => {
+                        console.error('MPEGTS play error:', err);
+                        setStatus('⚠️ فشل تشغيل MPEGTS', 'error');
+                    });
+                    qualityMenu.innerHTML = '<button class="active">تلقائي</button>';
+                } catch(e) {
+                    console.error('MPEGTS create error:', e);
+                    setStatus('❌ خطأ في MPEGTS', 'error');
+                }
+                return;
+            }
+        }
+
+        // باقي الصيغ
+        video.src = cleanUrl;
+        video.load();
+        video.addEventListener('loadedmetadata', () => {
+            setStatus('');
+            video.play().catch(() => {});
+            qualityMenu.innerHTML = '<button class="active">تلقائي</button>';
+        });
+        video.addEventListener('error', () => setStatus('❌ فشل التحميل العام', 'error'));
+    }
+
+    // ===================== جودات DASH و HLS =====================
+    function setupDashQualities() {
+        let bitrates = dashPlayer.getBitrateInfoListFor('video');
+        if (!bitrates || bitrates.length <= 1) { qualityMenu.innerHTML = '<button class="active">تلقائي</button>'; return; }
+        qualityMenu.innerHTML = '<button class="active" id="q-auto">تلقائي</button>';
+        bitrates.sort((a, b) => b.height - a.height);
+        let seen = new Set();
+        bitrates.forEach(info => {
+            if (!seen.has(info.height) && info.height > 0) {
+                seen.add(info.height);
+                let btn = document.createElement('button');
+                btn.textContent = info.height + 'p';
+                btn.onclick = () => { dashPlayer.setQualityFor('video', info.index); dashPlayer.setAutoSwitchQualityFor('video', false); updateQualityActive(btn); };
+                qualityMenu.appendChild(btn);
+            }
+        });
+        document.getElementById('q-auto').onclick = () => { dashPlayer.setAutoSwitchQualityFor('video', true); updateQualityActive(document.getElementById('q-auto')); };
+    }
+
+    function setupHlsQualities() {
+        let levels = hlsPlayer.levels;
+        if (!levels || levels.length <= 1) { qualityMenu.innerHTML = '<button class="active">تلقائي</button>'; return; }
+        qualityMenu.innerHTML = '<button class="active" id="q-auto">تلقائي</button>';
+        levels.forEach((level, idx) => {
+            let btn = document.createElement('button');
+            btn.textContent = (level.height ? level.height : 'جودة ' + idx) + 'p';
+            btn.onclick = () => { hlsPlayer.currentLevel = idx; updateQualityActive(btn); };
+            qualityMenu.appendChild(btn);
+        });
+        document.getElementById('q-auto').onclick = () => { hlsPlayer.currentLevel = -1; updateQualityActive(document.getElementById('q-auto')); };
+    }
+
+    function updateQualityActive(active) {
+        document.querySelectorAll('.quality-dropdown button').forEach(b => b.classList.remove('active'));
+        active.classList.add('active');
+        qualityMenu.style.display = 'none';
+    }
+
+    // ===================== قياس الشاشة =====================
+    function cycleAspect() {
+        aspectIndex = (aspectIndex + 1) % aspectModes.length;
+        video.style.objectFit = aspectModes[aspectIndex];
+        btnAspect.textContent = aspectIcons[aspectIndex];
+        btnAspect.title = 'قياس: ' + aspectModes[aspectIndex];
+        showUI();
+    }
+    function setAspectMode(mode) {
+        let idx = aspectModes.indexOf(mode);
+        if (idx !== -1) { aspectIndex = idx; video.style.objectFit = mode; btnAspect.textContent = aspectIcons[idx]; btnAspect.title = 'قياس: ' + mode; }
+    }
+
+    // ===================== أحداث التحكم =====================
+    let currentIndex = 0;
+    function loadChannel(index) {
+        currentIndex = index;
+        loadStream(channels[index].url);
+        qualityMenu.style.display = 'none';
+        showUI();
+        setAspectMode('contain');
+    }
+    channelSelect.addEventListener('change', function() { loadChannel(parseInt(this.value)); });
+
+    function togglePlay() {
+        if (video.paused) { video.play().catch(() => {}); playIcon.className = 'fas fa-pause'; } 
+        else { video.pause(); playIcon.className = 'fas fa-play'; }
+        showUI();
+    }
+    btnPlay.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+    video.addEventListener('click', () => {
+        if (overlay.classList.contains('hidden')) showUI();
+        else if (!isLocked) togglePlay();
+    });
+    video.addEventListener('dblclick', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        if (isLocked) return;
+        setAspectMode(aspectModes[aspectIndex] === 'contain' ? 'cover' : 'contain');
+        showUI();
+    });
+
+    video.addEventListener('timeupdate', () => {
+        if (video.duration && isFinite(video.duration)) {
+            let pct = (video.currentTime / video.duration) * 100;
+            timelineProgress.style.width = pct + '%';
+            let cm = Math.floor(video.currentTime/60), cs = Math.floor(video.currentTime%60);
+            let dm = Math.floor(video.duration/60), ds = Math.floor(video.duration%60);
+            timeText.textContent = `${String(cm).padStart(2,'0')}:${String(cs).padStart(2,'0')} / ${String(dm).padStart(2,'0')}:${String(ds).padStart(2,'0')}`;
+        } else {
+            let m = Math.floor(video.currentTime/60), s = Math.floor(video.currentTime%60);
+            timeText.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} • مباشر`;
+        }
+    });
+
+    timelineArea.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isLocked) return;
+        if (video.duration && isFinite(video.duration)) {
+            let rect = timelineArea.getBoundingClientRect();
+            let x = (e.clientX - rect.left) / rect.width;
+            video.currentTime = x * video.duration;
+        }
+        showUI();
+    });
+
+    btnMute.addEventListener('click', (e) => { e.stopPropagation(); video.muted = !video.muted; volumeIcon.className = video.muted ? 'fas fa-volume-xmark' : 'fas fa-volume-high'; showUI(); });
+    btnSpeed.addEventListener('click', (e) => {
+        e.stopPropagation();
+        let rates = [1.0, 1.5, 2.0];
+        let idx = rates.indexOf(video.playbackRate);
+        if (idx === -1) idx = 0;
+        let next = rates[(idx + 1) % rates.length];
+        video.playbackRate = next;
+        btnSpeed.textContent = next + 'x';
+        showUI();
+    });
+    btnLock.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isLocked = !isLocked;
+        btnLock.innerHTML = isLocked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-lock-open"></i>';
+        wrapper.classList.toggle('locked', isLocked);
+        showUI();
+    });
+    btnFullscreen.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!document.fullscreenElement) {
+            wrapper.requestFullscreen().then(() => { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); }).catch(() => {});
+        } else { document.exitFullscreen(); if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); }
+        showUI();
+    });
+    document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); });
+    btnPip.addEventListener('click', (e) => { e.stopPropagation(); if (video !== document.pictureInPictureElement) video.requestPictureInPicture(); else document.exitPictureInPicture(); showUI(); });
+    btnQuality.addEventListener('click', (e) => { e.stopPropagation(); qualityMenu.style.display = qualityMenu.style.display === 'flex' ? 'none' : 'flex'; showUI(); });
+    btnAspect.addEventListener('click', (e) => { e.stopPropagation(); cycleAspect(); });
+    wrapper.addEventListener('mousemove', showUI);
+    wrapper.addEventListener('touchstart', showUI);
+
+    loadChannel(0);
+</script>
+</body>
+</html>
