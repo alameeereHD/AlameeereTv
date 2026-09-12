@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>AlameeereTv – اختبار mpegts</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+#app { display: flex; flex-direction: column; width: 100%; height: 100%; }
+#player-wrap { flex: 0 0 45%; min-height: 200px; position: relative; background: #000; overflow: hidden; }
+video { width: 100%; height: 100%; display: block; background: #000; object-fit: contain; }
+#loader { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.75); z-index: 10; color: #fff; font-size: 18px; }
+#ch-title { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,.6); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; z-index: 6; display: none; }
+#controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent,rgba(0,0,0,.92)); padding: 30px 8px 10px; display: flex; align-items: center; gap: 6px; opacity: 0; transition: opacity .3s; z-index: 100; }
+#player-wrap.show-ctrl #controls { opacity: 1; }
+.cb { background: rgba(255,255,255,.12); border: none; color: #fff; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+.cb:hover { background: rgba(255,255,255,.28); }
+#qm { position: absolute; bottom: 50px; right: 8px; background: rgba(10,10,10,.97); border: 1px solid #333; border-radius: 8px; display: none; flex-direction: column; min-width: 100px; z-index: 999; }
+#qm.open { display: flex; }
+#qm button { background: none; border: none; color: #fff; padding: 8px 16px; cursor: pointer; font-size: 13px; text-align: right; }
+#qm button:hover { background: rgba(255,255,255,.1); }
+#qm button.active { color: #0f0; font-weight: 700; }
+#ch-rows { flex: 1; overflow-y: auto; background: #030303; padding: 8px; }
+.row-title { color: #888; font-size: 12px; font-weight: 700; margin: 8px 4px; }
+.row-scroll { display: flex; gap: 6px; overflow-x: auto; padding: 4px; }
+.ch { min-width: 100px; height: 50px; background: #0a0a0a; border: 1px solid #1a1a1a; color: #bbb; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4px; }
+.ch:hover { background: #151515; border-color: #0f0; color: #fff; }
+.ch.active { background: #0f0; color: #000; border-color: #0f0; }
+#err { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #a00; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 9999; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="err"></div>
+  <div id="player-wrap">
+    <video id="vid" playsinline webkit-playsinline controls></video>
+    <div id="loader">جاري التحميل...</div>
+    <div id="ch-title"></div>
+    <div id="qm"></div>
+    <div id="controls">
+      <button class="cb" id="q-btn">جودة</button>
+      <button class="cb" id="reload-btn">🔄</button>
+      <button class="cb" onclick="document.getElementById('vid').requestFullscreen()">⛶</button>
+    </div>
+  </div>
+  <div id="ch-rows">
+    <div class="row-title">قنوات التجريب (10 قنوات)</div>
+    <div class="row-scroll" id="ch-container"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.js"></script>
+<script>
+var WORKER = 'https://my-proxy.alameeeretv.workers.dev';
+
+var CHANNELS = [
+  { key: 'bein1',        name: 'BeIN Sport 01',     levels: ['SD','HD','FHD','HEVC'] },
+  { key: 'bein2',        name: 'BeIN Sport 02',     levels: ['SD','HD','FHD','HEVC'] },
+  { key: 'bein-xtra1',   name: 'beIN XTRA 1',       levels: ['SD','HD','4K'] },
+  { key: 'bein-news',    name: 'BEIN News',         levels: ['HD'] },
+  { key: 'thm1',         name: 'Thmanyah 1',        levels: ['SD','HD','4K'] },
+  { key: 'thm-minasa1',  name: 'Thmanyah minasa1',  levels: ['HD','4K'] },
+  { key: 'thm-app1',     name: 'Thmanyah APP 1',    levels: ['SD','HD','FHD'] },
+  { key: 'alwan1',       name: 'Alwan Sport 1',     levels: ['SD','HD','4K'] },
+  { key: 'alwan2',       name: 'Alwan Sport 2',     levels: ['SD','HD','4K'] },
+  { key: 'seriea1',      name: 'Serie A 1',         levels: ['HD'] }
+];
+
+var vid = document.getElementById('vid');
+var loader = document.getElementById('loader');
+var chTitle = document.getElementById('ch-title');
+var qm = document.getElementById('qm');
+var pw = document.getElementById('player-wrap');
+var chContainer = document.getElementById('ch-container');
+
+var player = null;
+var currentCh = null;
+var currentLevel = null;
+
+function showErr(msg) {
+  var e = document.getElementById('err');
+  e.textContent = msg;
+  e.style.display = 'block';
+  setTimeout(function(){ e.style.display = 'none'; }, 4000);
+}
+
+function showLoader() { loader.style.display = 'flex'; }
+function hideLoader() { loader.style.display = 'none'; }
+
+function destroyPlayer() {
+  if (player) {
+    try { player.pause(); } catch(e){}
+    try { player.unload(); } catch(e){}
+    try { player.detachMediaElement(); } catch(e){}
+    try { player.destroy(); } catch(e){}
+    player = null;
+  }
+}
+
+function playStream(chKey, level) {
+  destroyPlayer();
+  currentCh = chKey;
+  currentLevel = level;
+
+  var url = WORKER + '/ts/' + chKey;
+  if (level) url += '/' + level;
+
+  chTitle.textContent = chKey + (level ? ' - ' + level : '');
+  chTitle.style.display = 'block';
+  showLoader();
+
+  if (!mpegts.getFeatureList().mseLivePlayback) {
+    showErr('المتصفح لا يدعم تشغيل .ts');
+    hideLoader();
+    return;
+  }
+
+  player = mpegts.createPlayer({
+    type: 'mpegts',
+    isLive: true,
+    url: url
+  }, {
+    enableWorker: true,
+    lazyLoad: false,
+    liveBufferLatencyChasing: true,
+    liveBufferLatencyMaxLatency: 3,
+    liveBufferLatencyMinRemain: 0.5
+  });
+
+  player.attachMediaElement(vid);
+  player.load();
+
+  player.on(mpegts.Events.ERROR, function (type, detail) {
+    console.error('mpegts error:', type, detail);
+    showErr('خطأ في التشغيل: ' + type);
+    hideLoader();
+  });
+
+  player.play().then(function(){
+    setTimeout(hideLoader, 500);
+  }).catch(function(err){
+    showErr('لا يمكن التشغيل التلقائي');
+    hideLoader();
+  });
+}
+
+function buildChannelButtons() {
+  CHANNELS.forEach(function (ch) {
+    var btn = document.createElement('button');
+    btn.className = 'ch';
+    btn.textContent = ch.name;
+    btn.onclick = function () {
+      document.querySelectorAll('.ch').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      playStream(ch.key, ch.levels[0]);
+      buildQualityMenu(ch);
+    };
+    chContainer.appendChild(btn);
+  });
+}
+
+function buildQualityMenu(ch) {
+  qm.innerHTML = '';
+  ch.levels.forEach(function (lvl) {
+    var b = document.createElement('button');
+    b.textContent = lvl;
+    if (lvl === ch.levels[0]) b.classList.add('active');
+    b.onclick = function () {
+      document.querySelectorAll('#qm button').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      playStream(ch.key, lvl);
+      qm.classList.remove('open');
+    };
+    qm.appendChild(b);
+  });
+}
+
+document.getElementById('q-btn').onclick = function (e) {
+  e.stopPropagation();
+  qm.classList.toggle('open');
+};
+
+document.getElementById('reload-btn').onclick = function () {
+  if (currentCh) playStream(currentCh, currentLevel);
+};
+
+document.addEventListener('click', function () { qm.classList.remove('open'); });
+
+pw.addEventListener('click', function(e) {
+  if (e.target.closest('#controls') || e.target.closest('#qm')) return;
+  pw.classList.toggle('show-ctrl');
+});
+
+buildChannelButtons();
+</script>
+</body>
+</html>
