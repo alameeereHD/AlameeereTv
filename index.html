@@ -23,11 +23,11 @@ video { width: 100%; height: 100%; display: block; background: #000; object-fit:
 #qm button.active { color: #0f0; font-weight: 700; }
 #ch-rows { flex: 1; overflow-y: auto; background: #030303; padding: 8px; }
 .row-title { color: #888; font-size: 12px; font-weight: 700; margin: 8px 4px; }
-.row-scroll { display: flex; gap: 6px; overflow-x: auto; padding: 4px; }
+.row-scroll { display: flex; gap: 6px; overflow-x: auto; padding: 4px; flex-wrap: wrap; }
 .ch { min-width: 100px; height: 50px; background: #0a0a0a; border: 1px solid #1a1a1a; color: #bbb; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4px; }
 .ch:hover { background: #151515; border-color: #0f0; color: #fff; }
 .ch.active { background: #0f0; color: #000; border-color: #0f0; }
-#err { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #a00; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 9999; }
+#err { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #a00; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 9999; max-width: 90%; text-align: center; }
 </style>
 </head>
 <body>
@@ -41,7 +41,7 @@ video { width: 100%; height: 100%; display: block; background: #000; object-fit:
     <div id="controls">
       <button class="cb" id="q-btn">جودة</button>
       <button class="cb" id="reload-btn">🔄</button>
-      <button class="cb" onclick="document.getElementById('vid').requestFullscreen()">⛶</button>
+      <button class="cb" id="fs-btn">⛶</button>
     </div>
   </div>
   <div id="ch-rows">
@@ -52,7 +52,7 @@ video { width: 100%; height: 100%; display: block; background: #000; object-fit:
 
 <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.js"></script>
 <script>
-var WORKER = 'https://my-proxy.alameeeretv.workers.dev';
+var WORKER = 'https://l.alameeeretv.workers.dev';
 
 var CHANNELS = [
   { key: 'bein1',        name: 'BeIN Sport 01',     levels: ['SD','HD','FHD','HEVC'] },
@@ -82,7 +82,7 @@ function showErr(msg) {
   var e = document.getElementById('err');
   e.textContent = msg;
   e.style.display = 'block';
-  setTimeout(function(){ e.style.display = 'none'; }, 4000);
+  setTimeout(function(){ e.style.display = 'none'; }, 5000);
 }
 
 function showLoader() { loader.style.display = 'flex'; }
@@ -119,13 +119,18 @@ function playStream(chKey, level) {
   player = mpegts.createPlayer({
     type: 'mpegts',
     isLive: true,
+    cors: true,
+    withCredentials: false,
     url: url
   }, {
     enableWorker: true,
+    enableStashBuffer: false,
+    stashInitialSize: 128,
     lazyLoad: false,
     liveBufferLatencyChasing: true,
     liveBufferLatencyMaxLatency: 3,
-    liveBufferLatencyMinRemain: 0.5
+    liveBufferLatencyMinRemain: 0.5,
+    autoCleanupSourceBuffer: true
   });
 
   player.attachMediaElement(vid);
@@ -183,6 +188,14 @@ document.getElementById('q-btn').onclick = function (e) {
 
 document.getElementById('reload-btn').onclick = function () {
   if (currentCh) playStream(currentCh, currentLevel);
+};
+
+document.getElementById('fs-btn').onclick = function () {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    pw.requestFullscreen();
+  }
 };
 
 document.addEventListener('click', function () { qm.classList.remove('open'); });
