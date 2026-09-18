@@ -1,1058 +1,831 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<title>AlameeereTv – جميع القنوات بشعاراتها</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-#app { display: flex; flex-direction: column; width: 100%; height: 100%; }
-#player-wrap { flex: 0 0 40%; min-height: 200px; position: relative; background: #000; overflow: hidden; }
-video { width: 100%; height: 100%; display: block; background: #000; }
-video.fc { object-fit: contain; }
-video.fv { object-fit: fill; }
-video.ff { object-fit: contain; transform: scaleY(.72); transform-origin: center; }
-#brand-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; z-index: 50; pointer-events: none; transition: opacity .5s; }
-#brand-overlay span { color: #fff; font-size: 28px; font-weight: 700; letter-spacing: 2px; animation: wave 2s ease-in-out infinite; }
-@keyframes wave { 0%,100% { transform: translateY(0); text-shadow: 0 0 10px rgba(0,255,0,.4); } 25% { transform: translateY(-8px); text-shadow: 0 0 24px rgba(0,255,0,.9); } 75% { transform: translateY(6px); text-shadow: 0 0 18px rgba(0,255,0,.6); } }
-#player-wrap.playing #brand-overlay { opacity: 0; z-index: -1; }
-#brand-overlay.loading { opacity: 1; z-index: 50; }
-#loader { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(0,0,0,.75); z-index: 10; }
-#loader .wt { color: #fff; font-size: 26px; font-weight: 700; letter-spacing: 2px; animation: wave 1.5s ease-in-out infinite; }
-#iframe-wrap { position: absolute; inset: 0; display: none; z-index: 5; }
-#iframe-wrap iframe { width: 100%; height: 100%; border: none; }
-#brightness-layer { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 4; }
-#ch-title { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,.6); backdrop-filter: blur(6px); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; z-index: 6; display: none; }
-#speed-badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.65); backdrop-filter: blur(6px); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #0f0; z-index: 6; transition: opacity .3s; cursor: pointer; user-select: none; }
-#speed-badge.hide { opacity: 0; pointer-events: none; }
-#dbl-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 15; opacity: 0; transition: opacity .3s; }
-#dbl-hint span { background: rgba(0,0,0,.75); color: #fff; font-size: 15px; padding: 12px 26px; border-radius: 22px; border: 1px solid rgba(255,255,255,.2); }
-#dbl-hint.show { opacity: 1; }
-#swipe-ind { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,.78); border: 1px solid rgba(255,255,255,.15); border-radius: 16px; padding: 14px 22px; display: none; flex-direction: column; align-items: center; gap: 8px; z-index: 20; pointer-events: none; min-width: 130px; }
-#si-icon { font-size: 26px; }
-#si-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; }
-#si-bar { height: 100%; background: #0f0; border-radius: 3px; }
-#si-label { font-size: 12px; color: rgba(255,255,255,.75); }
-#controls-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent,rgba(0,0,0,.92)); padding: 30px 8px 10px; display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 100; overflow: visible; }
-#player-wrap.show-ctrl #controls-overlay { opacity: 1; pointer-events: auto; }
-.cb { background: rgba(255,255,255,.12); border: none; color: #fff; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-size: 11px; backdrop-filter: blur(6px); transition: .2s; white-space: nowrap; flex-shrink: 0; }
-.cb:hover { background: rgba(255,255,255,.28); }
-.cb.on { background: rgba(0,200,0,.2); color: #0f0; border: 1px solid rgba(0,255,0,.3); }
-#vw { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-#vs { -webkit-appearance: none; appearance: none; width: 48px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.3); outline: none; cursor: pointer; }
-#vs::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #0f0; cursor: pointer; }
-#fg { flex: 1; min-width: 2px; }
-#qw { position: relative; flex-shrink: 0; margin-left: 6px; }
-#qm { position: absolute; bottom: calc(100% + 8px); left: 0; background: rgba(10,10,10,.97); border: 1px solid #333; border-radius: 8px; display: none; flex-direction: column; min-width: 80px; max-height: 50vh; overflow-y: auto; z-index: 9999; box-shadow: 0 -4px 20px rgba(0,0,0,.8); }
-#qm.open { display: flex; }
-#qm button { background: none; border: none; color: #fff; padding: 6px 14px; cursor: pointer; text-align: center; font-size: 12px; }
-#qm button:hover { background: rgba(255,255,255,.08); }
-#qm button.active { color: #0f0; font-weight: 700; }
-#q-btn.manual { background: rgba(0,200,0,.2); color: #0f0; border: 1px solid rgba(0,255,0,.35); }
-#ch-rows { flex: 1 1 0; min-height: 0; background: #030303; border-top: 1px solid #111; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; padding: 2px 0; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-.ch-row { flex-shrink: 0; display: flex; align-items: center; border-bottom: 1px solid #0a0a0a; padding: 2px 0; }
-.row-label { flex-shrink: 0; width: 50px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: #050505; border-left: 1px solid #111; }
-.row-label .ico { font-size: 14px; }
-.row-label .ico-sm { font-size: 9px; }
-.row-label .lbl { font-size: 8px; color: #666; font-weight: 700; }
-.row-scroll { flex: 1; min-width: 0; display: flex; gap: 4px; padding: 4px; overflow-x: auto; overflow-y: hidden; align-items: center; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x; scrollbar-width: thin; }
-.row-scroll::-webkit-scrollbar { height: 3px; }
-.row-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-.row-scroll, .ch, .multi-card, .event-card { -webkit-user-select: none; user-select: none; }
-.ch { min-width: 65px; height: 40px; background: #0a0a0a; border: 1px solid #1a1a1a; color: #bbb; font-size: 10px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: .2s; flex-shrink: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2px; }
-.ch:hover { background: #151515; border-color: #0f0; color: #fff; }
-.ch.on { background: #0f0; color: #000; border-color: #0f0; }
-.ch.iframe-ch { border-color: #f80; }
-.ch.iframe-ch.on { background: #f80; color: #000; }
-.ch.ts-ch { border-color: #f0f; }
-.ch.ts-ch.on { background: #f0f; color: #000; }
-.ch.channel-active { background: #0f0 !important; color: #000 !important; border-color: #0f0 !important; box-shadow: 0 0 12px rgba(0,255,0,.45); }
-.ch.iframe-ch.channel-active { background: #f80 !important; border-color: #f80 !important; }
-.ch.ts-ch.channel-active { background: #f0f !important; border-color: #f0f !important; }
-.multi-card, .event-card { flex-shrink: 0; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; display: flex; flex-direction: column; align-items: center; overflow: hidden; width: 72px; cursor: pointer; }
-.event-card { border-color: #2a2a2a; }
-.event-card:hover { border-color: #0f0; }
-.multi-card .lw { width: 100%; height: 40px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #111; }
-.multi-card .lw img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
-.multi-card .lw img.cv { object-fit: cover; padding: 0; }
-.multi-card .lw .cn { position: absolute; bottom: 2px; left: 3px; background: rgba(0,0,0,.8); color: #fff; font-size: 9px; font-weight: 900; padding: 1px 4px; border-radius: 3px; line-height: 1; }
-.multi-card .ch-name, .event-card .ev-name { display: none; }
-.event-card .ev-icon { font-size: 20px; padding: 5px 0 0; }
-.multi-card .q-row, .event-card .q-row { display: flex; width: 100%; }
-.multi-card .q-row button, .event-card .q-row button { flex: 1; background: #111; border: none; border-top: 1px solid #222; color: #999; font-size: 8px; font-weight: 700; padding: 3px 0; cursor: pointer; transition: .15s; }
-.event-card .q-row button { color: #ccc; font-size: 9px; padding: 4px 0; }
-.multi-card .q-row button:not(:last-child), .event-card .q-row button:not(:last-child) { border-left: 1px solid #222; }
-.bein-style { border-color: #555; }
-.bein-style:hover { border-color: #c8a000; }
-.bein-style .q-row button:hover, .bein-style .q-row button.on { background: #c8a000; color: #000; }
-.alwan-style { border-color: #555; }
-.alwan-style:hover { border-color: #e05; }
-.alwan-style .q-row button:hover, .alwan-style .q-row button.on { background: #e05; color: #fff; }
-.thm-style { border-color: #555; }
-.thm-style:hover { border-color: #0af; }
-.thm-style .q-row button:hover, .thm-style .q-row button.on { background: #0af; color: #000; }
-.event-card .q-row button:hover, .event-card .q-row button.on { background: #0f0; color: #000; }
-.multi-card.channel-active { border-color: #0f0 !important; box-shadow: 0 0 12px rgba(0,255,0,.5); }
-.new-ch { border-color: #fff !important; box-shadow: 0 0 12px rgba(255,255,255,.7); }
-.new-ch:hover { box-shadow: 0 0 20px rgba(255,255,255,1); }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>AlameeereTv</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
+
+        #player-wrap {
+            flex: 0 0 40%;
+            min-height: 200px;
+            position: relative;
+            user-select: none;
+            overflow: hidden;
+            background: #000;
+        }
+        video { width: 100%; height: 100%; display: block; background: #000; }
+        video.fc { object-fit: contain; }
+        video.fv { object-fit: fill; }
+        video.ff { object-fit: contain; transform: scaleY(0.72); transform-origin: center center; }
+
+        /* ===== وضع الشاشة الكاملة ===== */
+        #player-wrap.fs {
+            flex: 1 1 100% !important;
+            height: 100dvh;
+            min-height: 100dvh;
+            padding: 0;
+        }
+        #player-wrap.fs video {
+            height: 100%;
+            width: 100%;
+        }
+
+        #brand-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            z-index: 50;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        #brand-overlay span {
+            color: #fff;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        #player-wrap.playing #brand-overlay {
+            opacity: 0;
+            z-index: -1;
+        }
+
+        #loader {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(0,0,0,.75);
+            z-index: 10;
+        }
+        #loader .wave-text {
+            color: #fff;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            animation: wave 1.5s ease-in-out infinite;
+        }
+        @keyframes wave {
+            0%, 100% { transform: translateY(0); text-shadow: 0 0 10px rgba(255,255,255,.4); }
+            25% { transform: translateY(-6px); text-shadow: 0 0 20px rgba(255,255,255,.8); }
+            50% { transform: translateY(0); text-shadow: 0 0 10px rgba(255,255,255,.4); }
+            75% { transform: translateY(6px); text-shadow: 0 0 20px rgba(255,255,255,.8); }
+        }
+
+        #iframe-wrap { position: absolute; inset: 0; display: none; z-index: 5; }
+        #iframe-wrap iframe { width: 100%; height: 100%; border: none; }
+        #brightness-layer { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 4; }
+        #ch-title { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,.6); backdrop-filter: blur(6px); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; z-index: 6; display: none; }
+        #speed-badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.65); backdrop-filter: blur(6px); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #0f0; z-index: 6; transition: opacity .3s; cursor: pointer; user-select: none; }
+        #speed-badge.hide { opacity: 0; pointer-events: none; }
+        #dbl-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 15; opacity: 0; transition: opacity .3s; }
+        #dbl-hint span { background: rgba(0,0,0,.75); color: #fff; font-size: 15px; padding: 12px 26px; border-radius: 22px; border: 1px solid rgba(255,255,255,.2); }
+        #dbl-hint.show { opacity: 1; }
+        #swipe-ind { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,.78); border: 1px solid rgba(255,255,255,.15); border-radius: 16px; padding: 14px 22px; display: none; flex-direction: column; align-items: center; gap: 8px; z-index: 20; pointer-events: none; min-width: 130px; }
+        #si-icon { font-size: 26px; }
+        #si-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; }
+        #si-bar { height: 100%; background: #0f0; border-radius: 3px; }
+        #si-label { font-size: 12px; color: rgba(255,255,255,.75); }
+        #controls-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,.92)); padding: 30px 8px 10px; display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 100; overflow: visible; }
+        #player-wrap.show-ctrl #controls-overlay { opacity: 1; pointer-events: auto; }
+        .cb { background: rgba(255,255,255,.12); border: none; color: #fff; padding: 5px 8px; border-radius: 5px; cursor: pointer; font-size: 11px; backdrop-filter: blur(6px); transition: .2s; white-space: nowrap; flex-shrink: 0; }
+        .cb:hover { background: rgba(255,255,255,.28); }
+        .cb.on { background: rgba(0,200,0,.2); color: #0f0; border: 1px solid rgba(0,255,0,.3); }
+        #vw { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        #vs { -webkit-appearance: none; appearance: none; width: 48px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.3); outline: none; cursor: pointer; }
+        #vs::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #0f0; cursor: pointer; }
+        #fg { flex: 1; min-width: 2px; }
+        #qw { position: relative; flex-shrink: 0; margin-left: 6px; }
+        #qm { position: absolute; bottom: calc(100% + 8px); left: 0; background: rgba(10,10,10,.97); border: 1px solid #333; border-radius: 8px; display: none; flex-direction: column; min-width: 80px; max-height: 50vh; overflow-y: auto; z-index: 9999; box-shadow: 0 -4px 20px rgba(0,0,0,.8); }
+        #qm.open { display: flex; }
+        #qm button { background: none; border: none; color: #fff; padding: 6px 14px; cursor: pointer; text-align: center; font-size: 12px; }
+        #qm button:hover { background: rgba(255,255,255,.08); }
+        #qm button.active { color: #0f0; font-weight: 700; }
+        #q-btn.manual { background: rgba(0,200,0,.2); color: #0f0; border: 1px solid rgba(0,255,0,.35); }
+
+        #ch-rows {
+            flex: 1 1 0;
+            min-height: 0;
+            background: #030303;
+            border-top: 1px solid #111;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 2px 0;
+        }
+        .ch-row {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #0a0a0a;
+            padding: 2px 0;
+        }
+        .row-label {
+            flex-shrink: 0;
+            width: 50px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            background: #050505;
+            border-left: 1px solid #111;
+        }
+        .row-label .ico { font-size: 14px; }
+        .row-label .lbl { font-size: 8px; color: #666; font-weight: 700; }
+        .row-scroll {
+            flex: 1;
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            overflow-x: auto;
+            align-items: center;
+        }
+        .row-scroll::-webkit-scrollbar { height: 3px; }
+        .row-scroll::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+        .ch {
+            min-width: 65px;
+            height: 40px;
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            color: #bbb;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: .2s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2px;
+        }
+        .ch:hover { background: #151515; border-color: #0f0; color: #fff; }
+        .ch.on { background: #0f0; color: #000; border-color: #0f0; }
+        .ch.iframe-ch { border-color: #f80; }
+        .ch.iframe-ch.on { background: #f80; color: #000; border-color: #f80; }
+        .ch.ts-ch { border-color: #f0f; }
+        .ch.ts-ch.on { background: #f0f; color: #000; border-color: #f0f; }
+        .ch.multi-ch { border-color: #a855f7; }
+        .ch.multi-ch:hover { border-color: #c084fc; background: #1a1025; }
+        .ch.multi-ch.on { background: #a855f7; color: #000; border-color: #a855f7; }
+
+        #err-toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #a00; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; display: none; z-index: 9999; }
+    </style>
 </head>
 <body>
-<div id="app">
-  <div id="player-wrap">
-    <video id="vid" class="fc" playsinline webkit-playsinline></video>
-    <div id="brand-overlay"><span>AlameeereTv</span></div>
-    <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay;encrypted-media;fullscreen" sandbox="allow-scripts allow-presentation" referrerpolicy="no-referrer"></iframe></div>
-    <div id="brightness-layer"></div>
-    <div id="loader"><div class="wt">AlameeereTv</div></div>
-    <div id="ch-title"></div>
-    <div id="speed-badge">📡 السرعة</div>
-    <div id="swipe-ind"><div id="si-icon">🔊</div><div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div><div id="si-label">الصوت</div></div>
-    <div id="dbl-hint"><span id="dbl-txt">⛶</span></div>
-    <div id="controls-overlay">
-      <button type="button" class="cb" id="play-btn">⏯</button>
-      <div id="vw"><button type="button" class="cb" id="mute-btn">🔊</button><input type="range" id="vs" min="0" max="1" step=".05" value="1"></div>
-      <button type="button" class="cb" id="skip-back-btn">⏪</button>
-      <button type="button" class="cb" id="skip-fwd-btn">⏩</button>
-      <button type="button" class="cb" id="fit-btn">↕ عادي</button>
-      <button type="button" class="cb" id="spd-btn">📡</button>
-      <button type="button" class="cb" id="fs-btn">⛶</button>
-      <div id="fg"></div>
-      <button type="button" class="cb" id="reload-btn">🔄</button>
-      <div id="qw"><button type="button" class="cb" id="q-btn">جودة</button><div id="qm"></div></div>
+    <div id="app">
+        <div id="err-toast"></div>
+        <div id="player-wrap">
+            <video id="vid" class="fc" playsinline webkit-playsinline></video>
+            <div id="brand-overlay"><span>AlameeereTv</span></div>
+            <div id="iframe-wrap"><iframe id="iframe-player" allowfullscreen allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"></iframe></div>
+            <div id="brightness-layer"></div>
+            <div id="loader"><div class="wave-text">AlameeereTv</div></div>
+            <div id="ch-title"></div>
+            <div id="speed-badge" onclick="runSpeedTest()">📡 السرعة</div>
+            <div id="swipe-ind"><div id="si-icon">🔊</div><div id="si-bar-bg"><div id="si-bar" style="width:100%"></div></div><div id="si-label">الصوت</div></div>
+            <div id="dbl-hint"><span id="dbl-txt">⛶ شاشة كاملة</span></div>
+            <div id="controls-overlay">
+                <button class="cb" onclick="togglePlay()">⏯️</button>
+                <div id="vw">
+                    <button class="cb" id="mute-btn" onclick="toggleMute()">🔊</button>
+                    <input type="range" id="vs" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)">
+                </div>
+                <button class="cb" onclick="skip(-10)">⏪</button>
+                <button class="cb" onclick="skip(10)">⏩</button>
+                <button class="cb" id="fit-btn" onclick="cycleAspect()">↕ عادي</button>
+                <button class="cb" id="spd-btn" onclick="toggleSpeed()">📡</button>
+                <button class="cb" onclick="doFullscreen()">⛶</button>
+                <div id="fg"></div>
+                <button class="cb" onclick="reloadCurrentStream()" title="إعادة تحميل البث">🔄</button>
+                <div id="qw">
+                    <button class="cb" id="q-btn" onclick="toggleQ()">جودة</button>
+                    <div id="qm"></div>
+                </div>
+            </div>
+        </div>
+        <div id="ch-rows">
+            <div class="ch-row"><div class="row-label"><span class="ico">📡</span><span class="lbl">bein</span></div><div class="row-scroll" id="row-0"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">📡</span><span class="lbl">bein متعدد</span></div><div class="row-scroll" id="row-1"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">أخبار</span></div><div class="row-scroll" id="row-2"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">🎬</span><span class="lbl">منوعات</span></div><div class="row-scroll" id="row-3"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">رياضة</span></div><div class="row-scroll" id="row-4"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">🏆</span><span class="lbl">وقت اللعب</span></div><div class="row-scroll" id="row-5"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">🎭</span><span class="lbl">ترفيه</span></div><div class="row-scroll" id="row-6"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">🌅</span><span class="lbl">الفجر</span></div><div class="row-scroll" id="row-7"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">📡</span><span class="lbl">ثمانية سبورت</span></div><div class="row-scroll" id="row-8"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">🎨</span><span class="lbl">الوان</span></div><div class="row-scroll" id="row-9"></div></div>
+            <div class="ch-row"><div class="row-label"><span class="ico">🎬</span><span class="lbl">MBC</span></div><div class="row-scroll" id="row-10"></div></div>
+        </div>
     </div>
-  </div>
-  <div id="ch-rows">
-    <div class="ch-row"><div class="row-label"><span class="ico">📡</span><span class="lbl">١ أخبار</span></div><div class="row-scroll" id="row-0"></div></div>
-    <div class="ch-row"><div class="row-label"><span class="ico">🎬</span><span class="lbl">٢ منوعات</span></div><div class="row-scroll" id="row-1"></div></div>
-    <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">٣ أخبار</span></div><div class="row-scroll" id="row-2"></div></div>
-    <div class="ch-row"><div class="row-label"><span class="ico">📺</span><span class="lbl">٤ MBC</span></div><div class="row-scroll" id="row-3"></div></div>
-    <div class="ch-row"><div class="row-label"><span class="ico">🎬</span><span class="lbl">٥ منوعات</span></div><div class="row-scroll" id="row-4"></div></div>
-    <div class="ch-row"><div class="row-label"><span class="ico">⚽</span><span class="lbl">٦ رياضة</span></div><div class="row-scroll" id="row-5"></div></div>
-    <div class="ch-row"><div class="row-label"><span class="ico">🏆</span><span class="lbl">٧ beIN</span></div><div class="row-scroll" id="row-6"></div></div>
-    <div class="ch-row"><div class="row-label"><span class="ico ico-sm">beIN</span><span class="lbl">٨</span></div><div class="row-scroll" id="row-bein"></div></div>
-    <div class="ch-row"><div class="row-label"><span class="ico ico-sm">الوان</span><span class="lbl">٩</span></div><div class="row-scroll" id="row-alwan"></div></div>
-    <div class="ch-row"><div class="row-label"><span class="ico ico-sm">ثمانية</span><span class="lbl">١٠</span></div><div class="row-scroll" id="row-thm"></div></div>
-  </div>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
+    <script>
+        // ===== جميع القنوات =====
+        var beinChannels = [
+            { n: "bein 1 HD", u: "https://www.manar2.shop/x1/59.m3u8", t: "hls" },
+            { n: "bein 2 HD", u: "https://www.manar2.shop/x1/60.m3u8", t: "hls" },
+            { n: "bein 3", u: "https://www.manar2.shop/x1/61.m3u8", t: "hls" },
+            { n: "bein 4", u: "https://www.manar2.shop/x1/62.m3u8", t: "hls" },
+            { n: "bein 5", u: "https://www.manar2.shop/x1/63.m3u8", t: "hls" },
+            { n: "bein 6", u: "https://www.manar2.shop/x1/64.m3u8", t: "hls" },
+            { n: "bein 7", u: "https://www.manar2.shop/x1/65.m3u8", t: "hls" },
+            { n: "bein 8", u: "https://www.manar2.shop/x1/66.m3u8", t: "hls" }
+        ];
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
-<script>
-var TS_UA = 'Mozilla/5.0 (QtEmbedded; U; Linux; C) IPTV';
-var TS_PROXY = 'https://my-proxy.alameeeretv.workers.dev/';
+        var beinMultiChannels = [
+            { n: "bein1", u: "http://neorcqds.top:8080/live/7851740326546692/ad453617508e/25106.m3u8", t: "hls" },
+            { n: "bein2", u: "https://ye-m3u8.tofi-xtv.com/_iptv/stream/621/index.m3u8", t: "hls" },
+            { n: "bein3", u: "http://2756d46c.akciatv.ru/iptv/7FRNF6CY9A9TG3/6123/index.m3u8", t: "hls" },
+            { n: "bein4", u: "https://ye-m3u8.tofi-xtv.com/stream/7-24-44/index.m3u8", t: "hls" },
+            { n: "bein5", u: "https://ye-m3u8.tofi-xtv.com/stream/8-24-44/index.m3u8", t: "hls" }
+        ];
 
-var LOGO_ALJAZEERA = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Al_Jazeera_Logo.svg/1200px-Al_Jazeera_Logo.svg.png';
-var LOGO_ARABIYA = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Al_Arabiya_Logo.svg/1200px-Al_Arabiya_Logo.svg.png';
-var LOGO_SKY = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Sky_News_Arabia_logo.svg/1200px-Sky_News_Arabia_logo.svg.png';
-var LOGO_MBC = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/MBC_Group_Logo.svg/1200px-MBC_Group_Logo.svg.png';
-var LOGO_BEIN = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/BeIN_Sports_logo.svg/1200px-BeIN_Sports_logo.svg.png';
-var LOGO_QURAN = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Quran_Logo.svg/1200px-Quran_Logo.svg.png';
-var LOGO_GENERIC = 'https://img.icons8.com/color/96/000000/tv.png';
+        var newsChannels = [
+            { n: "الجزيرة", u: "https://live-hls-web-aja2-gcp.thehlive.com/AJA2/index.m3u8", t: "hls" },
+            { n: "الجزيرة مباشر", u: "https://live-hls-web-ajm-ll-bp.thehlive.com/AJM/index.m3u8" },
+            { n: "الجزيرة الوثائقية", u: "https://live-hls-web-ajd-gcp.thehlive.com/AJD/index.m3u8" },
+            { n: "العربية", u: "https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8", t: "hls" },
+            { n: "الحدث", u: "https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8", t: "hls" },
+            { n: "سكاي نيوز", u: "https://stream.skynewsarabia.com/hls/sna.m3u8", t: "hls" },
+            { n: "القرآن الكريم", u: "https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8", t: "hls" },
+            { n: "السنة النبوية", u: "https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8", t: "hls" }
+        ];
 
-// ===== الصف 1: أخبار =====
-var NEWS_CH = [
-  { n: 'الجزيرة', u: 'https://ahm79.store/live/0545580310/7337741654/746714.m3u8', t: 'hls', logo: LOGO_ALJAZEERA },
-  { n: 'العربية', u: 'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8', t: 'hls', logo: LOGO_ARABIYA },
-  { n: 'الحدث', u: 'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8', t: 'hls', logo: LOGO_ARABIYA },
-  { n: 'سكاي نيوز', u: 'https://stream.skynewsarabia.com/hls/sna.m3u8', t: 'hls', logo: LOGO_SKY },
-  { n: 'القرآن الكريم', u: 'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8', t: 'hls', logo: LOGO_QURAN },
-  { n: 'السنة النبوية', u: 'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8', t: 'hls', logo: LOGO_GENERIC }
-];
+        var varietyChannels = [
+            { n: "MBC 1", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8", t: "hls" },
+            { n: "MBC 2", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D", t: "hls" },
+            { n: "MBC 3", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8", t: "hls" },
+            { n: "MBC 4", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8", t: "hls" },
+            { n: "MBC 5", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8", t: "hls" },
+            { n: "MBC Action", u: "https://edge66.magictvbox.com/liveApple/MBC_Action/index.m3u8", t: "hls" },
+            { n: "MBC Masr", u: "https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8", t: "hls" },
+            { n: "MBC Masr+", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-usa/cd8d40acdab28aac0582faa3bd3983f1/index.m3u8", t: "hls" },
+            { n: "MBC Masr 2", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-2/754931856515075b0aabf0e583495c68/index.m3u8", t: "hls" },
+            { n: "MBC Plus Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-plus-drama/e37251ec2aac8f6c98f75cd0fa37cd28/index.m3u8", t: "hls" },
+            { n: "MBC Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8", t: "hls" },
+            { n: "MBC Masr Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-drama/567b703c19ede6598222de81b0e4508b/index.m3u8", t: "hls" },
+            { n: "MBC Iraq", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8", t: "hls" },
+            { n: "MBC Persia", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-persia/818ee8e4b592dc497608f066d825bfb4/index.m3u8", t: "hls" },
+            { n: "starzplay1", u: "https://cadn.rf.gd/frame.php?id=38852042", t: "iframe" },
+            { n: "AD Premium 1", u: "https://www.elahmad.ru/tv/live/shahid_shaka.php?id=abudhabi_premium_1", t: "hls" },
+            { n: "AD Premium 2", u: "https://www.elahmad.ru/tv/live/shahid_shaka.php?id=abudhabi_premium_2", t: "hls" },
+            { n: "beIN Drama", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fstream.woodfencepods.com%2Fpdf%2FIC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ%2Findex.m3u8%3Ftoken%3D%3D", t: "hls" },
+            { n: "OSN Action", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2FOSNACTIONHD%2Findex.m3u8%3Ftoken%3D%3D", t: "hls" }
+        ];
 
-// ===== الصف 2: منوعات (كل القنوات forceProxy) =====
-var VARIETY_CH = [
-  { n: "MBC 1", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC 2", u: "http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token==", t: "hls", forceProxy: true },
-  { n: "MBC 3", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC 4", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC 5", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC Action", u: "https://edge66.magictvbox.com/liveApple/MBC_Action/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC Masr", u: "https://shd-gcp-live.lg.mncdn.com/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC Masr+", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-usa/cd8d40acdab28aac0582faa3bd3983f1/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC Masr 2", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-2/754931856515075b0aabf0e583495c68/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC Plus Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-plus-drama/e37251ec2aac8f6c98f75cd0fa37cd28/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC Masr Drama", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-drama/567b703c19ede6598222de81b0e4508b/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC Iraq", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8", t: "hls", forceProxy: true },
-  { n: "MBC Persia", u: "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-persia/818ee8e4b592dc497608f066d825bfb4/index.m3u8", t: "hls", forceProxy: true },
-  { n: "AD Premium 1", u: "https://www.elahmad.ru/tv/live/shahid_shaka.php?id=abudhabi_premium_1", t: "ts", forceProxy: true },
-  { n: "AD Premium 2", u: "https://www.elahmad.ru/tv/live/shahid_shaka.php?id=abudhabi_premium_2", t: "ts", forceProxy: true },
-  { n: "beIN Drama", u: "http://stream.woodfencepods.com/pdf/IC0gRg9bSFNxbAsWZmkLFRZASWV7fGg7BRceAV1GEQQ2GHcRfQ/index.m3u8?token==", t: "hls", forceProxy: true },
-  { n: "OSN Action", u: "http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token==", t: "hls", forceProxy: true }
-];
+        var sportsChannels = [
+            { n: "الكأس 1", u: "https://storage.googleapis.com/livealkass-eu/alkass1-p/main.m3u8", t: "hls" },
+            { n: "الكأس 2", u: "https://storage.googleapis.com/livealkass-eu/alkass2-p/main.m3u8", t: "hls" },
+            { n: "الكأس 3", u: "https://storage.googleapis.com/livealkass-eu/alkass3-p/main.m3u8", t: "hls" },
+            { n: "الكأس 4", u: "https://storage.googleapis.com/livealkass-eu/alkass4-p/main.m3u8", t: "hls" },
+            { n: "الكأس 5", u: "https://storage.googleapis.com/livealkass-eu/alkass5-p/main.m3u8", t: "hls" },
+            { n: "الكأس 6", u: "https://storage.googleapis.com/livealkass-eu/alkass6-p/main.m3u8", t: "hls" },
+            { n: "الكأس 7", u: "https://storage.googleapis.com/livealkass-eu/alkass7-p/main.m3u8", t: "hls" },
+            { n: "الكأس 8", u: "https://storage.googleapis.com/livealkass-eu/alkass8-p/main.m3u8", t: "hls" },
+            { n: "البحرين 1", u: "https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8", t: "hls" },
+            { n: "البحرين 2", u: "https://5c7b683162943.streamlock.net/live/ngrp:bahrainsportstwo_all/playlist.m3u8", t: "hls" },
+            { n: "العراقية رياضية", u: "https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8", t: "hls" },
+            { n: "Zain TV 1", u: "https://zaintv1.zaintvpro.workers.dev/live/z1.m3u8", t: "hls" }
+        ];
 
-// ===== الصفوف الرئيسية =====
-var ROWS = [
-  { channels: NEWS_CH },
-  { channels: VARIETY_CH },
-  {
-    channels: [
-      { n: 'الجزيرة', u: 'https://live-hls-web-aja.getaj.net/AJA/index.m3u8', t: 'hls', logo: LOGO_ALJAZEERA },
-      { n: 'العربية', u: 'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8', t: 'hls', logo: LOGO_ARABIYA },
-      { n: 'الحدث', u: 'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8', t: 'hls', logo: LOGO_ARABIYA },
-      { n: 'سكاي نيوز', u: 'https://stream.skynewsarabia.com/hls/sna.m3u8', t: 'hls', logo: LOGO_SKY },
-      { n: 'القرآن', u: 'https://cdn-globecast.akamaized.net/live/eds/saudi_quran/hls_roku/index.m3u8', t: 'hls', logo: LOGO_QURAN },
-      { n: 'السنة', u: 'https://cdn-globecast.akamaized.net/live/eds/saudi_sunnah/hls_roku/index.m3u8', t: 'hls', logo: LOGO_GENERIC }
-    ]
-  },
-  // ===== الصف 4: MBC (كل القنوات forceProxy) =====
-  {
-    channels: [
-      { n: 'MBC 1 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
-      { n: 'MBC 2 HD', u: 'http://cloth.orangecord.net/pdf/sat2MBC2/index.m3u8?token==', t: 'hls', logo: LOGO_MBC, forceProxy: true },
-      { n: 'MBC 3 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-3-usa/5d58265a862a476dc7f97694addb5ded/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
-      { n: 'MBC 4 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
-      { n: 'MBC 5 HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
-      { n: 'MBC Action HD', u: 'https://flu.systemnet.tv/MBCAction/mono.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
-      { n: 'MBC Drama HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
-      { n: 'MBC Iraq HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-iraq/e38c44b1b43474e1c39cb5b90203691e/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
-      { n: 'MBC Masr HD', u: 'https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8', t: 'hls', logo: LOGO_MBC, forceProxy: true },
-      { n: 'osn star', u: 'http://cloth.orangecord.net/pdf/OSNStarMoviesHD/index.m3u8?token==', t: 'hls', logo: LOGO_GENERIC, forceProxy: true }
-    ]
-  },
-  {
-    channels: [
-      { n: 'beIN S1', u: 'https://28.1yalla-shoot.space/albaplayer/live1/', t: 'iframe', logo: LOGO_BEIN },
-      { n: 'beIN 1', u: 'https://pl.koralive1.cc/albaplayer/1bein1/?serv=0', t: 'iframe', logo: LOGO_BEIN },
-      { n: 'beIN 2', u: 'https://23.1yallashoot.site/albaplayer/live2/', t: 'iframe', logo: LOGO_BEIN },
-      { n: 'beIN Sport 3', u: 'http://cloth.orangecord.net/pdf/OSNACTIONHD/index.m3u8?token==', t: 'hls', logo: LOGO_BEIN },
-      { n: 'Stream 1', u: 'https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8', t: 'hls', logo: LOGO_GENERIC },
-      { n: 'Smarop SP', u: 'https://we.smarop.store/spoos1.m3u8', t: 'hls', logo: LOGO_GENERIC },
-      { n: 'Sigma TV', u: 'https://sl3.sigmatv.com/hls/live.m3u8', t: 'hls', logo: LOGO_GENERIC }
-    ]
-  },
-  {
-    channels: [
-      { n: 'BeIN Movies 1', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/40773.ts', t: 'ts', logo: LOGO_BEIN },
-      { n: 'BeIN Movies 2', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35030.ts', t: 'ts', logo: LOGO_BEIN },
-      { n: 'BeIN Drama', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35026.ts', t: 'ts', logo: LOGO_BEIN },
-      { n: 'BeIN Series 1', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35024.ts', t: 'ts', logo: LOGO_BEIN },
-      { n: 'فتافيت', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/64588.ts', t: 'ts', logo: LOGO_GENERIC },
-      { n: 'FOX Movies', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/196050.ts', t: 'ts', logo: LOGO_GENERIC },
-      { n: 'JEEM', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts', t: 'ts', logo: LOGO_GENERIC },
-      { n: 'Baraem', u: 'http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts', t: 'ts', logo: LOGO_GENERIC }
-    ]
-  },
-  {
-    channels: [
-      { n: 'bein 1', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein1.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'hls', logo: LOGO_GENERIC },
-      { n: 'bein 2', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein2.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'hls', logo: LOGO_GENERIC },
-      { n: 'bein 3', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein3.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'hls', logo: LOGO_GENERIC },
-      { n: 'bein 4', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein4.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'hls', logo: LOGO_GENERIC },
-      { n: 'bein 5', u: 'https://my-proxy.alameeeretv.workers.dev/?url=https%3A%2F%2Fdltcbnt3gcg1g.cloudfront.net%2Flive%2Fbein5.m3u8&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV', t: 'hls', logo: LOGO_GENERIC }
-    ]
-  }
-];
+        var playChannels = [
+            { n: "beIN S1", u: "https://28.1yalla-shoot.space/albaplayer/live1/", t: "iframe" },
+            { n: "beIN 1", u: "https://pl.koralive1.cc/albaplayer/1bein1/?serv=0", t: "iframe" },
+            { n: "beIN 2", u: "https://23.1yallashoot.site/albaplayer/live2/", t: "iframe" },
+            { n: "match1", u: "https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4741713&key=9f39972b67d6ce22189507d008acwc26", t: "iframe" },
+            { n: "Stream 1", u: "https://l.njklokkmlgfgyggfdftjugsrtdfy.dpdns.org/hls/0/stream.m3u8", t: "hls" },
+            { n: "Smarop SP", u: "https://we.smarop.store/spoos1.m3u8", t: "hls" },
+            { n: "Sigma TV", u: "https://sl3.sigmatv.com/hls/live.m3u8", t: "hls" },
+            { n: "Super TV 1", u: "https://super-livetv.pages.dev/SUPER_TV_1.m3u8", t: "hls" }
+        ];
 
-var BASE = 'http://mh.smpy24.live/live/Bengamenbukinafaso2026/msvrpi45e1/';
-var BL = 'https://static.wixstatic.com/media/0f6f17_b14c529157884897b2f02fe167b51bd7~mv2.jpg';
-var AL = 'https://static.wixstatic.com/media/0f6f17_0b9748ca0f2a41698c2d620d753ac140~mv2.jpg';
-var AO = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTuhH7QXR24YA4PeJNfQRsxALFC3Sbaw_fhpg&s';
-var TL = 'https://static.wixstatic.com/media/0f6f17_0681a2e33f8d42d7ad61caf189caf0ac~mv2.jpg';
+        var entertainmentChannels = [
+            { n: "BeIN Movies HD1", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/40773.ts", t: "hls" },
+            { n: "BeIN Movies HD2", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35030.ts", t: "hls" },
+            { n: "BeIN Movies HD3", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35029.ts", t: "hls" },
+            { n: "BeIN Movies HD4", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35028.ts", t: "hls" },
+            { n: "BeIN Drama HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35026.ts", t: "hls" },
+            { n: "BeIN Series HD1", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35024.ts", t: "hls" },
+            { n: "BeIN Series HD2", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/176897.ts", t: "hls" },
+            { n: "BeIN AD Nat Geo HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/595709.ts", t: "hls" },
+            { n: "BeIN Nat Geographic HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/595705.ts", t: "hls" },
+            { n: "BeIN Nat Geo Wild HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/595706.ts", t: "hls" },
+            { n: "BeIN Discovery HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/56834.ts", t: "hls" },
+            { n: "BeIN Discovery Family HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/56201.ts", t: "hls" },
+            { n: "BeIN BBC EARTH HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/196053.ts", t: "hls" },
+            { n: "BeIN Boomerang HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35016.ts", t: "hls" },
+            { n: "BeIN فتافيت HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/64588.ts", t: "hls" },
+            { n: "BeIN FOOD NETWORK HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/84845.ts", t: "hls" },
+            { n: "BeIN FOX MOVIES ACTION HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/196050.ts", t: "hls" },
+            { n: "BeIN Gourmet HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/64589.ts", t: "hls" },
+            { n: "BeiN HGTV (HD)", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/91888.ts", t: "hls" },
+            { n: "BeIN JEEM HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35023.ts", t: "hls" },
+            { n: "BeIN Baraem HD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/35025.ts", t: "hls" },
+            { n: "BEIN BOX OFFICE 1 FHD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785558.ts", t: "hls" },
+            { n: "BEIN BOX OFFICE 2 FHD", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785557.ts", t: "hls" },
+            { n: "افلام بين اود 1", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785556.ts", t: "hls" },
+            { n: "افلام بين اود 2", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785555.ts", t: "hls" },
+            { n: "بين اود 3 افلام", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785554.ts", t: "hls" },
+            { n: "بين اود 4 افلام", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785553.ts", t: "hls" },
+            { n: "بين اود 5 افلام", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785552.ts", t: "hls" },
+            { n: "بين اود 6 افلام", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785551.ts", t: "hls" },
+            { n: "افلام بين اود 7", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785550.ts", t: "hls" },
+            { n: "بين اود 8 افلام", u: "http://vip2.sharkhost.xyz/live/9143315182/7352465335/785549.ts", t: "hls" }
+        ];
 
-var BEIN_LOGO = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjOpopC3xXohcLmciN53KEA167Hu81lx28tAWV9SDGBAjqr3MX9z6WXto&s=10';
-var ALWAN_LOGO = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe0DT49qB-VmFJ5kUgQlEXRdY6FGRWyznc9_tmwUwApQ&s=10';
-var THM_LOGO = 'https://upload.wikimedia.org/wikipedia/commons/e/e9/Thmanyah_Logo.svg';
+        var fajerChannels = [
+            { n: "الفجر 1", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463532.ts", t: "hls" },
+            { n: "الفجر 2", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463533.ts", t: "hls" },
+            { n: "الفجر 3", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463534.ts", t: "hls" },
+            { n: "الفجر 4", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463535.ts", t: "hls" },
+            { n: "الفجر 5", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/463536.ts", t: "hls" }
+        ];
 
-var BEIN_CH = [
-  { name: 'bein 1', isNew: true, logo: BEIN_LOGO, single: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.165.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14670.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XA1FTQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGl8EBVcCDwUGBQwNVgQHBAcBBAdXVwAEVVUMA1wBAlMBGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAFYCDkYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUELAAAEVAMbSBEQTUdRBF1qXFAQDQRRDwYHSBdCDQkGQQIIAg9ZAA9SAFsAGRYQQ1BHa1tTF18IBwRUBg9RGQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' },
-  { name: 'bein 2', isNew: true, logo: BEIN_LOGO, single: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.165.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F769629.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XAVJdQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGl9XAAIPAFMCUVwMVQEFDAZRBlVXUQpSAQJXA1AFBQJcGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAFYEAUYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUEJDAcGUA8bSBEQTUdRBF1qXFAQDQJTAAcFXRkUEA0OBhoDBABZDg9SBVcJDBhHRUZQRm1eUUcDAAFXBQVdUR4%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' },
-  { name: 'bein 3', isNew: true, logo: BEIN_LOGO, single: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14672.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XD1xcQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGloAVldVWlELAlwGVwRVAgVRAQRRVg5UBFQNAlMGBlYJGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXA1EEC1YGQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwQEWAMIRh9BSkFGAFFYal1WFQ9UDQcAVhkUEA0OBhoDBABZDg9SBVcLBxhHRUZQRm1eUUcDAAFXBQVdUR4%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' },
-  { name: 'bein 4', isNew: true, logo: BEIN_LOGO, single: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14673.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XAVJRQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGloGU1EHAVABUl1XAFcFAgxXVFUCBFoJBAAGUAYHUVYOGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAVgACVcRTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaDwwBVQcbSBEQTUdRBF1qXFAQDQRRDwYESBdCDQkGQQIIAg9ZAA9SB1ABGRYQQ1BHa1tTF18IBwRUBg9RGQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' },
-  { name: 'bein 5', isNew: true, logo: BEIN_LOGO, single: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14674.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XD1VVQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgECUwAACwBRBwpTAgQFBAcHVFRWUgoGUQANUlVWUVoMGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXAVcPCFcRTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaDwMOVAYbSBEQTUdRBF1qXFAQDQRRDwYDSBdCDQkGQQIIAg9ZAA9SB1QAGRYQQ1BHa1tTF18IBwRUBg9RGQ%3D%3D&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' },
-  { name: 'bein 6', isNew: true, logo: BEIN_LOGO, single: 'https://my-proxy.alameeeretv.workers.dev/?url=http%3A%2F%2F103.76.130.128.nip.io%3A8080%2Flive%2F0545580310%2F7337741654%2F14675.m3u8%3Ftoken%3DThdWW0NHBE1UFV4XAVxQQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGl0BVVQFDV1QBw0DVQBUB1QHUAQHUQwBUwIHVAJdWlBcGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8%2BVVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBVAPDlQKQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwcGWAELXBFPG0ZAF1VUWGtbUxdfCAUBUwAaRhAKDl0bDwZWDgFSBVQIAAFJEkBGUUBoXAEbCwZSBgZXXVYe&ua=Mozilla%2F5.0%20(QtEmbedded%3B%20U%3B%20Linux%3B%20C)%20IPTV' },
-  { name: 'News', num: 'N', logo: BL, sd: BASE + '274145.ts', hd: BASE + '28939.ts', uhd: BASE + '44.ts' },
-  { name: '1', num: '1', logo: BL, sd: BASE + '2541.ts', hd: BASE + '1.ts', uhd: BASE + '3854.ts' },
-  { name: '2', num: '2', logo: BL, sd: BASE + '2540.ts', hd: BASE + '2.ts', uhd: BASE + '3853.ts' },
-  { name: '3', num: '3', logo: BL, sd: BASE + '2538.ts', hd: BASE + '4.ts', uhd: BASE + '3851.ts' },
-  { name: '4', num: '4', logo: BL, sd: BASE + '10795.ts', hd: BASE + '5.ts', uhd: BASE + '3850.ts' },
-  { name: '5', num: '5', logo: BL, sd: BASE + '2536.ts', hd: BASE + '6.ts', uhd: BASE + '3849.ts' },
-  { name: '6', num: '6', logo: BL, sd: BASE + '2535.ts', hd: BASE + '7.ts', uhd: BASE + '3848.ts' },
-  { name: '7', num: '7', logo: BL, sd: BASE + '2534.ts', hd: BASE + '8.ts', uhd: BASE + '3847.ts' },
-  { name: '8', num: '8', logo: BL, sd: BASE + '2533.ts', hd: BASE + '9.ts', uhd: BASE + '10361.ts' },
-  { name: '9', num: '9', logo: BL, sd: BASE + '2532.ts', hd: BASE + '10.ts', uhd: BASE + '10362.ts' }
-];
+        var tamanyaSportChannels = [
+            { n: "8 الأولى", u: "https://ahm79.store/live/0545580310/7337741654/746713.m3u8?token==", t: "hls" },
+            { n: "ثمانية سبورت 1", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421785.ts", t: "hls" },
+            { n: "ثمانية سبورت 2", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/421786.ts", t: "hls" },
+            { n: "ثمانية سبورت 3", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/429403.ts", t: "hls" },
+            { n: "الاولى", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fahm79.store%2Flive%2F0545580310%2F7337741654%2F746713.m3u8%3Ftoken%3D%3D", t: "hls" }
+        ];
 
-var ALWAN_CH = [
-  { name: 'الوان 1', isNew: true, logo: ALWAN_LOGO, levels: [
-    { label: 'SD', url: 'http://103.76.130.136:8080/live/0545580310/7337741654/772276.m3u8?token=ThdWW0NHBE1UFV4XD1RXQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgFUDwRVXFwAB1wBDVwGAAFWU1QBAA4BD1UDVVBVVFsIGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXA1MPCEYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUEKAAUAWQMbSBEQTUdRBF1qXFAQDQJSCwMAUhkUEA0OBhoDBABZDg9SC1oOBhhHRUZQRm1eUUcDAAFXBQVdUR4=' },
-    { label: 'HD', url: 'http://103.76.130.131:8080/live/0545580310/7337741654/772277.m3u8?token=ThdWW0NHBE1UFV4XBFJVUUEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhtUVlYOCFEHVl9QAQdSBVMNAQ4FBwkJVgcMUwBTB1sPWhcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVIDDF0RTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaCgwPVQEBRh9BSkFGAFFYal1WFQ9SDgMFUwIaRhAKDl0bDwZWDgFSBVsAAQRJEkBGUUBoXAEbCwZSBgZXXVYe' }
-  ]},
-  { name: 'الوان 2', isNew: true, logo: ALWAN_LOGO, levels: [
-    { label: 'SD', url: 'http://103.76.130.136:8080/live/0545580310/7337741654/772273.m3u8?token=ThdWW0NHBE1UFV4XDlBSQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgEGDwMCCVEGVl0GVQYJBQcHAgEFBF1VVVEHDlBVW1oOGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXA1gGDkYfQVZbawFVWFRaVhUPRwgTG0ZFXwBGWUEKAAQFUAcbSBEQTUdRBF1qXFAQDQJSCwMAVxkUEA0OBhoDBABZDg9SClEJBhhHRUZQRm1eUUcDAAFXBQVdUR4=' },
-    { label: 'HD', url: 'http://103.76.130.131:8080/live/0545580310/7337741654/772274.m3u8?token=ThdWW0NHBE1UFV4XBFFQW0EUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhsEU1gBDlVWBg1UAwdVAQ0AAVYNUF0IUlICBwBdUwAKWhcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVcFDlERTxtaWjpUUFhVXFMXXxsAFUgXRg0AQVkaCgwPWQEBRh9BSkFGAFFYal1WFQ9SDgMFUwEaRhAKDl0bDwZWDgFSBVoIAQFJEkBGUUBoXAEbCwZSBgZXXVYe' }
-  ]},
-  { name: 'الوان 3', isNew: true, logo: ALWAN_LOGO, levels: [
-    { label: 'SD', url: 'http://103.76.130.164:8080/live/0545580310/7337741654/772270.m3u8?token=ThdWW0NHBE1UFV4XBkZIQQBXTFtDE08bXl0WVVkYR1VNQVFcRFwKVxMNRlgFEVxBTxpcTUMERFcFXzxdUEIMU1AXDlxCWQkVE18FRl5GXkFRCFtWBAQCCAVRUF8NBFUDBFABBFZTXQpTBVMHA1JUAEEUG1xEPkRcF0cRXFRZAEIXDwQeFVwWSRMNCkBaCEhBDllBalQOWFcBUBdQWloWEg8EGBBaWgtQRVgWakYNAEFZGgkXG0NZVztXBlRUWgESDxcFEBsXFVBVFV4XBkZIQRBMS1BWDGlQABFZDgIGVwcFGRZGXlgAGwsGUw0OUlJaUAoBGRUURVwWbApdFw5UBgYFBwsCSA==' },
-    { label: 'HD', url: 'http://103.76.130.164:8080/live/0545580310/7337741654/772271.m3u8?token=ThdWW0NHBE1UFV4XBFFWUkEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhsCVlRTDAcDVVpWUAcJVAcEBwANVloDVF1WUgBTUwdbWxcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVUAAV0DVRsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcDVw4AVQZBFRdHEUJQVFltXlFHAwYAVgcBVUhBF1FUUBVbBw5cC1UPDAZdARkXQUFSRzpQVRVeBABXVFBaDUQ=' }
-  ]},
-  { name: 'Sport 1', num: '1', logo: AL, sport: true, sd: BASE + '1641624.ts', hd: BASE + '1641618.ts', uhd: BASE + '1641605.ts' },
-  { name: 'Sport 2', num: '2', logo: AL, sport: true, sd: BASE + '1641625.ts', hd: BASE + '1641619.ts', uhd: BASE + '1641606.ts' },
-  { name: 'Sport 3', num: '3', logo: AL, sport: true, sd: BASE + '1641626.ts', hd: BASE + '1641620.ts', uhd: BASE + '1641607.ts' },
-  { name: 'Sport 4', num: '4', logo: AL, sport: true, sd: BASE + '1641627.ts', hd: BASE + '1641621.ts', uhd: BASE + '1641608.ts' },
-  { name: 'Sport 5', num: '5', logo: AL, sport: true, sd: BASE + '1641628.ts', hd: BASE + '1641622.ts', uhd: BASE + '1641609.ts' },
-  { name: 'Sport 6', num: '6', logo: AL, sport: true, sd: BASE + '1641629.ts', hd: BASE + '1641623.ts', uhd: BASE + '1641610.ts' },
-  { name: 'Sport 7', num: '7', logo: AL, sport: true, uhd: BASE + '1641611.ts' },
-  { name: 'Sport 8', num: '8', logo: AL, sport: true, uhd: BASE + '1641612.ts' },
-  { name: 'Sport 9', num: '9', logo: AL, sport: true, uhd: BASE + '1641613.ts' },
-  { name: 'Sport 10', num: '10', logo: AL, sport: true, uhd: BASE + '1641614.ts' },
-  { name: 'F1', num: 'F1', logo: AL, sport: true, uhd: BASE + '1641616.ts' },
-  { name: 'UFC', num: 'UFC', logo: AL, sport: true, uhd: BASE + '1641615.ts' },
-  { name: 'WWE', num: 'WWE', logo: AL, sport: true, uhd: BASE + '1641617.ts' },
-  { name: 'Aflam 1', logo: AO, uhd: BASE + '1641630.ts' },
-  { name: 'Aflam 2', logo: AO, uhd: BASE + '1641631.ts' },
-  { name: 'Mosalsalat', logo: AO, uhd: BASE + '1641637.ts' },
-  { name: 'Aghani', logo: AO, uhd: BASE + '1641638.ts' },
-  { name: 'Atfal', logo: AO, uhd: BASE + '1641636.ts' },
-  { name: 'Anime', logo: AO, uhd: BASE + '1641642.ts' },
-  { name: 'Quran', logo: AO, uhd: BASE + '1641643.ts' }
-];
+        var alwanChannels = [
+            { n: "الوان 1", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418113.ts", t: "hls" },
+            { n: "الوان 2", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418114.ts", t: "hls" },
+            { n: "الوان 3", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418115.ts", t: "hls" },
+            { n: "الوان 4", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418116.ts", t: "hls" },
+            { n: "الوان 5", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418117.ts", t: "hls" },
+            { n: "الوان 6", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418118.ts", t: "hls" },
+            { n: "الوان 7", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418119.ts", t: "hls" },
+            { n: "الوان 8", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418120.ts", t: "hls" },
+            { n: "الوان 9", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418121.ts", t: "hls" },
+            { n: "الوان 10", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418122.ts", t: "hls" },
+            { n: "الوان 11", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418123.ts", t: "hls" },
+            { n: "الوان 12", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418124.ts", t: "hls" },
+            { n: "الوان 13", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418125.ts", t: "hls" },
+            { n: "الوان 14", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418126.ts", t: "hls" },
+            { n: "الوان 15", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418127.ts", t: "hls" },
+            { n: "الوان 16", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418128.ts", t: "hls" },
+            { n: "الوان 17", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418129.ts", t: "hls" },
+            { n: "الوان 18", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418130.ts", t: "hls" },
+            { n: "الوان 19", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418131.ts", t: "hls" },
+            { n: "الوان 20", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418132.ts", t: "hls" },
+            { n: "الوان 21", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418133.ts", t: "hls" },
+            { n: "الوان 22", u: "http://185.191.126.127:8080/live//b0:99:d7:15:88:50/3090914536649669/418134.ts", t: "hls" }
+        ];
 
-var THM_CH = [
-  { name: '8 1', isNew: true, logo: THM_LOGO, levels: [
-    { label: 'SD', url: 'http://103.76.130.136:8080/live/0545580310/7337741654/746714.m3u8?token=ThdWW0NHBE1UFV4XDlZVQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGgpWVAJQWFcAVAwHDAMGUQAEAARQVAEAAF1WBAVSAAZZGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBlEPClQGQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwQPVAAOXBFPG0ZAF1VUWGtbUxdfDgUBUwQCSEYXClVcFw1QAQFcBVUODQ1VHBdAR1dFagxdEw1VAwVUV1pWRQ==' },
-    { label: 'HD', url: 'http://103.76.130.131:8080/live/0545580310/7337741654/746713.m3u8?token=ThdWW0NHBE1UFV4XBVVUW0EUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhtRUVkACQVRAglTBwNTBAcDC1IFUQ9VD1cHAwVUUQELDRcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVIBDlELUxsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcEUQIKVAtBFRdHEUJQVFltXlFHAwYDUgIHV0hBF1FUUBVbBw5cC1UPAgxUARkXQUFSRzpQVRVeBABXVFBaDUQ=' }
-  ]},
-  { name: '8 2', isNew: true, logo: THM_LOGO, levels: [
-    { label: 'SD', url: 'http://103.76.130.131:8080/live/0545580310/7337741654/746717.m3u8?token=ThdWW0NHBE1UFV4XD1dQQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGlxTVAMFW1ZXUg4AAVVTVAEFBVEDBlpVBlRUBFECAVEPGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBFYBAFQAQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwYHUg4KXRFPG0ZAF1VUWGtbUxdfDgUBUwQBSEYXClVcFw1QAQFcBVUBBAVVHBdAR1dFagxdEw1VAwVUV1pWRQ==' },
-    { label: 'HD', url: 'http://103.76.130.165:8080/live/0545580310/7337741654/746716.m3u8?token=ThdWW0NHBE1UFV4XBFJSVEEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhtXUlIBW1dXWgsFBwQCVFRRC1INAQpXAlAMUgEGUVVdWBcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVMDDlcFVhsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcFUA8NVAZBFRdHEUJQVFltXlFHAwYDUgIHUkhBF1FUUBVbBw5cC1UPDQRTBhkXQUFSRzpQVRVeBABXVFBaDUQ=' }
-  ]},
-  { name: '8 3', isNew: true, logo: THM_LOGO, levels: [
-    { label: 'SD', url: 'http://103.76.130.165:8080/live/0545580310/7337741654/746720.m3u8?token=ThdWW0NHBE1UFV4XDlJTQU8aWlpCD0JLHRFZV0BYCRwXUExGUlsWUF5ZRg8UCVcWWxoVF1IZQlwWXQJValAARlxWURANWxBVXRtGXVcXDEFZGg5UDwcDXFZSBggMUAFUDAMAUwRXXQ5TBlFRAQZSU1cKGxkVCEVmFlYQTUdRBF1QRxYIBxlHUEJHRg9YEQgPTxpUVE8+VVYKXQZaQV0KXkYXDgMbFwhWX14QWkQ7FAoHGgMXBVQBAFYDQRUXWwtvUVBZU1lRRwMTBkYZFBQNB0ECGwcFUQcAURFPG0ZAF1VUWGtbUxdfDgUBUwcGSEYXClVcFw1QAQFcBVUBBwNcHBdAR1dFagxdEw1VAwVUV1pWRQ==' },
-    { label: 'HD', url: 'http://103.76.130.131:8080/live/0545580310/7337741654/746719.m3u8?token=ThdWW0NHBE1UFV4XBFxUUEEUG1ZYFFhNFkpBA1tBCVwZF1FKQ1ALSlhYChcMRglQFgAbGRUETk0BQQ1YWWsBVUNcV1cVDwtMXVtIF14FFwtBAhsGD1gOAFMAUgsFV1wFAwEAVlMEAwFQVlECDwJcUQIOXRcbQ19KO0EGSkFGAFFYUEYQDQVJG1hEFBcMChEPDxQbWFYZaVoLXQ1cVkAMX1tGFggGGUdUXlkNQVkWOxMKXBsPFVIBAVQFURsZFgpealFRX1ZbARsLFVUXGkYUCgcaAxcEUQIOUQFBFRdHEUJQVFltXlFHAwYDUgIHXUhBF1FUUBVbBw5cC1UPDQZUARkXQUFSRzpQVRVeBABXVFBaDUQ=' }
-  ]},
-  { name: '1', num: '1', logo: TL, hd: BASE + '1549876.ts', uhd: BASE + '1630479.ts' },
-  { name: '2', num: '2', logo: TL, hd: BASE + '1549877.ts', uhd: BASE + '1549875.ts' },
-  { name: '3', num: '3', logo: TL, hd: BASE + '1848332.ts' },
-  { name: 'منصة 1', num: 'M1', logo: TL, uhd: BASE + '1597497.ts' },
-  { name: 'منصة 2', num: 'M2', logo: TL, uhd: BASE + '1597570.ts' },
-  { name: 'منصة 3', num: 'M3', logo: TL, uhd: BASE + '1597571.ts' }
-];
+        var mbcNewChannels = [
+            { n: "MBC 1 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-1%2F15cf99af5de54063fdabfefe66adc075%2Findex.m3u8", t: "hls" },
+            { n: "MBC 2 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=http%3A%2F%2Fcloth.orangecord.net%2Fpdf%2Fsat2MBC2%2Findex.m3u8%3Ftoken%3D%3D", t: "hls" },
+            { n: "MBC 3 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-3-usa%2F5d58265a862a476dc7f97694addb5ded%2Findex.m3u8", t: "hls" },
+            { n: "MBC 4 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-4%2F24f134f1cd63db9346439e96b86ca6ed%2Findex.m3u8", t: "hls" },
+            { n: "MBC 5 HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-5%2Fee6b000cee0629411b666ab26cb13e9b%2Findex.m3u8", t: "hls" },
+            { n: "MBC Action HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-action%2F0e5b9f7a8c3d421a9321588d92723700%2Findex.m3u8", t: "hls" },
+            { n: "MBC Drama HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-drama%2F2c28a458e2f3253e678b07ac7d13fe71%2Findex.m3u8", t: "hls" },
+            { n: "MBC Iraq HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-iraq%2Fe38c44b1b43474e1c39cb5b90203691e%2Findex.m3u8", t: "hls" },
+            { n: "MBC Masr HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.lg.mncdn.com%2Flive%2Fbitmovin-mbc-masr%2F956eac069c78a35d47245db6cdbb1575%2Findex.m3u8", t: "hls" },
+            { n: "MBC Persia HD", u: "https://auratvdz.lovable.app/api/public/stream?url=https%3A%2F%2Fshd-gcp-live.edgenextcdn.net%2Flive%2Fbitmovin-mbc-persia%2F818ee8e4b592dc497608f066d825bfb4%2Findex.m3u8", t: "hls" }
+        ];
 
-(function () {
-  var hls = null;
-  var cur = { r: -1, i: -1 };
-  var retryT = null;
-  var curEvtUrl = null;
-  var curPlayUrl = null;
-  var curPlayName = '';
-  var retryCount = 0;
-  var MAX_RETRIES = 3;
-  var qBuilt = false;
+        var ROWS = [
+            { label: 'bein', channels: beinChannels, special: false },
+            { label: 'bein متعدد', channels: beinMultiChannels, special: true },
+            { label: 'أخبار', channels: newsChannels, special: false },
+            { label: 'منوعات', channels: varietyChannels, special: false },
+            { label: 'رياضة', channels: sportsChannels, special: false },
+            { label: 'وقت اللعب', channels: playChannels, special: false },
+            { label: 'ترفيه', channels: entertainmentChannels, special: false },
+            { label: 'الفجر', channels: fajerChannels, special: false },
+            { label: 'ثمانية سبورت', channels: tamanyaSportChannels, special: false },
+            { label: 'الوان', channels: alwanChannels, special: false },
+            { label: 'MBC', channels: mbcNewChannels, special: false }
+        ];
 
-  var vid = document.getElementById('vid');
-  var ifw = document.getElementById('iframe-wrap');
-  var ifp = document.getElementById('iframe-player');
-  var qm = document.getElementById('qm');
-  var qBtn = document.getElementById('q-btn');
-  var loader = document.getElementById('loader');
-  var chTitle = document.getElementById('ch-title');
-  var dblHint = document.getElementById('dbl-hint');
-  var dblTxt = document.getElementById('dbl-txt');
-  var swInd = document.getElementById('swipe-ind');
-  var siIcon = document.getElementById('si-icon');
-  var siBar = document.getElementById('si-bar');
-  var siLabel = document.getElementById('si-label');
-  var brightL = document.getElementById('brightness-layer');
-  var pw = document.getElementById('player-wrap');
-  var chRows = document.getElementById('ch-rows');
-  var fitBtn = document.getElementById('fit-btn');
-  var speedBadge = document.getElementById('speed-badge');
-  var spdBtn = document.getElementById('spd-btn');
-  var brandOverlay = document.getElementById('brand-overlay');
-  var muteBtn = document.getElementById('mute-btn');
-  var volSlider = document.getElementById('vs');
+        // ===== عناصر واجهة المستخدم والمتغيرات =====
+        var hls = null, cur = { r: -1, i: -1 }, retryT = null;
+        var vid = document.getElementById('vid');
+        var iframeWrap = document.getElementById('iframe-wrap');
+        var iframePlayer = document.getElementById('iframe-player');
+        var qm = document.getElementById('qm');
+        var qBtn = document.getElementById('q-btn');
+        var loader = document.getElementById('loader');
+        var chTitle = document.getElementById('ch-title');
+        var dblHint = document.getElementById('dbl-hint');
+        var dblTxt = document.getElementById('dbl-txt');
+        var swInd = document.getElementById('swipe-ind');
+        var siIcon = document.getElementById('si-icon');
+        var siBar = document.getElementById('si-bar');
+        var siLabel = document.getElementById('si-label');
+        var brightL = document.getElementById('brightness-layer');
+        var pw = document.getElementById('player-wrap');
+        var chRows = document.getElementById('ch-rows');
+        var fitBtn = document.getElementById('fit-btn');
+        var speedBadge = document.getElementById('speed-badge');
+        var spdBtn = document.getElementById('spd-btn');
+        var brightness = parseFloat(localStorage.getItem('brightness') || '0');
+        brightL.style.opacity = brightness;
 
-  var brightness = parseFloat(localStorage.getItem('brightness') || '0');
-  brightL.style.opacity = brightness;
-
-  var ASPECTS = [
-    { cls: 'fc', lbl: '↕ عادي' },
-    { cls: 'fv', lbl: '⛶ ملء' },
-    { cls: 'ff', lbl: '↔ مفيد' }
-  ];
-  var aIdx = parseInt(localStorage.getItem('aIdx') || '0', 10);
-
-  var speedOn = localStorage.getItem('speedOn') !== '0';
-  var isTesting = false;
-  var spInt = null;
-  var uIdx = 0;
-  var TU = [
-    'https://httpbin.org/bytes/200000',
-    'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'
-  ];
-
-  var swT = null;
-  var swSV = 0;
-  var swTm = null;
-  var isSwiping = false;
-  var tyS = 0;
-  var lTap = 0;
-  var dblT = null;
-  var dblHT = null;
-  var hCtrl = null;
-
-  function $(sel, root) { return (root || document).querySelector(sel); }
-  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
-  function el(tag, cls, text) {
-    var node = document.createElement(tag);
-    if (cls) node.className = cls;
-    if (text != null) node.textContent = text;
-    return node;
-  }
-
-  function getProxyUrl(url, forceProxy) {
-    if (!url) return '';
-    if (url.indexOf('my-proxy.alameeeretv.workers.dev') !== -1) return url;
-    var safeUrl = url.replace(/http:\/\/(\d+\.\d+\.\d+\.\d+)/g, 'http://$1.nip.io');
-    var isTsUrl = safeUrl.split('?')[0].slice(-3) === '.ts';
-    if (forceProxy || isTsUrl || safeUrl.indexOf('token=') !== -1) {
-      return TS_PROXY + '?url=' + encodeURIComponent(safeUrl) + '&ua=' + encodeURIComponent(TS_UA);
-    }
-    return url;
-  }
-
-  function clearChannelActive() {
-    $all('.ch.channel-active, .multi-card.channel-active, .event-card.channel-active').forEach(function (node) {
-      node.classList.remove('channel-active');
-    });
-  }
-
-  function setChannelActive(node) {
-    clearChannelActive();
-    if (node) node.classList.add('channel-active');
-  }
-
-  function channelLoading() {
-    brandOverlay.classList.add('loading');
-    brandOverlay.style.opacity = '1';
-    brandOverlay.style.zIndex = '50';
-  }
-
-  function channelWorking() {
-    brandOverlay.classList.remove('loading');
-    brandOverlay.style.opacity = '0';
-    brandOverlay.style.zIndex = '-1';
-    pw.classList.add('playing');
-  }
-
-  function applyAspect(i) {
-    vid.className = ASPECTS[i].cls;
-    fitBtn.textContent = ASPECTS[i].lbl;
-    fitBtn.classList.toggle('on', i !== 0);
-    localStorage.setItem('aIdx', i);
-  }
-
-  function cycleAspect() {
-    aIdx = (aIdx + 1) % 3;
-    applyAspect(aIdx);
-  }
-
-  function setFUI(full) {
-    chRows.style.display = full ? 'none' : 'flex';
-    if (!full && screen.orientation && screen.orientation.unlock) {
-      screen.orientation.unlock();
-    }
-  }
-
-  function doFullscreen() {
-    if (document.fullscreenElement || document.webkitFullscreenElement) {
-      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-      setFUI(false);
-      return;
-    }
-    var root = document.documentElement;
-    var req = root.requestFullscreen
-      ? root.requestFullscreen()
-      : root.webkitRequestFullscreen
-        ? root.webkitRequestFullscreen()
-        : null;
-    Promise.resolve(req).then(function () {
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(function () {});
-      }
-      setFUI(true);
-    }).catch(function () {
-      setFUI(true);
-    });
-  }
-
-  function runSpeedTest() {
-    if (isTesting) return;
-    isTesting = true;
-    speedBadge.textContent = '📡 ...';
-    var url = TU[uIdx % TU.length] + '?r=' + Date.now();
-    var t0 = Date.now();
-    fetch(url, { cache: 'no-store' })
-      .then(function (res) { return res.blob(); })
-      .then(function (blob) {
-        showSpeed(((blob.size || 200000) * 8) / ((Date.now() - t0) / 1000));
-        isTesting = false;
-      })
-      .catch(function () {
-        uIdx += 1;
-        isTesting = false;
-      });
-  }
-
-  function showSpeed(bits) {
-    speedBadge.textContent = bits >= 1e6
-      ? '📡 ' + (bits / 1e6).toFixed(1) + ' Mbps'
-      : '📡 ' + Math.round(bits / 1000) + ' Kbps';
-    speedBadge.style.color = bits >= 1e7 ? '#0f0' : bits >= 2e6 ? '#ff0' : bits >= 5e5 ? '#f80' : '#f44';
-  }
-
-  function applySpeedVis() {
-    speedBadge.classList.toggle('hide', !speedOn);
-    spdBtn.classList.toggle('on', speedOn);
-    if (speedOn) {
-      if (!spInt) {
-        runSpeedTest();
-        spInt = setInterval(runSpeedTest, 15000);
-      }
-    } else if (spInt) {
-      clearInterval(spInt);
-      spInt = null;
-    }
-  }
-
-  function toggleSpeed() {
-    speedOn = !speedOn;
-    localStorage.setItem('speedOn', speedOn ? '1' : '0');
-    applySpeedVis();
-  }
-
-  function showLoader() { loader.style.display = 'flex'; }
-  function hideLoader() { loader.style.display = 'none'; }
-
-  function toIntentUrl(streamUrl) {
-    try {
-      var u = new URL(streamUrl);
-      return 'intent://' + u.host + u.pathname + u.search +
-        '#Intent;scheme=' + u.protocol.replace(':', '') +
-        ';action=android.intent.action.VIEW;type=video/*;end';
-    } catch (err) {
-      return 'intent:' + streamUrl + '#Intent;action=android.intent.action.VIEW;type=video/*;end';
-    }
-  }
-
-  function isIOS() {
-    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  }
-
-  function openExternalDirect(url) {
-    if (!url) return;
-    if (isIOS()) {
-      window.location.href = 'vlc://' + url;
-    } else {
-      window.location.href = toIntentUrl(url);
-    }
-  }
-
-  function reloadCurrentStream() {
-    if (ifw.style.display === 'block' && curPlayUrl) {
-      ifp.src = '';
-      setTimeout(function() { ifp.src = curPlayUrl; }, 400);
-      return;
-    }
-    if (curPlayUrl) playChannel(curPlayUrl, curPlayName);
-    else if (curEvtUrl) startHls(curEvtUrl);
-    else if (cur.r >= 0) load(cur.r, cur.i);
-  }
-
-  function destroyHls() {
-    if (!hls) return;
-    hls.destroy();
-    hls = null;
-  }
-
-  function startHls(rawUrl, forceProxy) {
-    var url = getProxyUrl(rawUrl, forceProxy);
-
-    retryCount = 0;
-    channelLoading();
-    vid.style.display = 'block';
-    ifw.style.display = 'none';
-    ifp.src = '';
-    showLoader();
-    destroyHls();
-    vid.removeAttribute('src');
-    vid.load();
-
-    var started = false;
-
-    function onStarted() {
-      if (started) return;
-      started = true;
-      retryCount = 0;
-      clearTimeout(retryT);
-      retryT = null;
-      hideLoader();
-      channelWorking();
-    }
-
-    if (Hls.isSupported()) {
-      hls = new Hls({
-        enableWorker: true,
-        startLevel: 0,
-        autoStartLoad: true,
-        capLevelToPlayerSize: false,
-        maxAutoLevel: -1,
-        maxBufferLength: 10,
-        maxMaxBufferLength: 30,
-        manifestLoadingMaxRetry: 3,
-        fragLoadingMaxRetry: 3,
-        liveSyncDurationCount: 2,
-        lowLatencyMode: true,
-        backBufferLength: 30
-      });
-      hls.loadSource(url);
-      hls.attachMedia(vid);
-
-      hls.on(Hls.Events.MANIFEST_PARSED, function () {
-        if (!qBuilt) { buildQ(); qBuilt = true; }
-        if (hls.levels && hls.levels.length) {
-          hls.autoLevelEnabled = false;
-          hls.currentLevel = 0;
+        var ASPECTS = [{ cls: 'fc', lbl: '↕ عادي' }, { cls: 'fv', lbl: '⛶ ملء' }, { cls: 'ff', lbl: '↔ مفيد' }];
+        var aspectIdx = parseInt(localStorage.getItem('aspectIdx') || '0');
+        function applyAspect(i) {
+            vid.className = ASPECTS[i].cls;
+            fitBtn.textContent = ASPECTS[i].lbl;
+            fitBtn.classList.toggle('on', i !== 0);
+            localStorage.setItem('aspectIdx', i);
         }
-        vid.play().catch(function () {});
-      });
-
-      hls.on(Hls.Events.FRAG_BUFFERED, onStarted);
-
-      hls.on(Hls.Events.ERROR, function (e, d) {
-        if (!d || !d.fatal) return;
-
-        if (d.type === Hls.ErrorTypes.MEDIA_ERROR) {
-          try { hls.recoverMediaError(); } catch (err) {}
-          return;
+        function cycleAspect() {
+            aspectIdx = (aspectIdx + 1) % ASPECTS.length;
+            applyAspect(aspectIdx);
         }
+        applyAspect(aspectIdx);
 
-        if (d.type === Hls.ErrorTypes.NETWORK_ERROR) {
-          if (!started) {
-            try { hls.startLoad(); } catch (err) {}
-          } else {
-            if (retryCount++ >= MAX_RETRIES) return;
-            showLoader();
-            clearTimeout(retryT);
-            retryT = setTimeout(reloadCurrentStream, 5000);
-          }
-          return;
+        function doFullscreen() {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                return;
+            }
+            var el = document.documentElement;
+            var p = el.requestFullscreen ? el.requestFullscreen() : el.webkitRequestFullscreen ? el.webkitRequestFullscreen() : Promise.resolve();
+            Promise.resolve(p).then(function () {
+                if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function () { });
+                setFullUI(true);
+            }).catch(function () { setFullUI(true); });
         }
-
-        if (started) {
-          if (retryCount++ >= MAX_RETRIES) return;
-          clearTimeout(retryT);
-          retryT = setTimeout(reloadCurrentStream, 5000);
+        function setFullUI(isFs) {
+            if (isFs) {
+                chRows.style.display = 'none';
+                pw.classList.add('fs');
+            } else {
+                chRows.style.display = 'flex';
+                pw.classList.remove('fs');
+                if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+            }
         }
-      });
-      return;
-    }
+        document.addEventListener('fullscreenchange', function () { setFullUI(!!document.fullscreenElement); });
+        document.addEventListener('webkitfullscreenchange', function () { setFullUI(!!(document.fullscreenElement || document.webkitFullscreenElement)); });
 
-    if (vid.canPlayType('application/vnd.apple.mpegurl')) {
-      vid.src = url;
-      vid.addEventListener('loadeddata', onStarted, { once: true });
-      vid.play().catch(function () {});
-    }
-  }
-
-  function playIframe(url) {
-    destroyHls();
-    vid.style.display = 'none';
-    ifw.style.display = 'block';
-    showLoader();
-    ifp.src = url;
-    channelWorking();
-    setTimeout(hideLoader, 1500);
-  }
-
-  function playChannel(target, name, cardNode, forceProxy) {
-    curPlayUrl = target;
-    curPlayName = name || '';
-    curEvtUrl = null;
-    cur = { r: -1, i: -1 };
-    chTitle.textContent = name || '';
-    chTitle.style.display = 'block';
-    setChannelActive(cardNode || null);
-
-    if (typeof target === 'string' && (target.indexOf('http') === 0 && target.indexOf('.m3u8') === -1 && target.indexOf('.ts') === -1)) {
-      playIframe(target);
-      return;
-    }
-    startHls(target, forceProxy);
-  }
-
-  function load(r, i, node) {
-    cur.r = r; cur.i = i;
-    curEvtUrl = null;
-    curPlayUrl = null;
-    curPlayName = '';
-    var ch = ROWS[r].channels[i];
-    chTitle.textContent = ch.n;
-    chTitle.style.display = 'block';
-    setChannelActive(node || null);
-
-    if (ch.t === 'iframe') playIframe(ch.u);
-    else startHls(ch.u, ch.forceProxy);
-  }
-
-  function buildQ() {
-    qm.innerHTML = '';
-    var btnAuto = el('button', 'active', 'تلقائي');
-    btnAuto.onclick = function () {
-      if (hls) hls.currentLevel = -1;
-      qBtn.classList.remove('manual');
-      qBtn.textContent = 'جودة';
-      $all('button', qm).forEach(function (b) { b.classList.remove('active'); });
-      btnAuto.classList.add('active');
-      qm.classList.remove('open');
-    };
-    qm.appendChild(btnAuto);
-
-    if (!hls || !hls.levels) return;
-    hls.levels.forEach(function (lv, idx) {
-      var name = lv.height ? lv.height + 'p' : 'جودة ' + (idx + 1);
-      var b = el('button', '', name);
-      b.onclick = function () {
-        if (hls) hls.currentLevel = idx;
-        qBtn.classList.add('manual');
-        qBtn.textContent = name;
-        $all('button', qm).forEach(function (btn) { btn.classList.remove('active'); });
-        b.classList.add('active');
-        qm.classList.remove('open');
-      };
-      qm.appendChild(b);
-    });
-  }
-
-  function initUI() {
-    applyAspect(aIdx);
-    applySpeedVis();
-
-    vid.addEventListener('play', function () {
-      $('#play-btn').textContent = '⏸';
-      channelWorking();
-    });
-    vid.addEventListener('pause', function () { $('#play-btn').textContent = '▶'; });
-    vid.addEventListener('volumechange', function () {
-      volSlider.value = vid.muted ? 0 : vid.volume;
-      muteBtn.textContent = (vid.muted || vid.volume === 0) ? '🔇' : '🔊';
-    });
-
-    $('#play-btn').onclick = function () { if (vid.paused) vid.play(); else vid.pause(); };
-    muteBtn.onclick = function () { vid.muted = !vid.muted; };
-    volSlider.oninput = function () { vid.volume = parseFloat(this.value); vid.muted = (vid.volume === 0); };
-
-    $('#skip-back-btn').onclick = function () { vid.currentTime = Math.max(0, vid.currentTime - 10); };
-    $('#skip-fwd-btn').onclick = function () { vid.currentTime += 10; };
-    fitBtn.onclick = cycleAspect;
-    spdBtn.onclick = toggleSpeed;
-    speedBadge.onclick = runSpeedTest;
-    $('#fs-btn').onclick = doFullscreen;
-    $('#reload-btn').onclick = reloadCurrentStream;
-
-    qBtn.onclick = function (e) { e.stopPropagation(); qm.classList.toggle('open'); };
-    document.addEventListener('click', function () { qm.classList.remove('open'); });
-
-    ROWS.forEach(function (row, rIdx) {
-      var container = $('#row-' + rIdx);
-      if (!container) return;
-      row.channels.forEach(function (ch, cIdx) {
-        var btn = el('button', 'ch', ch.n);
-        if (ch.t === 'iframe') btn.classList.add('iframe-ch');
-        if (ch.t === 'ts') btn.classList.add('ts-ch');
-        btn.onclick = function () {
-          if (ch.t === 'ts') {
-            setChannelActive(btn);
-            openExternalDirect(ch.u);
-            return;
-          }
-          load(rIdx, cIdx, btn);
-        };
-        container.appendChild(btn);
-      });
-    });
-
-    var beinRow = $('#row-bein');
-    if (beinRow) {
-      BEIN_CH.forEach(function (item, idx) {
-        var card = el('div', 'multi-card bein-style');
-        if (item.isNew) card.classList.add('new-ch');
-
-        var lw = el('div', 'lw');
-        var img = el('img');
-        img.src = item.logo;
-        lw.appendChild(img);
-        if (item.num) {
-          var cn = el('span', 'cn', item.num);
-          lw.appendChild(cn);
+        var speedOn = localStorage.getItem('speedOn') !== '0';
+        var isTesting = false, speedInterval = null;
+        var TEST_URLS = ['https://httpbin.org/bytes/200000', 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png'];
+        var urlIdx = 0;
+        function runSpeedTest() {
+            if (isTesting) return;
+            isTesting = true;
+            speedBadge.textContent = '📡 ...';
+            var url = TEST_URLS[urlIdx % TEST_URLS.length] + '?r=' + Date.now();
+            var t0 = Date.now();
+            fetch(url, { cache: 'no-store' }).then(function (r) { return r.blob(); }).then(function (b) {
+                var elapsed = (Date.now() - t0) / 1000;
+                var bps = ((b.size || 200000) * 8) / elapsed;
+                showSpeed(bps);
+                isTesting = false;
+            }).catch(function () { urlIdx++; isTesting = false; });
         }
-        card.appendChild(lw);
-
-        var qRow = el('div', 'q-row');
-        var isExternalCard = idx >= 6;
-
-        if (item.single) {
-          var b = el('button', '', 'تشغيل');
-          b.onclick = function (e) {
-            e.stopPropagation();
-            playChannel(item.single, item.name, card);
-          };
-          qRow.appendChild(b);
-        } else {
-          ['sd', 'hd', 'uhd'].forEach(function (q) {
-            if (item[q]) {
-              var b = el('button', '', q.toUpperCase());
-              b.onclick = function (e) {
-                e.stopPropagation();
-                if (isExternalCard) {
-                  setChannelActive(card);
-                  openExternalDirect(item[q]);
-                  return;
+        function showSpeed(bps) {
+            var lbl = bps >= 1000000 ? '📡 ' + (bps / 1000000).toFixed(1) + ' Mbps' : '📡 ' + Math.round(bps / 1000) + ' Kbps';
+            speedBadge.textContent = lbl;
+            speedBadge.style.color = bps >= 10000000 ? '#0f0' : bps >= 2000000 ? '#ff0' : bps >= 500000 ? '#f80' : '#f44';
+        }
+        function applySpeedVis() {
+            speedBadge.classList.toggle('hide', !speedOn);
+            spdBtn.classList.toggle('on', speedOn);
+            if (speedOn) {
+                if (!speedInterval) {
+                    runSpeedTest();
+                    speedInterval = setInterval(runSpeedTest, 15000);
                 }
-                playChannel(item[q], item.name + ' (' + q.toUpperCase() + ')', card);
-              };
-              qRow.appendChild(b);
+            } else {
+                if (speedInterval) { clearInterval(speedInterval); speedInterval = null; }
             }
-          });
         }
-        card.appendChild(qRow);
-        card.onclick = function () {
-          if (isExternalCard) {
-            var t = item.uhd || item.hd || item.sd;
-            if (t) {
-              setChannelActive(card);
-              openExternalDirect(t);
+        function toggleSpeed() {
+            speedOn = !speedOn;
+            localStorage.setItem('speedOn', speedOn ? '1' : '0');
+            applySpeedVis();
+        }
+        applySpeedVis();
+
+        function showLoader() { loader.style.display = 'flex'; }
+        function hideLoader() { loader.style.display = 'none'; }
+        function toast(msg) {
+            var t = document.getElementById('err-toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(function () { t.style.display = 'none'; }, 4000);
+        }
+
+        function reloadCurrentStream() {
+            if (cur.r !== -1 && cur.i !== -1) {
+                load(cur.r, cur.i);
             }
-            return;
-          }
-          var target = item.single || item.hd || item.uhd || item.sd;
-          if (target) playChannel(target, item.name, card);
-        };
-        beinRow.appendChild(card);
-      });
-    }
-
-    var alwanRow = $('#row-alwan');
-    if (alwanRow) {
-      ALWAN_CH.forEach(function (item, idx) {
-        var card = el('div', 'multi-card alwan-style');
-        if (item.isNew) card.classList.add('new-ch');
-
-        var lw = el('div', 'lw');
-        var img = el('img');
-        img.src = item.logo;
-        lw.appendChild(img);
-        if (item.num) {
-          var cn = el('span', 'cn', item.num);
-          lw.appendChild(cn);
         }
-        card.appendChild(lw);
 
-        var qRow = el('div', 'q-row');
-        var isInternalCard = idx < 3;
+        var HLS_PROXY   = 'https://l.alameeeretv.workers.dev/?url=';
+        var HLS_PROXY_2 = 'https://sho.alameeereshooot-web.deno.net/?url=';
 
-        if (item.levels) {
-          if (!isInternalCard) {
-            item.levels.forEach(function (lv) {
-              var b = el('button', '', lv.label);
-              b.onclick = function (e) {
-                e.stopPropagation();
-                openExternalDirect(lv.url);
-              };
-              qRow.appendChild(b);
+        function getPlayableUrl(url) {
+            if (url.indexOf('sharkhost.xyz') !== -1 ||
+                url.indexOf('akciatv.ru') !== -1 ||
+                url.indexOf('neorcqds.top') !== -1 ||
+                url.indexOf('185.191.126.127') !== -1 ||
+                url.indexOf('elahmad.ru') !== -1) {
+                return HLS_PROXY_2 + encodeURIComponent(url);
+            }
+            if (url.indexOf('manar2.shop') !== -1) {
+                return HLS_PROXY + encodeURIComponent(url);
+            }
+            return url;
+        }
+
+        function loadHls(url, name) {
+            url = getPlayableUrl(url);
+            if (window.location.protocol === 'https:' && url.startsWith('http://')) {
+                url = url.replace('http://', 'https://');
+            }
+            vid.style.display = 'block';
+            iframeWrap.style.display = 'none';
+            iframePlayer.src = '';
+            showLoader();
+            if (hls) { hls.destroy(); hls = null; }
+            vid.removeAttribute('src');
+            vid.load();
+            if (Hls.isSupported()) {
+                hls = new Hls({
+                    enableWorker: true,
+                    startLevel: 0,
+                    autoLevelEnabled: false,
+                    capLevelToPlayerSize: false,
+                    maxBufferLength: 10,
+                    maxMaxBufferLength: 30,
+                    maxBufferSize: 20 * 1000 * 1000,
+                    manifestLoadingMaxRetry: 4,
+                    manifestLoadingRetryDelay: 500,
+                    levelLoadingMaxRetry: 4,
+                    fragLoadingMaxRetry: 4,
+                    fragLoadingRetryDelay: 500,
+                    liveSyncDurationCount: 2,
+                    liveMaxLatencyDurationCount: 4,
+                    lowLatencyMode: true
+                });
+                hls.loadSource(url);
+                hls.attachMedia(vid);
+                hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                    hls.currentLevel = 0;
+                    hls.autoLevelEnabled = false;
+                    hideLoader();
+                    pw.classList.add('playing');
+                    vid.play().catch(function () { });
+                    buildQ();
+                });
+                hls.on(Hls.Events.FRAG_BUFFERED, function () { hideLoader(); });
+                hls.on(Hls.Events.ERROR, function (e, d) {
+                    if (d.fatal) {
+                        if (d.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                            showLoader();
+                            hls.startLoad();
+                            retryT = setTimeout(function () { load(cur.r, cur.i); }, 5000);
+                        } else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                            hls.recoverMediaError();
+                        } else {
+                            retryT = setTimeout(function () { load(cur.r, cur.i); }, 5000);
+                        }
+                    }
+                });
+            } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+                vid.src = url;
+                vid.addEventListener('loadeddata', function () { hideLoader(); pw.classList.add('playing'); }, { once: true });
+                vid.play().catch(function () { });
+            } else {
+                hideLoader();
+                toast('المتصفح غير متوافق');
+            }
+        }
+
+        function buildChannels() {
+            ROWS.forEach(function (row, ri) {
+                var box = document.getElementById('row-' + ri);
+                if (!box) return;
+                box.innerHTML = '';
+                row.channels.forEach(function (c, ci) {
+                    var b = document.createElement('button');
+                    var cls = 'ch';
+                    if (c.t === 'iframe') cls += ' iframe-ch';
+                    if (c.t === 'ts') cls += ' ts-ch';
+                    if (row.special) cls += ' multi-ch';
+                    b.className = cls;
+                    b.textContent = c.n;
+                    b.id = 'ch-' + ri + '-' + ci;
+                    b.onclick = function () { load(ri, ci); };
+                    box.appendChild(b);
+                });
             });
-          }
-        } else {
-          ['sd', 'hd', 'uhd'].forEach(function (q) {
-            if (item[q]) {
-              var b = el('button', '', q.toUpperCase());
-              b.onclick = function (e) {
-                e.stopPropagation();
-                setChannelActive(card);
-                openExternalDirect(item[q]);
-              };
-              qRow.appendChild(b);
+        }
+
+        function load(ri, ci) {
+            if (ri < 0 || ri >= ROWS.length || ci < 0 || ci >= ROWS[ri].channels.length) return;
+            cur = { r: ri, i: ci };
+            if (retryT) { clearTimeout(retryT); retryT = null; }
+            document.querySelectorAll('.ch').forEach(function (b) { b.classList.remove('on'); });
+            var btn = document.getElementById('ch-' + ri + '-' + ci);
+            if (btn) btn.classList.add('on');
+            var ch = ROWS[ri].channels[ci];
+            chTitle.textContent = ch.n;
+            chTitle.style.display = 'block';
+            var type = ch.t || 'hls';
+
+            if (type === 'iframe') {
+                if (hls) { hls.destroy(); hls = null; }
+                vid.style.display = 'none';
+                iframeWrap.style.display = 'block';
+                pw.classList.add('playing');
+                showLoader();
+                iframePlayer.src = '';
+                setTimeout(function () { iframePlayer.src = ch.u; hideLoader(); }, 400);
+                qm.innerHTML = '';
+                return;
             }
-          });
+
+            loadHls(ch.u, ch.n);
         }
-        card.appendChild(qRow);
-        card.onclick = function () {
-          if (isInternalCard && item.levels) {
-            playChannel(item.levels[0].url, item.name + ' (' + item.levels[0].label + ')', card);
-            return;
-          }
-          var target = (item.levels && item.levels[0]) ? item.levels[0].url : (item.uhd || item.hd || item.sd);
-          if (target) {
-            setChannelActive(card);
-            openExternalDirect(target);
-          }
-        };
-        alwanRow.appendChild(card);
-      });
-    }
 
-    var thmRow = $('#row-thm');
-    if (thmRow) {
-      THM_CH.forEach(function (item, idx) {
-        var card = el('div', 'multi-card thm-style');
-        if (item.isNew) card.classList.add('new-ch');
-
-        var lw = el('div', 'lw');
-        var img = el('img');
-        img.src = item.logo;
-        lw.appendChild(img);
-        if (item.num) {
-          var cn = el('span', 'cn', item.num);
-          lw.appendChild(cn);
-        }
-        card.appendChild(lw);
-
-        var qRow = el('div', 'q-row');
-        var isInternalCard = idx < 3;
-
-        if (item.levels) {
-          if (!isInternalCard) {
-            item.levels.forEach(function (lv) {
-              var b = el('button', '', lv.label);
-              b.onclick = function (e) {
-                e.stopPropagation();
-                openExternalDirect(lv.url);
-              };
-              qRow.appendChild(b);
+        function buildQ() {
+            qm.innerHTML = '';
+            if (!hls) return;
+            var lvls = hls.levels;
+            if (!lvls || !lvls.length) return;
+            var a = document.createElement('button');
+            a.textContent = 'تلقائي';
+            a.onclick = function () {
+                hls.currentLevel = -1;
+                hls.autoLevelEnabled = true;
+                qBtn.classList.remove('manual');
+                updateQActive();
+                closeQ();
+            };
+            qm.appendChild(a);
+            lvls.forEach(function (lv, i) {
+                var b = document.createElement('button');
+                var lbl = lv.height ? lv.height + 'p' : Math.round(lv.bitrate / 1000) + 'k';
+                b.textContent = lbl;
+                b.onclick = function () {
+                    hls.autoLevelEnabled = false;
+                    hls.currentLevel = i;
+                    qBtn.classList.add('manual');
+                    updateQActive();
+                    closeQ();
+                };
+                qm.appendChild(b);
             });
-          }
-        } else {
-          ['sd', 'hd', 'uhd'].forEach(function (q) {
-            if (item[q]) {
-              var b = el('button', '', q.toUpperCase());
-              b.onclick = function (e) {
-                e.stopPropagation();
-                setChannelActive(card);
-                openExternalDirect(item[q]);
-              };
-              qRow.appendChild(b);
+            updateQActive();
+        }
+        function updateQActive() {
+            if (!hls) return;
+            var btns = qm.querySelectorAll('button');
+            btns.forEach(function (b, i) {
+                if (i === 0) b.classList.toggle('active', hls.currentLevel === -1);
+                else b.classList.toggle('active', hls.currentLevel === (i - 1));
+            });
+        }
+        function closeQ() { qm.classList.remove('open'); }
+        function toggleQ() {
+            if (!hls && !qm.innerHTML) { return; }
+            qm.classList.toggle('open');
+            if (qm.classList.contains('open')) updateQActive();
+        }
+        function togglePlay() { vid.paused ? vid.play() : vid.pause(); }
+        function toggleMute() {
+            vid.muted = !vid.muted;
+            document.getElementById('mute-btn').textContent = vid.muted ? '🔇' : '🔊';
+            document.getElementById('vs').value = vid.muted ? 0 : vid.volume;
+        }
+        function setVolume(v) {
+            vid.volume = parseFloat(v);
+            vid.muted = v == 0;
+            document.getElementById('mute-btn').textContent = v == 0 ? '🔇' : '🔊';
+            document.getElementById('vs').value = v;
+            localStorage.setItem('vol', v);
+        }
+        function skip(s) { vid.currentTime += s; }
+
+        var swType = null, swStartY = 0, swStartVal = 0, swTimer = null, isSwiping = false, tyStart = 0;
+        function showSwipe(type, val) {
+            clearTimeout(swTimer);
+            if (type === 'vol') {
+                siIcon.textContent = '🔊';
+                siLabel.textContent = 'الصوت ' + Math.round(val * 100) + '%';
+                siBar.style.width = (val * 100) + '%';
+                siBar.style.background = '#0f0';
+            } else {
+                siIcon.textContent = '☀️';
+                siLabel.textContent = 'الإضاءة ' + Math.round((1 - val / 0.85) * 100) + '%';
+                siBar.style.width = ((1 - val / 0.85) * 100) + '%';
+                siBar.style.background = '#fbbf24';
             }
-          });
+            swInd.style.display = 'flex';
+            swTimer = setTimeout(function () { swInd.style.display = 'none'; }, 1200);
         }
-        card.appendChild(qRow);
-        card.onclick = function () {
-          if (isInternalCard && item.levels) {
-            playChannel(item.levels[0].url, item.name + ' (' + item.levels[0].label + ')', card);
-            return;
-          }
-          var target = (item.levels && item.levels[0]) ? item.levels[0].url : (item.uhd || item.hd || item.sd);
-          if (target) {
-            setChannelActive(card);
-            openExternalDirect(target);
-          }
-        };
-        thmRow.appendChild(card);
-      });
-    }
 
-    pw.addEventListener('touchstart', function (e) {
-      if (e.touches.length === 1) {
-        swT = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        isSwiping = false;
-        var rect = pw.getBoundingClientRect();
-        tyS = (swT.x - rect.left < rect.width / 2) ? 'bright' : 'vol';
-        swSV = (tyS === 'bright') ? brightness : vid.volume;
-      }
-    }, { passive: true });
-
-    pw.addEventListener('touchmove', function (e) {
-      if (!swT || e.touches.length !== 1) return;
-      var dx = e.touches[0].clientX - swT.x;
-      var dy = e.touches[0].clientY - swT.y;
-      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
-        isSwiping = true;
-        var delta = -dy / 150;
-        if (tyS === 'bright') {
-          brightness = Math.min(0.85, Math.max(0, swSV + delta));
-          brightL.style.opacity = brightness;
-          localStorage.setItem('brightness', brightness);
-          siIcon.textContent = '☀️';
-          siBar.style.width = Math.round((1 - brightness / 0.85) * 100) + '%';
-          siLabel.textContent = 'السطوع';
-        } else {
-          var nv = Math.min(1, Math.max(0, swSV + delta));
-          vid.volume = nv;
-          volSlider.value = nv;
-          siIcon.textContent = nv === 0 ? '🔇' : '🔊';
-          siBar.style.width = Math.round(nv * 100) + '%';
-          siLabel.textContent = 'الصوت';
+        var lastTap = 0, dblTimer = null, dblHintTimer = null;
+        function showDblHint(txt) {
+            dblTxt.textContent = txt;
+            dblHint.classList.add('show');
+            clearTimeout(dblHintTimer);
+            dblHintTimer = setTimeout(function () { dblHint.classList.remove('show'); }, 1500);
         }
-        swInd.style.display = 'flex';
-        clearTimeout(swTm);
-        swTm = setTimeout(function () { swInd.style.display = 'none'; }, 1000);
-      }
-    }, { passive: true });
+        var hideCtrlT = null;
 
-    pw.addEventListener('touchend', function () {
-      swT = null;
-    });
+        document.addEventListener('touchend', function (e) {
+            if (e.target.closest('#controls-overlay') || e.target.closest('#ch-rows') || e.target.closest('#qm') || e.target.closest('#speed-badge') || e.target.closest('#iframe-wrap')) return;
+            if (isSwiping) return;
+            var now = Date.now();
+            if (now - lastTap < 400 && lastTap > 0) {
+                lastTap = 0;
+                clearTimeout(dblTimer);
+                dblTimer = null;
+                doFullscreen();
+                showDblHint('⛶ شاشة كاملة');
+            } else {
+                lastTap = now;
+                clearTimeout(dblTimer);
+                if (e.target.closest('#player-wrap')) {
+                    dblTimer = setTimeout(function () {
+                        lastTap = 0;
+                        pw.classList.add('show-ctrl');
+                        clearTimeout(hideCtrlT);
+                        hideCtrlT = setTimeout(function () { pw.classList.remove('show-ctrl'); }, 3000);
+                    }, 400);
+                }
+            }
+        }, { passive: true });
 
-    function handleDoubleTap() {
-      doFullscreen();
-      dblTxt.textContent = (document.fullscreenElement || document.webkitFullscreenElement) ? 'Exit' : '⛶';
-      dblHint.classList.add('show');
-      clearTimeout(dblHT);
-      dblHT = setTimeout(function () { dblHint.classList.remove('show'); }, 600);
-    }
+        pw.addEventListener('touchstart', function (e) {
+            if (e.target.closest('#controls-overlay') || e.target.closest('#loader') || e.target.closest('#speed-badge') || e.target.closest('#iframe-wrap')) return;
+            var t = e.touches[0];
+            tyStart = t.clientY;
+            isSwiping = false;
+            var rect = pw.getBoundingClientRect();
+            swType = (t.clientX - rect.left) > (rect.width / 2) ? 'vol' : 'brightness';
+            swStartY = t.clientY;
+            swStartVal = swType === 'vol' ? vid.volume : brightness;
+        }, { passive: true });
 
-    function handleSingleTap() {
-      dblT = setTimeout(function () {
-        pw.classList.toggle('show-ctrl');
-        clearTimeout(hCtrl);
-        if (pw.classList.contains('show-ctrl')) {
-          hCtrl = setTimeout(function () { pw.classList.remove('show-ctrl'); }, 4000);
+        pw.addEventListener('touchmove', function (e) {
+            if (!swType || e.target.closest('#controls-overlay') || e.target.closest('#iframe-wrap')) return;
+            var t = e.touches[0];
+            var dy = tyStart - t.clientY;
+            if (!isSwiping && Math.abs(dy) > 12) isSwiping = true;
+            if (!isSwiping) return;
+            var delta = dy / pw.getBoundingClientRect().height;
+            if (swType === 'vol') {
+                var v = Math.max(0, Math.min(1, swStartVal + delta));
+                setVolume(v);
+                showSwipe('vol', v);
+            } else {
+                var b = Math.max(0, Math.min(0.85, swStartVal - delta));
+                brightness = b;
+                brightL.style.opacity = b;
+                localStorage.setItem('brightness', b);
+                showSwipe('brightness', b);
+            }
+        }, { passive: true });
+
+        pw.addEventListener('touchend', function () {
+            swType = null;
+            setTimeout(function () { isSwiping = false; }, 50);
+        }, { passive: true });
+
+        pw.addEventListener('click', function (e) {
+            if (e.target.closest('#controls-overlay') || e.target.closest('#loader') || e.target.closest('#speed-badge') || e.target.closest('#iframe-wrap')) return;
+            pw.classList.add('show-ctrl');
+            clearTimeout(hideCtrlT);
+            hideCtrlT = setTimeout(function () { pw.classList.remove('show-ctrl'); }, 3000);
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('#qw')) closeQ();
+        });
+
+        var sv = localStorage.getItem('vol');
+        if (sv) {
+            vid.volume = parseFloat(sv);
+            document.getElementById('vs').value = sv;
         }
-      }, 280);
-    }
 
-    pw.addEventListener('touchend', function (e) {
-      if (e.target.closest('#controls-overlay') || e.target.closest('#speed-badge')) return;
-      if (isSwiping) return;
-
-      var now = Date.now();
-      if (now - lTap < 300 && now - lTap > 30) {
-        clearTimeout(dblT);
-        dblT = null;
-        e.preventDefault();
-        handleDoubleTap();
-        lTap = 0;
-        return;
-      }
-
-      lTap = now;
-      clearTimeout(dblT);
-      handleSingleTap();
-    }, { passive: false });
-
-    pw.addEventListener('click', function (e) {
-      if (e.target.closest('#controls-overlay') || e.target.closest('#speed-badge')) return;
-      if ('ontouchstart' in window) return;
-
-      var now = Date.now();
-      if (now - lTap < 300) {
-        clearTimeout(dblT);
-        dblT = null;
-        handleDoubleTap();
-        lTap = 0;
-      } else {
-        lTap = now;
-        clearTimeout(dblT);
-        handleSingleTap();
-      }
-    });
-
-    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
-  }
-
-  document.addEventListener('DOMContentLoaded', initUI);
-})();
-</script>
+        buildChannels();
+        load(0, 0);
+    </script>
 </body>
 </html>
